@@ -12,10 +12,8 @@ RUN mvn -q -DskipTests package
 # --- serve stage ---
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-
 # Copy jar from build stage to serve stage
 COPY --from=build /app/target/*.jar app.jar
-
 # Set enviroment variables
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75"
 # ENV SPRING_PROFILES_ACTIVE=prod

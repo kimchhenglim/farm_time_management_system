@@ -51,7 +51,7 @@ jobs:
         id: generatetag
         shell: bash
         env:
-          IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}/backend
+          IMAGE_REGISTRY: ghcr.io/${{ github.repository }}/backend
           BRANCH: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
         run: |
