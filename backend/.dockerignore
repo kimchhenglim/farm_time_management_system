@@ -1,0 +1,9 @@
+.git
+.target
+/target
+/build
+.gradle
+.idea
+.vscode
+node_modules
+Dockerfile*
