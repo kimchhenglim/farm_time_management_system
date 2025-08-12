@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn -q -e -DskipTests dependency:go-offline
 # build
-COPY src ./src
+COPY ../backend/src ./src
 RUN mvn -q -DskipTests package
 
 # --- serve stage ---
