@@ -6,4 +6,4 @@
 .idea
 .vscode
 node_modules
-Dockerfile
+Dockerfile*
