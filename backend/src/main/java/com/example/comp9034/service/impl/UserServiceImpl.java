@@ -10,8 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import static com.example.comp9034.enums.CommonEnum.REGISTER;
-import static com.example.comp9034.enums.ErrorCodeEnum.INTERNAL_SERVER_ERROR;
-import static com.example.comp9034.enums.ErrorCodeEnum.USER_CREATED;
+import static com.example.comp9034.enums.ErrorCodeEnum.*;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 
 
@@ -44,6 +43,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public CompleteResponse<Object> checkUserExisted(String userInput) {
-        return null;
+        try {
+            return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, REGISTER.name(), null);
+        } catch (
+                BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("There has been an error in registering a new user!", e);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, REGISTER.name());
+        }
     }
 }
