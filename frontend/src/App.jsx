@@ -42,8 +42,8 @@ function App() {
             {/* row 1 */}
             <tr>
               <th>1</th>
-              <th>{data.message}</th>
-              <th>{data.flow}</th>
+              <th>{data?.message}</th>
+              <th>{data?.flow}</th>
             </tr>
           </tbody>
         </table>
