@@ -11,8 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.example.comp9034.enums.CommonEnum.COMMON;
-import static com.example.comp9034.enums.CommonEnum.NON_AUTHENTICATED_REQUEST;
+import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
 
 
@@ -111,6 +110,22 @@ public class Common {
                     .toArray(String[]::new);
         } else {
             log.warn("There is no config for {}", NON_AUTHENTICATED_REQUEST);
+            return new String[0];
+        }
+    }
+
+    public static String[] getAllowedCORSUrls(ConfigurationRepository configurationRepository) {
+        Optional<ConfigurationEntity> getAllowedCORSUrlsOptional = configurationRepository.findByConfigCode(ALLOWED_CORS_URL_CONFIG.name());
+        if (getAllowedCORSUrlsOptional.isPresent()) {
+            String[] getAllowedCORSUrls = getAllowedCORSUrlsOptional.get().getConfigValue()
+                    .replaceAll("[{}]", "") // Remove curly braces
+                    .split(","); // Split by commas to get individual URLs
+            return Arrays.stream(getAllowedCORSUrls)
+                    .map(url -> url.replace("\\n", "").trim())
+                    .filter(url -> url.startsWith("http"))
+                    .toArray(String[]::new);
+        } else {
+            log.warn("There is no config for {}", ALLOWED_CORS_URL_CONFIG);
             return new String[0];
         }
     }
