@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Logo from "../assets/FarmLogo.svg";
 import Eye from "../assets/eye.svg";
 function Login() {
   const [hidden, setHidden] = useState(true);
-
+  useEffect(() => {
+    const API = import.meta.env.VITE_HI;
+    alert(API);
+  }, []);
   //submit function
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -11,7 +14,7 @@ function Login() {
   };
   return (
     <div className="text-black w-screen  h-screen flex flex-col items-center justify-center ">
-      <div className="w-[25%] h-auto shadow-[var(--custom-shadow)] rounded-2xl overflow-hidden px-[40px] py-[32px] bg-white">
+      <div className="w-[35%] h-auto shadow-[var(--custom-shadow)] rounded-2xl overflow-hidden px-12 pt-[56px] pb-10 bg-white">
         {/* logo */}
         <div className="flex flex-col">
           <img src={Logo} alt="farmLogo" className="w-[250px] h-auto" />
@@ -31,9 +34,8 @@ function Login() {
                   type="text"
                   name="username"
                   id="username"
-                  className="w-[90%]  border-[#ADADAD] p-2 rounded-md outline-0"
+                  className="w-full  border-[#ADADAD] p-4 rounded-md outline-0"
                 />
-                <img src={Eye} alt="eye" />
               </div>
             </div>
             <div className="flex flex-col mt-[23px] gap-2.5">
@@ -46,12 +48,7 @@ function Login() {
                   name=""
                   placeholder="Type your password"
                   id="password"
-                  className="w-[90%]  border-[#ADADAD] p-2 rounded-md outline-0"
-                />
-                <img
-                  src={Eye}
-                  alt="eye"
-                  onClick={() => setHidden((prev) => !prev)}
+                  className="w-[90%]  border-[#ADADAD] p-4 rounded-md outline-0"
                 />
               </div>
             </div>
@@ -60,16 +57,16 @@ function Login() {
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="checkbox rounded-xs size-[18px] border-[#ADADAD]  checked:bg-red-400 checked:text-white"
+                  className="checkbox rounded-xs size-[18px] border-[#ADADAD]  checked:bg-[#16A34A] checked:text-white"
                 />
-                <label htmlFor="">Remember me</label>
+                <label htmlFor="">Show password</label>
               </div>
               <div className="text-blue-500 underline">
                 <span className="font-medium">Forgot password?</span>
               </div>
             </div>
             <button
-              className="w-full bg-[#16A34A] py-[14px] text-xl mt-[32px] font-bold text-white rounded-md cursor-pointer"
+              className="w-full bg-[#16A34A] py-[20px] text-xl mt-[32px] font-bold text-white rounded-md cursor-pointer"
               type="submit"
             >
               Log In
