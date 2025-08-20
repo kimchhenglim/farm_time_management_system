@@ -2,13 +2,19 @@ import React, { useState } from "react";
 import Logo from "../assets/FarmLogo.svg";
 import Bell from "../assets/bell.svg";
 import Dropdown from "../assets/dropdown.svg";
-
+import Calendar from "../assets/calendar.svg";
+import User from "../assets/user.svg";
+import Report from "../assets/report.svg";
+import Calendar_active from "../assets/calendar-active.svg";
+import User_active from "../assets/users-active.svg";
+import Report_active from "../assets/report-active.svg";
+import { Link, useLocation } from "react-router-dom";
 function TopNavBar() {
   return (
-    <header className="flex items-center justify-between bg-white px-6 py-2 shadow h-[87px]">
-      <div className="flex items-center space-x-6 w-full max-w-[700px]">
+    <header className="flex items-center justify-between bg-white px-6 py-2 shadow-2xs h-[87px]">
+      <div className="flex items-center space-x-6 w-full ">
         {/* Logo */}
-        <div className="flex items-center w-[314px] h-[87px]">
+        <div className="flex items-center w-[207px] h-[87px]">
           <img src={Logo} alt="Logo" className="object-contain" />
         </div>
 
@@ -79,18 +85,75 @@ function TopNavBar() {
 }
 
 function SideNavBar() {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  console.log(currentPath);
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-200 shadow-sm">
-      <nav className="flex flex-col pt-6 s64pace-y-2 px-4">
-        <button className="text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-          Roster
-        </button>
-        <button className="text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-          Staff Management
-        </button>
-        <button className="text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-          Report
-        </button>
+    <aside className="w-64 h-screen bg-white border-r border-gray-200 shadow-sm border-t-[2px] ">
+      <nav className="flex flex-col pt-6 s64pace-y-2 ">
+        <Link
+          to="/roster"
+          className={`w-full hover:bg-[#F0FDF4] ${
+            currentPath === "/roster"
+              ? "border-l-[4px] border-[#16A34A] bg-[#F0FDF4]"
+              : ""
+          }`}
+        >
+          <button
+            className={`flex items-center gap-2.5 h-[76px] text-left px-[24px]  py-2 rounded-lg   font-medium cursor-pointer ${
+              currentPath === "/roster" ? "text-[#16A34A]" : "text-gray-700"
+            }`}
+          >
+            <img
+              src={currentPath === "/roster" ? Calendar_active : Calendar}
+              alt="Calendar"
+            />
+            Roster
+          </button>
+        </Link>
+        <Link
+          to="/staff-management"
+          className={`w-full hover:bg-[#F0FDF4] ${
+            currentPath === "/staff-management"
+              ? "border-l-[4px] border-[#16A34A] bg-[#F0FDF4]"
+              : ""
+          }`}
+        >
+          <button
+            className={`flex items-center gap-2.5 h-[76px] text-left px-[24px]  py-2 rounded-lg   font-medium cursor-pointer ${
+              currentPath === "/staff-management"
+                ? "text-[#16A34A]"
+                : "text-gray-700"
+            }`}
+          >
+            <img
+              src={currentPath === "/staff-management" ? User_active : User}
+              alt="staff"
+            />{" "}
+            Staff Management
+          </button>
+        </Link>
+        <Link
+          to="/report"
+          className={`w-full hover:bg-[#F0FDF4] ${
+            currentPath === "/report"
+              ? "border-l-[4px] border-[#16A34A] bg-[#F0FDF4] "
+              : ""
+          }`}
+        >
+          <button
+            className={`flex items-center gap-2.5 h-[76px] text-left px-[24px]  py-2 rounded-lg   font-medium cursor-pointer ${
+              currentPath === "/report" ? "text-[#16A34A]" : "text-gray-700"
+            }`}
+          >
+            <img
+              src={currentPath === "/report" ? Report_active : Report}
+              alt="report"
+              className=""
+            />
+            Report
+          </button>
+        </Link>
       </nav>
     </aside>
   );
@@ -102,7 +165,7 @@ function NavigationLayout({ children }) {
       <TopNavBar />
       <div className="flex flex-1 overflow-hidden">
         <SideNavBar />
-        <main className="flex-1 bg-gray-50 p-6 overflow-auto">{children}</main>
+        <main className="flex-1 bg-gray-50 overflow-auto">{children}</main>
       </div>
     </div>
   );
