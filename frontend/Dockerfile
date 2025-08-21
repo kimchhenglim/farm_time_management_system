@@ -6,7 +6,8 @@ COPY package*.json ./
 RUN npm ci
 # build
 COPY . .
-RUN npm run build
+ARG MODE=dev
+RUN npm run build:$MODE
 
 # --- serve stage ---
 FROM nginx:alpine
