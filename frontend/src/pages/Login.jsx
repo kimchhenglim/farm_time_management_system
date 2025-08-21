@@ -4,7 +4,7 @@ import Eye from "../assets/eye.svg";
 function Login() {
   const [hidden, setHidden] = useState(true);
   useEffect(() => {
-    const API = import.meta.env.VITE_HI;
+    const API = import.meta.env.VITE_BASE_API;
     alert(API);
   }, []);
   //submit function
