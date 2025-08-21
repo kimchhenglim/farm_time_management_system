@@ -10,6 +10,12 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   syntax-check:
     name: Syntax check
@@ -38,6 +44,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+    outputs:
+      environment: ${{ steps.generateglobaltag.outputs.environment }}
     steps:
       - name: Checkout Sourcecode
         uses: actions/checkout@v4
@@ -67,6 +76,15 @@ jobs:
             echo "EOF" 
           } >> $GITHUB_OUTPUT
 
+      - name: Docker Information
+        id: generateglobaltag
+        run: |
+          environment="${{ github.ref_name }}"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            environment="prod"
+          fi
+          echo "environment=$environment" >> $GITHUB_OUTPUT
+
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
@@ -74,3 +92,40 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.generatetag.outputs.tags }}
+          build-args: |
+            MODE=${{ steps.generateglobaltag.outputs.environment }}
+
+  docker-deploy:
+    name: Docker deploy
+    needs: [syntax-check, docker-build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.docker-build.outputs.environment }}
+    steps:
+      - name: Variable from docker build
+        run: |
+          echo "environment: ${{ needs.docker-build.outputs.environment }}"
+
+      - name: Add droplet to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DO_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/app
+            
+            # pull and restart service
+            # docker compose pull
+            # docker compose up -d
+            docker compose --profile frontend_${{ needs.docker-build.outputs.environment }} up -d --pull always --no-deps
+
+            # clean
+            docker image prune -f
