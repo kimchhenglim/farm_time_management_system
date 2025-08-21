@@ -17,7 +17,7 @@ COPY --from=build /app/target/*.jar app.jar
 # Set enviroment variables
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75"
 # ENV SPRING_PROFILES_ACTIVE=prod
-ENV SPRING_PROFILES_ACTIVE=nodb
+# ENV SPRING_PROFILES_ACTIVE=nodb
 
 EXPOSE 8088
 ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar app.jar" ]
