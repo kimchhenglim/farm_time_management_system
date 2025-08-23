@@ -1,5 +1,6 @@
 package com.example.comp9034.entity;
 
+import com.example.comp9034.enums.GenderEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,95 +18,54 @@ import java.util.List;
 @Table(name = "Users")
 @Getter
 @Setter
-public class User implements Serializable, UserDetails {
+public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 12L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private int userId;
+    private int Id;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false, unique = true, updatable = false)
+    private String UserCode;
 
-    @Column(name = "password")
-    private String password;
+    private String FirstName;
+    private String LastName;
+    private LocalDate Dob;
 
-    @Column(name = "email", unique = true)
-    private String email;
+    @Enumerated(EnumType.STRING)
+    private GenderEnum Gender;
 
-    @Column(name = "dob")
+    private String Email;
+    private String MobileNumber;
+    private String Address;
 
-    private LocalDate dob;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Role Role;
 
-    @Column(name = "created_date")
-    private LocalDate createdDate;
+    private LocalDateTime CreatedAt =  LocalDateTime.now();
+    private LocalDateTime UpdatedAt =  LocalDateTime.now();
 
-    @Column(name = "referred_code")
-    private String referredCode;
+    // Relationships
+    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
+    private List<Payslip> Payslips;
 
-    @Column(name = "phone_num")
-    private String phoneNumber;
+    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
+    private List<Roster> Rosters;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
-
-    @Column(name = "is_OAuth2", nullable = false)
-    private boolean isOAuth2;
-
-    public User(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-    }
-
-    public User(String username, String password, String phoneNumber, LocalDate dob, LocalDate createdDate, String email, boolean isActive) {
-        this.username = username;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.dob = dob;
-        this.createdDate = createdDate;
-        this.email = email;
-        this.isActive = isActive;
-    }
-
-    public User(String username, String password, LocalDate dob, LocalDate createdDate, String email, boolean isActive, boolean isOAuth2) {
-        this.username = username;
-        this.password = password;
-        this.dob = dob;
-        this.createdDate = createdDate;
-        this.email = email;
-        this.isActive = isActive;
-        this.isOAuth2 = isOAuth2;
-    }
+    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
+    private List<Clocking> Clockings;
 
     public User() {
 
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+    public User(String FirstName, String LastName, GenderEnum Gender, String Email, String MobileNumber, String Address) {
+        this.FirstName = FirstName;
+        this.LastName = LastName;
+        this.Gender = Gender;
+        this.Email = Email;
+        this.MobileNumber = MobileNumber;
+        this.Address = Address;
     }
 }
