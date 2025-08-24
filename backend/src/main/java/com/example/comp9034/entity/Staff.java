@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import com.example.comp9034.enums.ContractType;
 
+import java.util.List;
+
 @Entity
 @Table(name = "Staff")
 public class Staff {
@@ -25,4 +27,14 @@ public class Staff {
     private Double PayRate;
     private String Task;
     private Boolean IsActive = true;
+
+    // Relationships
+    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
+    private List<Payslip> Payslips;
+
+    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
+    private List<Roster> Rosters;
+
+    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
+    private List<Clocking> Clockings;
 }

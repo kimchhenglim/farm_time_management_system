@@ -13,8 +13,8 @@ public class Payslip {
     private int Id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UserId", nullable = false)
-    private User User;
+    @JoinColumn(name = "StaffId", nullable = false)
+    private Staff Staff;
 
     private LocalDate PayPeriodStart;
     private LocalDate PayPeriodEnd;

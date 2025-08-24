@@ -12,8 +12,8 @@ public class Roster {
     private int Id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UserId", nullable = false)
-    private User User;
+    @JoinColumn(name = "StafffId", nullable = false)
+    private Staff Staff;
 
     private LocalDateTime StartTime = LocalDateTime.now();
     private LocalDateTime EndTime;

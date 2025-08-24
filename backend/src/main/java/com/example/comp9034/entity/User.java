@@ -46,16 +46,6 @@ public class User implements Serializable {
     private LocalDateTime CreatedAt =  LocalDateTime.now();
     private LocalDateTime UpdatedAt =  LocalDateTime.now();
 
-    // Relationships
-    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
-    private List<Payslip> Payslips;
-
-    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
-    private List<Roster> Rosters;
-
-    @OneToMany(mappedBy = "User", cascade = CascadeType.ALL)
-    private List<Clocking> Clockings;
-
     public User() {
 
     }

@@ -13,8 +13,8 @@ public class Clocking {
     private Long Id;
 
     @ManyToOne
-    @JoinColumn(name = "UserId", nullable = false)
-    private User User;
+    @JoinColumn(name = "StaffId", nullable = false)
+    private Staff Staff;
 
     private LocalDateTime ClockInTime;
     private LocalDateTime ClockOutTime;
