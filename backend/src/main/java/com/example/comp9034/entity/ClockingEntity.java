@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Clocking")
-public class Clocking {
+public class ClockingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +14,7 @@ public class Clocking {
 
     @ManyToOne
     @JoinColumn(name = "StaffId", nullable = false)
-    private Staff Staff;
+    private StaffEntity Staff;
 
     private LocalDateTime ClockInTime;
     private LocalDateTime ClockOutTime;
@@ -23,5 +23,5 @@ public class Clocking {
     private String ManualReason;
 
     @OneToMany(mappedBy = "Clocking", cascade = CascadeType.ALL)
-    private List<Break> Breaks;
+    private List<BreakEntity> Breaks;
 }

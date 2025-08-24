@@ -7,14 +7,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Payslip")
-public class Payslip {
+public class PayslipEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int Id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "StaffId", nullable = false)
-    private Staff Staff;
+    private StaffEntity Staff;
 
     private LocalDate PayPeriodStart;
     private LocalDate PayPeriodEnd;

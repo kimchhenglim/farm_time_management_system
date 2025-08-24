@@ -1,6 +1,6 @@
 package com.example.comp9034.service.impl;
 
-import com.example.comp9034.entity.User;
+import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.ErrorCodeEnum;
 import com.example.comp9034.exception_handler.BusinessException;
 import com.example.comp9034.repository.ConfigurationRepository;
@@ -84,7 +84,7 @@ public class TokenServiceImpl implements TokenService {
         log.info("Start validating access token!");
         String username;
         Claims claims;
-        Optional<User> userOptional;
+        Optional<UserEntity> userOptional;
         try {
             claims = Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(accessToken) // This validates the token
                     .getBody();

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Break")
-public class Break {
+public class BreakEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,7 +13,7 @@ public class Break {
 
     @ManyToOne
     @JoinColumn(name = "ClockingId", nullable = false)
-    private Clocking Clocking;
+    private ClockingEntity Clocking;
 
     private LocalDateTime BreakStartTime;
     private LocalDateTime BreakEndTime;

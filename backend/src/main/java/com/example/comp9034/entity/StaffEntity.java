@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Staff")
-public class Staff {
+public class StaffEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +16,7 @@ public class Staff {
 
     @OneToOne
     @JoinColumn(name = "UserId", nullable = false)
-    private User User;
+    private UserEntity User;
 
     @Column(unique = true)
     private String CardId;
@@ -30,11 +30,11 @@ public class Staff {
 
     // Relationships
     @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<Payslip> Payslips;
+    private List<PayslipEntity> Payslips;
 
     @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<Roster> Rosters;
+    private List<RosterEntity> Rosters;
 
     @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<Clocking> Clockings;
+    private List<ClockingEntity> Clockings;
 }

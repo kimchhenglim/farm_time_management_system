@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "Users")
 @Getter
 @Setter
-public class User implements Serializable {
+public class UserEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 12L;
 
@@ -41,16 +41,16 @@ public class User implements Serializable {
     private String Address;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Role Role;
+    private RoleEntity Role;
 
     private LocalDateTime CreatedAt =  LocalDateTime.now();
     private LocalDateTime UpdatedAt =  LocalDateTime.now();
 
-    public User() {
+    public UserEntity() {
 
     }
 
-    public User(String FirstName, String LastName, GenderEnum Gender, String Email, String MobileNumber, String Address) {
+    public UserEntity(String FirstName, String LastName, GenderEnum Gender, String Email, String MobileNumber, String Address) {
         this.FirstName = FirstName;
         this.LastName = LastName;
         this.Gender = Gender;

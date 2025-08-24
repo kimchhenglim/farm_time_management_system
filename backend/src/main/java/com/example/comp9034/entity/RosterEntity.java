@@ -6,21 +6,21 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Roster")
-public class Roster {
+public class RosterEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int Id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "StafffId", nullable = false)
-    private Staff Staff;
+    private StaffEntity Staff;
 
     private LocalDateTime StartTime = LocalDateTime.now();
     private LocalDateTime EndTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CreatedBy", referencedColumnName = "UserId")
-    private Admin CreatedBy;
+    private AdminEntity CreatedBy;
 
     private LocalDateTime CreatedAt = LocalDateTime.now();
 }

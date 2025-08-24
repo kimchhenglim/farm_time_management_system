@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Admin")
-public class Admin {
+public class AdminEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,7 +12,7 @@ public class Admin {
 
     @OneToOne
     @JoinColumn(name = "UserId", nullable = false)
-    private User User;
+    private UserEntity User;
 
     @Column(unique = true, nullable = false)
     private String UserName;
