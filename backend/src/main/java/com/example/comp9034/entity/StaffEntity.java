@@ -2,7 +2,7 @@ package com.example.comp9034.entity;
 
 import jakarta.persistence.*;
 
-import com.example.comp9034.enums.ContractType;
+import com.example.comp9034.enums.ContractTypeEnum;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class StaffEntity {
     private String CardId;
 
     @Enumerated(EnumType.STRING)
-    private ContractType ContractType;
+    private ContractTypeEnum ContractType;
 
     private Double PayRate;
     private String Task;

@@ -12,7 +12,7 @@ public class RosterEntity {
     private int Id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "StafffId", nullable = false)
+    @JoinColumn(name = "StaffId", nullable = false)
     private StaffEntity Staff;
 
     private LocalDateTime StartTime = LocalDateTime.now();
