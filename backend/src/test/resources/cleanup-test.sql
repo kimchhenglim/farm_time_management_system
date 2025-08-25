@@ -3,7 +3,7 @@
 
 -- Clean up test data in reverse order of dependencies
 DELETE FROM users WHERE username IN ('testuser', 'oauth2user', 'inactiveuser');
-DELETE FROM configurations WHERE config_code IN (
+DELETE FROM configuration WHERE config_code IN (
     'ACCESS_TOKEN_EXPIRATION_TIME', 
     'SECRET_KEY_CONFIG', 
     'NON_AUTHENTICATED_REQUEST', 
