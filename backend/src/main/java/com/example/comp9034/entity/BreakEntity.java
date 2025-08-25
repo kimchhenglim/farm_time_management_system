@@ -1,22 +1,27 @@
 package com.example.comp9034.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Break")
+@Getter
+@Setter
 public class BreakEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "ClockingId", nullable = false)
-    private ClockingEntity Clocking;
+    @ManyToOne()
+    @JoinColumn(name = "clockingId", nullable = false)
+    private ClockingEntity clocking;
 
-    private LocalDateTime BreakStartTime;
-    private LocalDateTime BreakEndTime;
+    private LocalDateTime breakStartTime;
+    private LocalDateTime breakEndTime;
 
-    private String Reason;
+    private String reason;
 }

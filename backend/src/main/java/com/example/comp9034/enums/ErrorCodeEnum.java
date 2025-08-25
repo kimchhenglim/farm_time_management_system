@@ -22,6 +22,7 @@ public enum ErrorCodeEnum {
     USER_DETAILS_VERIFIED("E000", "Users details pass the verification", REGISTER, HttpStatusCodeEnum.OK),
     PASSWORD_UPDATED_SUCCESS("E000", "New password updated successfully", REGISTER, HttpStatusCodeEnum.OK),
     SEARCH_INFO_SUCCESS("E000", "Search info successfully", COMMON, HttpStatusCodeEnum.OK),
+    UPDATE_USER_SUCCESS("E000", "User updated successfully", COMMON, HttpStatusCodeEnum.OK),
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
     USERNAME_TAKEN("E002", "Username taken", REGISTER, HttpStatusCodeEnum.CONFLICT),

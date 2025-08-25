@@ -1,22 +1,26 @@
 package com.example.comp9034.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "Admin")
+@Getter
+@Setter
 public class AdminEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "UserId", nullable = false)
-    private UserEntity User;
+    @OneToOne()
+    @JoinColumn(name = "userId", nullable = false)
+    private UserEntity user;
 
     @Column(unique = true, nullable = false)
-    private String UserName;
+    private String userName;
 
     @Column(nullable = false)
-    private String Password;
+    private String password;
 }

@@ -18,44 +18,44 @@ import java.util.List;
 @Table(name = "Users")
 @Getter
 @Setter
-public class UserEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 12L;
+public class UserEntity {
+//    @Serial
+//    private static final long serialVersionUID = 12L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int Id;
+    private int id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private String UserCode;
+    @Column(name = "user_code", nullable = false, unique = true, updatable = false)
+    private String userCode;
 
-    private String FirstName;
-    private String LastName;
-    private LocalDate Dob;
+    private String firstName;
+    private String lastName;
+    private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    private GenderEnum Gender;
+    private GenderEnum gender;
 
-    private String Email;
-    private String MobileNumber;
-    private String Address;
+    private String email;
+    private String mobileNumber;
+    private String address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private RoleEntity Role;
+    @ManyToOne()
+    private RoleEntity role;
 
-    private LocalDateTime CreatedAt =  LocalDateTime.now();
-    private LocalDateTime UpdatedAt =  LocalDateTime.now();
+    private LocalDateTime createdAt =  LocalDateTime.now();
+    private LocalDateTime updatedAt =  LocalDateTime.now();
 
     public UserEntity() {
 
     }
 
-    public UserEntity(String FirstName, String LastName, GenderEnum Gender, String Email, String MobileNumber, String Address) {
-        this.FirstName = FirstName;
-        this.LastName = LastName;
-        this.Gender = Gender;
-        this.Email = Email;
-        this.MobileNumber = MobileNumber;
-        this.Address = Address;
+    public UserEntity(String firstName, String lastName, GenderEnum gender, String email, String mobileNumber, String address) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.address = address;
     }
 }

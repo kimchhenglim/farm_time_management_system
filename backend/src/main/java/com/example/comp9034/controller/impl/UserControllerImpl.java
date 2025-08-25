@@ -3,6 +3,7 @@ package com.example.comp9034.controller.impl;
 import com.example.comp9034.controller.UserController;
 import com.example.comp9034.dto.CreateUserDTO;
 
+import com.example.comp9034.dto.UpdateUserDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.UserService;
@@ -30,6 +31,12 @@ public class UserControllerImpl implements UserController {
         CompleteResponse<Object> response = userService.createNewUserAdmin(registerRequest);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
 
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO, String userCode) {
+        CompleteResponse<Object> response = userService.updateUser(updateUserDTO, userCode);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
     @Override

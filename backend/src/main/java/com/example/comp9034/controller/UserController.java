@@ -1,6 +1,7 @@
 package com.example.comp9034.controller;
 
 import com.example.comp9034.dto.CreateUserDTO;
+import com.example.comp9034.dto.UpdateUserDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import com.example.comp9034.response_template.ResponseBody;
@@ -14,6 +15,9 @@ public interface UserController {
 
     @PostMapping("/register/admin")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
+
+    @PutMapping("/users/{userCode}")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userCode") String userCode);
 
     @GetMapping("/get/user")
     ResponseEntity<ResponseBody<Object>> checkUserExisted(@NotNull @RequestParam(name = "userInput") String userInput);

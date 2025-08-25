@@ -3,38 +3,42 @@ package com.example.comp9034.entity;
 import jakarta.persistence.*;
 
 import com.example.comp9034.enums.ContractTypeEnum;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
 @Table(name = "Staff")
+@Getter
+@Setter
 public class StaffEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "UserId", nullable = false)
-    private UserEntity User;
+    private UserEntity user;
 
     @Column(unique = true)
-    private String CardId;
+    private String cardId;
 
     @Enumerated(EnumType.STRING)
-    private ContractTypeEnum ContractType;
+    private ContractTypeEnum contractType;
 
-    private Double PayRate;
-    private String Task;
-    private Boolean IsActive = true;
+    private Double payRate;
+    private String task;
+    private Boolean isActive = true;
 
     // Relationships
-    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<PayslipEntity> Payslips;
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL)
+    private List<PayslipEntity> payslips;
 
-    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<RosterEntity> Rosters;
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL)
+    private List<RosterEntity> rosters;
 
-    @OneToMany(mappedBy = "Staff", cascade = CascadeType.ALL)
-    private List<ClockingEntity> Clockings;
+    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL)
+    private List<ClockingEntity> clockings;
 }

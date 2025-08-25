@@ -1,33 +1,37 @@
 package com.example.comp9034.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Payslip")
+@Getter
+@Setter
 public class PayslipEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int Id;
+    private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "StaffId", nullable = false)
-    private StaffEntity Staff;
+    private StaffEntity staff;
 
-    private LocalDate PayPeriodStart;
-    private LocalDate PayPeriodEnd;
+    private LocalDate payPeriodStart;
+    private LocalDate payPeriodEnd;
 
-    private Double BaseHours;
-    private Double SaturdayHours;
-    private Double SundayHours;
-    private Double HolidayHours;
-    private Double OvertimeHours;
-    private Double TotalHours;
+    private Double baseHours;
+    private Double saturdayHours;
+    private Double sundayHours;
+    private Double holidayHours;
+    private Double overtimeHours;
+    private Double totalHours;
 
-    private Double TotalPay;
+    private Double totalPay;
 
-    private LocalDateTime GeneratedAt = LocalDateTime.now();
-    private Boolean IsExported = false;
+    private LocalDateTime generatedAt = LocalDateTime.now();
+    private Boolean isExported = false;
 }

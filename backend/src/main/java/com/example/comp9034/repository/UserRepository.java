@@ -10,13 +10,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-    /**
-     * Finds a user by their username.
-     *
-     * @param username the username to search for
-     * @param isActive the active status to search for
-     * @return an Optional containing the User if found, or empty if not found
-     */
+    // /**
+    //  * Finds a user by their username.
+    //  *
+    //  * @param username the username to search for
+    //  * @param isActive the active status to search for
+    //  * @return an Optional containing the User if found, or empty if not found
+    //  */
 //    @Query("SELECT u FROM User u WHERE u.username = :username AND u.isActive = :isActive")
 //    Optional<User> findByUsernameAndActive(String username, boolean isActive);
 //
@@ -25,4 +25,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 //
 //    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isActive = :isActive")
 //    Optional<User> findByEmailAndActive(String email, boolean isActive);
+
+    Optional<UserEntity> findByUserCode(String userCode);
 }
