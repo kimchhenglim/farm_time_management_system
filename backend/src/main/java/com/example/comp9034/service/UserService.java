@@ -9,7 +9,7 @@ public interface UserService {
 
     CompleteResponse<Object> createNewUserAdmin(CreateUserDTO registerRequest);
 
-    // CompleteResponse<Object> getAllSortedByActive();
+    CompleteResponse<Object> getAllSortedByActive();
 
     CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String userId);
 }

@@ -16,6 +16,8 @@ public interface UserMapper {
     @Mapping(source = "userId", target = "userId")
     UserDTO toUserDTO(UserEntity user);
 
+    List<UserDTO> toUserDTOList(List<UserEntity> users);
+
     // DTO -> Entity (update only non-null fields)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(UpdateUserDTO dto, @MappingTarget UserEntity entity);

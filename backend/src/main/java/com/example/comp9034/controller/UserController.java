@@ -19,6 +19,6 @@ public interface UserController {
     @PutMapping("/users/{userId}")
     ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userId") String userId);
 
-    // @GetMapping("/users")
-    // ResponseEntity<ResponseBody<Object>> getAllUsers();
+     @GetMapping("/users")
+     ResponseEntity<ResponseBody<Object>> getAllUsers();
 }

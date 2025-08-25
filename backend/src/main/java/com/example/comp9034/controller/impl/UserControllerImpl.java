@@ -39,11 +39,11 @@ public class UserControllerImpl implements UserController {
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
-    // @Override
-    // public ResponseEntity<ResponseBody<Object>> getAllUsers() {
-    //     CompleteResponse<Object> response = userService.getAllSortedByActive();
-    //     return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
-    // }
+    @Override
+    public ResponseEntity<ResponseBody<Object>> getAllUsers() {
+        CompleteResponse<Object> response = userService.getAllSortedByActive();
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
 }
 
 

@@ -12,9 +12,11 @@ import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.service.UserService;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.example.comp9034.enums.CommonEnum.COMMON;
 import static com.example.comp9034.enums.CommonEnum.REGISTER;
@@ -85,9 +87,11 @@ public class UserServiceImpl implements UserService {
         return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS,  COMMON.name(),responseDTO);
     }
 
-    // @Override
-    // public CompleteResponse<Object> getAllSortedByActive() {
-    //     List<StaffEntity> staffs = staffRepository.findAll(Sort.by(Sort.Direction.ASC, "isActive"));
-    //     return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), UserMapper.toUpdateUserDTOs(staffs));
-    // }
+    @Override
+    public CompleteResponse<Object> getAllSortedByActive() {
+        List<UserEntity> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "isActive"));
+
+        List<UserDTO> responseList = userMapper.toUserDTOList(users);
+        return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), responseList);
+    }
 }
