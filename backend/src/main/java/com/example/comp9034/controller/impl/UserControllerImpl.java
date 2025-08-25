@@ -34,16 +34,16 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO, String userCode) {
-        CompleteResponse<Object> response = userService.updateUser(updateUserDTO, userCode);
+    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO, String userId) {
+        CompleteResponse<Object> response = userService.updateUser(updateUserDTO, userId);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
-    @Override
-    public ResponseEntity<ResponseBody<Object>> checkUserExisted(String userInput) {
-        CompleteResponse<Object> response = userService.checkUserExisted(userInput);
-        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
-    }
+    // @Override
+    // public ResponseEntity<ResponseBody<Object>> getAllUsers() {
+    //     CompleteResponse<Object> response = userService.getAllSortedByActive();
+    //     return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    // }
 }
 
 

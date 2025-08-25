@@ -16,9 +16,9 @@ public interface UserController {
     @PostMapping("/register/admin")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
 
-    @PutMapping("/users/{userCode}")
-    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userCode") String userCode);
+    @PutMapping("/users/{userId}")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userId") String userId);
 
-    @GetMapping("/get/user")
-    ResponseEntity<ResponseBody<Object>> checkUserExisted(@NotNull @RequestParam(name = "userInput") String userInput);
+    // @GetMapping("/users")
+    // ResponseEntity<ResponseBody<Object>> getAllUsers();
 }

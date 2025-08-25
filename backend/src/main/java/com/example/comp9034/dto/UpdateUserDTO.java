@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Setter
 @Getter
 @Valid
@@ -15,6 +17,8 @@ public class UpdateUserDTO {
 
     @Size(max = 50, message = "Last name must be at most 50 characters")
     private String lastName;
+
+    private LocalDate dob;
 
     private GenderEnum gender;
 

@@ -17,8 +17,8 @@ public class PayslipEntity {
     private int id;
 
     @ManyToOne()
-    @JoinColumn(name = "StaffId", nullable = false)
-    private StaffEntity staff;
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private UserEntity user;
 
     private LocalDate payPeriodStart;
     private LocalDate payPeriodEnd;

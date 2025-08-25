@@ -18,8 +18,8 @@ public class ClockingEntity {
     private Long id;
 
     @ManyToOne()
-    @JoinColumn(name = "staffId", nullable = false)
-    private StaffEntity staff;
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private UserEntity user;
 
     private LocalDateTime clockInTime;
     private LocalDateTime clockOutTime;
