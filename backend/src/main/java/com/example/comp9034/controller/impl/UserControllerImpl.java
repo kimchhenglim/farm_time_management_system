@@ -1,12 +1,15 @@
 package com.example.comp9034.controller.impl;
 
 import com.example.comp9034.controller.UserController;
-import com.example.comp9034.dto.CreateUserDTO;
+import com.example.comp9034.dto.*;
 
-import com.example.comp9034.dto.UpdateUserDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.UserService;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,8 +43,14 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> getAllUsers() {
-        CompleteResponse<Object> response = userService.getAllSortedByActive();
+    public ResponseEntity<ResponseBody<Object>> getAllUsers(String userId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
+        Pageable pageable = PageRequest.of(
+            page,
+            size,
+            sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
+        
+        CompleteResponse<Object> response = userService.getUserByFilter(userId, name, email, phoneNumber, pageable);
+        
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 }

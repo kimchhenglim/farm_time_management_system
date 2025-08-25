@@ -20,5 +20,14 @@ public interface UserController {
     ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userId") String userId);
 
      @GetMapping("/users")
-     ResponseEntity<ResponseBody<Object>> getAllUsers();
+     ResponseEntity<ResponseBody<Object>> getAllUsers(
+        @RequestParam(required = false) String userId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phoneNumber,
+        @RequestParam(defaultValue = "0") int page,   // page number
+        @RequestParam(defaultValue = "10") int size,  // page size
+        @RequestParam(defaultValue = "id") String sortBy, // sort field
+        @RequestParam(defaultValue = "asc") String sortDir // asc or desc
+     );
 }

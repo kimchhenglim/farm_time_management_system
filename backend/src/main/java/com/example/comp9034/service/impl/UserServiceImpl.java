@@ -12,11 +12,15 @@ import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.service.UserService;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.comp9034.enums.CommonEnum.COMMON;
 import static com.example.comp9034.enums.CommonEnum.REGISTER;
@@ -88,10 +92,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CompleteResponse<Object> getAllSortedByActive() {
-        List<UserEntity> users = userRepository.findAll(Sort.by(Sort.Direction.DESC, "isActive"));
+    public CompleteResponse<Object> getUserByFilter(String userId, String name, String email, String mobileNumber, Pageable pageable) {
+        Specification<UserEntity> spec = Specification.where(null);
 
-        List<UserDTO> responseList = userMapper.toUserDTOList(users);
-        return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), responseList);
+        if (userId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), userId));
+        }
+
+        if (name != null) {
+            spec = spec.and((root, query, cb) -> cb.or(
+                cb.like(cb.lower(root.get("firstName")), "%" + name.toLowerCase() + "%"),
+                cb.like(cb.lower(root.get("lastName")), "%" + name.toLowerCase() + "%")
+        ));
+        }
+
+        if (email != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
+        }
+
+        if (mobileNumber != null) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("mobileNumber"), "%" + mobileNumber + "%"));
+        }
+
+        Page<UserEntity> page = userRepository.findAll(spec, pageable);
+
+        //map content to DTO
+        List<UserDTO> dtoList = page.getContent().stream()
+                                    .map(userMapper::toUserDTO)
+                                    .collect(Collectors.toList());
+
+        Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());
+
+        return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), dtoPage);
     }
 }
