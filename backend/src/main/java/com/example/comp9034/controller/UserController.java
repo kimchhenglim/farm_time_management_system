@@ -8,7 +8,6 @@ import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/public/api/users/")
 public interface UserController {
     @PostMapping("/register")
     ResponseEntity<ResponseBody<Object>> createNewUser(@Valid @RequestBody CreateUserDTO registerRequest);
