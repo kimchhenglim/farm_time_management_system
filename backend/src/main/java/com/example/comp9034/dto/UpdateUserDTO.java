@@ -36,6 +36,7 @@ public class UpdateUserDTO {
     private String cardId;
 
     private UserEnum contractType;
+    private UserEnum role;
 
     @Positive(message = "Pay rate must be greater than zero")
     private Double payRate;

@@ -23,7 +23,7 @@ public class UserDTO {
     private String email;
     private String mobileNumber;
     private String address;
-    private RoleEntity role;
+    private UserEnum role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String cardId;

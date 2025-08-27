@@ -53,12 +53,12 @@ public class UserEntity implements Serializable, UserDetails{
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    private UserEnum role;
+    private int roleId;
 
     public UserEntity() {
 
     }
-    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, UserEnum role, String password) {
+    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, int roleId, String password) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -72,7 +72,7 @@ public class UserEntity implements Serializable, UserDetails{
         this.payRate = payRate;
         this.task = task;
         this.createdAt = createdAt;
-        this.role = role;
+        this.roleId = roleId;
         this.password = password;
     }
 

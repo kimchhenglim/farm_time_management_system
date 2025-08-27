@@ -8,14 +8,13 @@ import com.example.comp9034.mapper.UserMapper;
 import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
+import com.example.comp9034.service.RoleCache;
 import com.example.comp9034.service.UserService;
-import io.micrometer.common.util.StringUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -41,12 +40,14 @@ import static com.example.comp9034.util.DateTimeFormatter.toLocalDate;
 public class UserServiceImpl implements UserService {
     private final ErrorCodeRepository errorCodeRepository;
     private final UserRepository userRepository;
+    private final RoleCache roleCache;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleCache roleCache, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.errorCodeRepository = errorCodeRepository;
         this.userRepository = userRepository;
+        this.roleCache = roleCache;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -138,14 +139,15 @@ public class UserServiceImpl implements UserService {
 //                throw new BusinessException(OTP_BLOCKED_OR_NOT_FOUND, REGISTER.name());
 //            }
             UserEntity newUser;
+            int roleId = roleCache.getRoleIdByDescription(registerRequest.getRole().name());
             if (registerRequest.getRole().equals(UserEnum.ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), registerRequest.getRole(), passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), roleId, passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), registerRequest.getRole(), null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), roleId, null);
             } else {
                 log.info("User role is not valid: {} !", registerRequest.getRole());
                 throw new BusinessException(INVALID_INPUT, REGISTER.name());
@@ -183,13 +185,20 @@ public class UserServiceImpl implements UserService {
                     return new BusinessException(USER_NOT_FOUND, COMMON.name());
                 });
 
-        //update entity
+        //update role first if exists since role datatype is mismatched
+        if (updateUserDTO.getRole() != null) {
+            existingUser.setRoleId(roleCache.getRoleIdByDescription(updateUserDTO.getRole().name()));
+        }
+        
+        //update entire entity
         userMapper.updateEntityFromDto(updateUserDTO, existingUser);
         existingUser.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(existingUser);
 
+
         UserDTO responseDTO = userMapper.toUserDTO(existingUser);
+        responseDTO.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(existingUser.getRoleId())));
         return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
     }
 
@@ -220,7 +229,12 @@ public class UserServiceImpl implements UserService {
 
         //map content to DTO
         List<UserDTO> dtoList = page.getContent().stream()
-                .map(userMapper::toUserDTO)
+                .map(user -> {
+                    UserDTO dto = userMapper.toUserDTO(user);
+                    dto.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(user.getRoleId())));
+                    
+                    return dto;
+                })
                 .collect(Collectors.toList());
 
         Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());

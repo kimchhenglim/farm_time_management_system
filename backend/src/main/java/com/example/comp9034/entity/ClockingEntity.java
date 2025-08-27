@@ -15,7 +15,7 @@ public class ClockingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     private String employeeId;
 
