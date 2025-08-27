@@ -8,6 +8,7 @@ import Report from "../assets/report.svg";
 import Calendar_active from "../assets/calendar-active.svg";
 import User_active from "../assets/users-active.svg";
 import Report_active from "../assets/report-active.svg";
+import Ellipse from "../assets/Ellipse.svg";
 import { Link, useLocation } from "react-router-dom";
 function TopNavBar() {
   return (
@@ -64,12 +65,8 @@ function TopNavBar() {
         </button>
 
         {/* Profile Section */}
-        <div className="flex items-center space-x-3">
-          <img
-            src="https://via.placeholder.com/40"
-            alt="Profile"
-            className="h-10 w-10 rounded-full"
-          />
+        <div className="flex items-center w-[200px] gap-4">
+          <img src={Ellipse} alt="Profile" className="h-10 w-10 rounded-full" />
           <div className="flex flex-col text-sm">
             <span className="font-bold text-gray-700">User Name</span>
             <span className="text-gray-500">Admin</span>
@@ -165,7 +162,7 @@ function NavigationLayout({ children }) {
       <TopNavBar />
       <div className="flex flex-1 overflow-hidden">
         <SideNavBar />
-        <main className="flex-1 bg-gray-50 overflow-auto">{children}</main>
+        <main className="w-screen h-full flex-1 bg-gray-50">{children}</main>
       </div>
     </div>
   );
