@@ -14,6 +14,7 @@ function App() {
           <Route path="/roster" element={<Roster />} />
           <Route path="/staff-management" element={<StaffManagement />} />
           <Route path="/report" element={<Report />} />
+          {/* <Route path="/staff/:id" element={<StaffDetail />} /> */}
         </Routes>
       </main>
     </NavigationLayout>
