@@ -22,10 +22,21 @@ public class UserControllerImpl implements UserController {
         this.userService = userService;
     }
 
+    @Override
+    public ResponseEntity<ResponseBody<Object>> login(LoginDTO registerRequest) {
+        CompleteResponse<Object> response = userService.login(registerRequest);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> createNewUser(CreateUserDTO registerRequest) {
-        CompleteResponse<Object> response = userService.createNewUser(registerRequest);
+    public ResponseEntity<ResponseBody<Object>> logout(LoginDTO registerRequest) {
+        CompleteResponse<Object> response = userService.logout(registerRequest);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> forgotPassword(ForgotPasswordDTO forgotPasswordRequest) {
+        CompleteResponse<Object> response = userService.forgotPassword(forgotPasswordRequest);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
@@ -33,7 +44,6 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<ResponseBody<Object>> createNewUserAdmin(CreateUserDTO registerRequest) {
         CompleteResponse<Object> response = userService.createNewUserAdmin(registerRequest);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
-
     }
 
     @Override

@@ -1,14 +1,13 @@
 package com.example.comp9034.entity;
 
-import com.example.comp9034.enums.ContractTypeEnum;
 import com.example.comp9034.enums.GenderEnum;
+import com.example.comp9034.enums.UserEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,13 +15,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 @Getter
 @Setter
-public class UserEntity {
-//    @Serial
-//    private static final long serialVersionUID = 12L;
-
+public class UserEntity implements Serializable, UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -37,7 +33,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
 
+    @Column(unique = true)
     private String email;
+
     private String mobileNumber;
     private String address;
 
@@ -45,19 +43,16 @@ public class UserEntity {
     private String cardId;
 
     @Enumerated(EnumType.STRING)
-    private ContractTypeEnum contractType;
+    private UserEnum contractType;
 
     private Double payRate;
     private String task;
     private Boolean isActive = true;
 
-    @Column(unique = true)
-    private String userName;
-
     private String password;
 
-    private LocalDateTime createdAt =  LocalDateTime.now();
-    private LocalDateTime updatedAt =  LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Relationships
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -69,21 +64,12 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<ClockingEntity> clockings;
 
-    @ManyToOne()
-    private RoleEntity role;
+    private String role;
 
     public UserEntity() {
 
     }
-
-    public UserEntity(int id, String userId, String firstName, String lastName, LocalDate dob,
-                  GenderEnum gender, String email, String mobileNumber, String address,
-                  String cardId, ContractTypeEnum contractType, Double payRate, String task,
-                  Boolean isActive, String userName, String password,
-                  LocalDateTime createdAt, LocalDateTime updatedAt,
-                  List<PayslipEntity> payslips, List<RosterEntity> rosters,
-                  List<ClockingEntity> clockings, RoleEntity role) {
-        this.id = id;
+    public UserEntity(String userId, String firstName, String lastName, LocalDate dob, GenderEnum gender, String email, String mobileNumber, String address, String cardId, LocalDateTime createdAt, String role, String password) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -93,17 +79,18 @@ public class UserEntity {
         this.mobileNumber = mobileNumber;
         this.address = address;
         this.cardId = cardId;
-        this.contractType = contractType;
-        this.payRate = payRate;
-        this.task = task;
-        this.isActive = isActive;
-        this.userName = userName;
-        this.password = password;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.payslips = payslips;
-        this.rosters = rosters;
-        this.clockings = clockings;
         this.role = role;
+        this.password = password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return "";
     }
 }

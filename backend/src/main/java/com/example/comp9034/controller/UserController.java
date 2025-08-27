@@ -1,19 +1,27 @@
 package com.example.comp9034.controller;
 
 import com.example.comp9034.dto.CreateUserDTO;
+import com.example.comp9034.dto.ForgotPasswordDTO;
+import com.example.comp9034.dto.LoginDTO;
 import com.example.comp9034.dto.UpdateUserDTO;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 public interface UserController {
-    @PostMapping("/register")
-    ResponseEntity<ResponseBody<Object>> createNewUser(@Valid @RequestBody CreateUserDTO registerRequest);
-
     @PostMapping("/register/admin")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
+
+    @PostMapping("/login")
+    ResponseEntity<ResponseBody<Object>> login(@Valid @RequestBody LoginDTO loginRequest);
+
+    @PostMapping("/logout")
+    ResponseEntity<ResponseBody<Object>> logout(@Valid @RequestBody LoginDTO logoutRequest);
+
+    @PostMapping("/forgot-pass")
+    ResponseEntity<ResponseBody<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordRequest);
+
 
     @PutMapping("/users/{userId}")
     ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userId") String userId);
