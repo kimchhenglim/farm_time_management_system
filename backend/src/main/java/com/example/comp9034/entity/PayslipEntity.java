@@ -16,9 +16,7 @@ public class PayslipEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne()
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private UserEntity user;
+    private String employeeId;
 
     private LocalDate payPeriodStart;
     private LocalDate payPeriodEnd;

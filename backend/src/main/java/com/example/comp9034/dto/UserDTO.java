@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 @Getter
 public class UserDTO {
     private int id;
-    private String userId;
+    private String employeeId;
 
     private String firstName;
     private String lastName;
     private LocalDate dob;
-    private GenderEnum gender;
+    private UserEnum gender;
     private String email;
     private String mobileNumber;
     private String address;
@@ -27,7 +27,7 @@ public class UserDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String cardId;
-    private ContractTypeEnum contractType;
+    private UserEnum contractType;
     private Double payRate;
     private String task;
     private Boolean isActive;

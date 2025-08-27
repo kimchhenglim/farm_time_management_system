@@ -17,7 +17,7 @@ public interface UserService {
 
     CompleteResponse<Object> createNewUserAdmin(CreateUserDTO registerRequest);
 
-    CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String userId);
+    CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId);
 
-    CompleteResponse<Object> getUserByFilter(String userId, String name, String email, String mobileNumber, Pageable pageable);
+    CompleteResponse<Object> getUserByFilter(String employeeId, String name, String email, String mobileNumber, Pageable pageable);
 }

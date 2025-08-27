@@ -17,16 +17,11 @@ public class ClockingEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne()
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private UserEntity user;
+    private String employeeId;
 
     private LocalDateTime clockInTime;
     private LocalDateTime clockOutTime;
 
     private Boolean isAdminManual = false;
     private String manualReason;
-
-    @OneToMany(mappedBy = "clocking", cascade = CascadeType.ALL)
-    private List<BreakEntity> breaks;
 }

@@ -1,7 +1,7 @@
 package com.example.comp9034.dto;
 
-import com.example.comp9034.enums.ContractTypeEnum;
-import com.example.comp9034.enums.GenderEnum;
+import com.example.comp9034.enums.UserEnum;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,13 +40,13 @@ public class CreateUserDTO {
     private String lastName;
 
     @NotBlank(message = "Gender name cannot be null or empty")
-    private GenderEnum gender;
+    private UserEnum gender;
 
     @NotBlank(message = "Address name cannot be null or empty")
     private String address;
 
     @NotBlank(message = "Role name cannot be null or empty")
-    private String role;
+    private UserEnum role;
 
     private LocalDateTime createdAt;
 
@@ -54,7 +54,7 @@ public class CreateUserDTO {
 
     private String cardId;
 
-    private ContractTypeEnum contractType;
+    private UserEnum contractType;
 
     private Double payRate;
 

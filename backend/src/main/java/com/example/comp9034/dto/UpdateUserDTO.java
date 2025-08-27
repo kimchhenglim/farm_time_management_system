@@ -20,7 +20,7 @@ public class UpdateUserDTO {
 
     private LocalDate dob;
 
-    private GenderEnum gender;
+    private UserEnum gender;
 
     @Email(message = "Invalid email format")
     private String email;
@@ -35,7 +35,7 @@ public class UpdateUserDTO {
     //@Size(max = 20, message = "CardId must be at most 20 characters")
     private String cardId;
 
-    private ContractTypeEnum contractType;
+    private UserEnum contractType;
 
     @Positive(message = "Pay rate must be greater than zero")
     private Double payRate;

@@ -141,11 +141,11 @@ public class UserServiceImpl implements UserService {
             if (registerRequest.getRole().equals(UserEnum.ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), LocalDateTime.now(), registerRequest.getRole(), passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), registerRequest.getRole(), passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), LocalDateTime.now(), registerRequest.getRole(), null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), registerRequest.getRole(), null);
             } else {
                 log.info("User role is not valid: {} !", registerRequest.getRole());
                 throw new BusinessException(INVALID_INPUT, REGISTER.name());
@@ -176,29 +176,29 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String userId) {
-        UserEntity existingUser = userRepository.findByUserId(userId)
+    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
+        UserEntity existingUser = userRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> {
-                    log.error("User not found with code: {}", userId);
+                    log.error("User not found with code: {}", employeeId);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name());
                 });
 
         //update entity
-        //userMapper.updateEntityFromDto(updateUserDTO, existingUser);
+        userMapper.updateEntityFromDto(updateUserDTO, existingUser);
         existingUser.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(existingUser);
 
-        //UserDTO responseDTO = userMapper.toUserDTO(existingUser);
-        return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), null);
+        UserDTO responseDTO = userMapper.toUserDTO(existingUser);
+        return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
     }
 
     @Override
-    public CompleteResponse<Object> getUserByFilter(String userId, String name, String email, String mobileNumber, Pageable pageable) {
+    public CompleteResponse<Object> getUserByFilter(String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
         Specification<UserEntity> spec = Specification.where(null);
 
-        if (userId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("userId"), userId));
+        if (employeeId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), employeeId));
         }
 
         if (name != null) {
@@ -219,11 +219,11 @@ public class UserServiceImpl implements UserService {
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
         //map content to DTO
-//        List<UserDTO> dtoList = page.getContent().stream()
-//                .map(userMapper::toUserDTO)
-//                .collect(Collectors.toList());
+        List<UserDTO> dtoList = page.getContent().stream()
+                .map(userMapper::toUserDTO)
+                .collect(Collectors.toList());
 
-        Page<UserDTO> dtoPage = new PageImpl<>(null, pageable, page.getTotalElements());
+        Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());
 
         return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), dtoPage);
     }

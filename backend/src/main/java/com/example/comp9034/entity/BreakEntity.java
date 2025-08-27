@@ -16,12 +16,8 @@ public class BreakEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne()
-    @JoinColumn(name = "clockingId", nullable = false)
-    private ClockingEntity clocking;
-
+    private Long clockingId;
     private LocalDateTime breakStartTime;
     private LocalDateTime breakEndTime;
-
     private String reason;
 }

@@ -23,12 +23,12 @@ public interface UserController {
     ResponseEntity<ResponseBody<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordRequest);
 
 
-    @PutMapping("/users/{userId}")
-    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("userId") String userId);
+    @PutMapping("/users/{employeeId}")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("employeeId") String employeeId);
 
      @GetMapping("/users")
      ResponseEntity<ResponseBody<Object>> getAllUsers(
-        @RequestParam(required = false) String userId,
+        @RequestParam(required = false) String employeeId,
         @RequestParam(required = false) String name,
         @RequestParam(required = false) String email,
         @RequestParam(required = false) String phoneNumber,

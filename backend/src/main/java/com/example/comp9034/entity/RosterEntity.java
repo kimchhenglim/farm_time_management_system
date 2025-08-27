@@ -15,16 +15,11 @@ public class RosterEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne()
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private UserEntity user;
+    private String employeeId;
 
     private LocalDateTime startTime = LocalDateTime.now();
     private LocalDateTime endTime;
 
-    @ManyToOne()
-    @JoinColumn(name = "createdBy", referencedColumnName = "user_id")
-    private UserEntity createdBy;
-
+    private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 }

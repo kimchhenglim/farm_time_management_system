@@ -1,6 +1,5 @@
 package com.example.comp9034.entity;
 
-import com.example.comp9034.enums.GenderEnum;
 import com.example.comp9034.enums.UserEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,15 +22,15 @@ public class UserEntity implements Serializable, UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "user_id", nullable = false, unique = true, updatable = false)
-    private String userId;
+    @Column(nullable = false, unique = true, updatable = false)
+    private String employeeId;
 
     private String firstName;
     private String lastName;
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
+    private UserEnum gender;
 
     @Column(unique = true)
     private String email;
@@ -54,23 +53,13 @@ public class UserEntity implements Serializable, UserDetails{
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Relationships
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<PayslipEntity> payslips;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<RosterEntity> rosters;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<ClockingEntity> clockings;
-
-    private String role;
+    private UserEnum role;
 
     public UserEntity() {
 
     }
-    public UserEntity(String userId, String firstName, String lastName, LocalDate dob, GenderEnum gender, String email, String mobileNumber, String address, String cardId, LocalDateTime createdAt, String role, String password) {
-        this.userId = userId;
+    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, UserEnum role, String password) {
+        this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dob = dob;
@@ -79,6 +68,9 @@ public class UserEntity implements Serializable, UserDetails{
         this.mobileNumber = mobileNumber;
         this.address = address;
         this.cardId = cardId;
+        this.contractType = contractType;
+        this.payRate = payRate;
+        this.task = task;
         this.createdAt = createdAt;
         this.role = role;
         this.password = password;
