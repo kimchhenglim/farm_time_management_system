@@ -15,7 +15,7 @@ function App() {
           <Route path="/" element={<Roster />} />
           <Route path="/staff-management" element={<StaffManagement />} />
           <Route
-            path="/staff-management/staff-detail/:staffID"
+            path="/staff-management/staff/:staffID"
             element={<StaffDetail />}
           />
           <Route path="/report" element={<Report />} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import ConfirmEditModal from "./ConfirmEditModal";
+import ConfirmModal from "./ConfirmationModal";
 
 function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
   const modalRef = useRef(null);
@@ -50,31 +50,31 @@ function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formData);
+    // const payload = new FormData();
+    // Object.entries(formData).forEach(([key, value]) => {
+    //   if (value !== null) {
+    //     payload.append(key, value);
+    //   }
+    // });
 
-    const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        payload.append(key, value);
-      }
-    });
+    // onSubmit(payload);
 
-    onSubmit(payload);
-
-    setFormData({
-      biometricId: "",
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      gender: "",
-      email: "",
-      phoneNumber: "",
-      address: "",
-      role: "",
-      contractType: "",
-      payRate: "",
-      task: "",
-      avatar: null,
-    });
+    // setFormData({
+    //   biometricId: "",
+    //   firstName: "",
+    //   lastName: "",
+    //   dateOfBirth: "",
+    //   gender: "",
+    //   email: "",
+    //   phoneNumber: "",
+    //   address: "",
+    //   role: "",
+    //   contractType: "",
+    //   payRate: "",
+    //   task: "",
+    //   avatar: null,
+    // });
   };
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -284,28 +284,21 @@ function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#16A34A] text-white rounded cursor-pointer"
-            >
-              <label
-                // type="submit"
-                htmlFor="my_modal_7"
-              >
-                Save
-              </label>
-            </button>
+
+            <ConfirmModal
+              propID="my_modal_7"
+              confirmLabel="Confirm"
+              cancelLabel="Cancel"
+              title="Confirm edits"
+              message="Are you sure all information are correct?"
+              handleSubmit={handleSubmit}
+              setIsOpenModel={setIsOpenModel}
+              submitLabel="Save"
+            />
           </div>
         </form>
       </div>
       {/* popup */}
-      <ConfirmEditModal
-        propID="my_modal_7"
-        confirmLable="Confirm"
-        cancelLable="Cancel"
-        title="Confirm edits"
-        message="Are you sure all information are correct?"
-      />
     </div>
   );
 }
