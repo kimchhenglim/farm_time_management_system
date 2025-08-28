@@ -9,17 +9,22 @@ function ConfirmModal({
   cancelLabel,
   handleSubmit,
   setIsOpenModal,
+  style,
 }) {
   const handleOnSubmit = (e) => {
     handleSubmit(e);
-    setIsOpenModal(false);
+    // setIsOpenModal(false);
     document.getElementById(propID).close();
   };
   return (
     <div>
       {submitLabel && (
         <button
-          className="px-4 py-2 bg-[#16A34A] text-white rounded cursor-pointer"
+          className={`${
+            style
+              ? style
+              : "px-4 py-2 bg-[#16A34A] text-white rounded cursor-pointer"
+          }`}
           onClick={() => document.getElementById(propID).showModal()}
         >
           {submitLabel}
@@ -44,7 +49,7 @@ function ConfirmModal({
             </button>
           </div>
         </div>
-        <form method="dialog" className="modal-backdrop">
+        <form method="dialog" className="modal-backdrop hidden">
           <button>close</button>
         </form>
       </dialog>

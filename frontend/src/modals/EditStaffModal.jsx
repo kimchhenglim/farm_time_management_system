@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import ConfirmModal from "./ConfirmationModal";
-
+import UploadAvatar from "../assets/uploadAvatar.svg";
+import Avatar from "../assets/avatar.svg";
 function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
   const modalRef = useRef(null);
   const [isConfirm, setIsConfirm] = useState(false);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     biometricId: "",
     firstName: "",
@@ -51,6 +53,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
+    setIsOpenModal(false);
     // const payload = new FormData();
     // Object.entries(formData).forEach(([key, value]) => {
     //   if (value !== null) {
@@ -96,21 +99,29 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
         <h2 className="text-xl font-semibold text-[#566074] mb-4">
           Edit Staff
         </h2>
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="grid grid-cols-2 gap-4">
             {/* Avatar and Upload */}
             <div className="grid grid-cols-2 gap-4 col-span-2 mb-2">
               <div className="flex items-center justify-center gap-3">
                 <img
-                  src="/path/to/avatar.jpg"
+                  src={Avatar}
                   alt="Avatar"
                   className="w-16 h-16 rounded-full object-cover border border-gray-300"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  // onChange={handleAvatarChange}
                 />
                 <button
                   type="button"
                   className="flex items-center gap-2 bg-[#F5F5F5] text-[#566074] px-4 py-2 rounded-md font-medium cursor-pointer"
+                  onClick={() => fileInputRef.current.click()}
                 >
-                  <img src="" alt="Upload Avatar" />
+                  <img src={UploadAvatar} alt="Upload Avatar" />
                   Upload Avatar
                 </button>
               </div>
@@ -274,7 +285,6 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
               </select>
             </div>
           </div>
-
           {/* Buttons */}
           <div className="flex justify-end gap-2 pt-6">
             <button
@@ -296,7 +306,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
               submitLabel="Save"
             />
           </div>
-        </form>
+        </div>
       </div>
       {/* popup */}
     </div>

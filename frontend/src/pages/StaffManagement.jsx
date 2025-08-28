@@ -8,50 +8,50 @@ import ConfirmationModal from "../modals/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
 
 function StaffManagement() {
-  // const [staffList, setStaffList] = useState([
-  //   {
-  //     id: "001",
-  //     name: "Jasmine Lee",
-  //     role: "Technician",
-  //     contract: "Full-Time",
-  //     payRate: "$42/hr",
-  //     task: "Sensor Calibration",
-  //     shift: "Aug 25, 08:00–16:00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     id: "002",
-  //     name: "Marco Tan",
-  //     role: "Supervisor",
-  //     contract: "Part-Time",
-  //     payRate: "$55/hr",
-  //     task: "System Check",
-  //     shift: "Aug 25, 12:00–20:00",
-  //     status: "Inactive",
-  //   },
-  //   {
-  //     id: "003",
-  //     name: "Aiden Clarke",
-  //     role: "Field Engineer",
-  //     contract: "Full-Time",
-  //     payRate: "$48/hr",
-  //     task: "Equipment Diagnostics",
-  //     shift: "Aug 26, 07:00–15:00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     id: "004",
-  //     name: "Sofia Nguyen",
-  //     role: "Data Analyst",
-  //     contract: "Part-Time",
-  //     payRate: "$38/hr",
-  //     task: "Sensor Data Review",
-  //     shift: "Aug 26, 14:00–20:00",
-  //     status: "Inactive",
-  //   },
-  // ]);
+  const [staffList, setStaffList] = useState([
+    {
+      id: "001",
+      name: "Jasmine Lee",
+      role: "Technician",
+      contract: "Full-Time",
+      payRate: "$42/hr",
+      task: "Sensor Calibration",
+      shift: "Aug 25, 08:00–16:00",
+      status: "Active",
+    },
+    {
+      id: "002",
+      name: "Marco Tan",
+      role: "Supervisor",
+      contract: "Part-Time",
+      payRate: "$55/hr",
+      task: "System Check",
+      shift: "Aug 25, 12:00–20:00",
+      status: "Inactive",
+    },
+    {
+      id: "003",
+      name: "Aiden Clarke",
+      role: "Field Engineer",
+      contract: "Full-Time",
+      payRate: "$48/hr",
+      task: "Equipment Diagnostics",
+      shift: "Aug 26, 07:00–15:00",
+      status: "Active",
+    },
+    {
+      id: "004",
+      name: "Sofia Nguyen",
+      role: "Data Analyst",
+      contract: "Part-Time",
+      payRate: "$38/hr",
+      task: "Sensor Data Review",
+      shift: "Aug 26, 14:00–20:00",
+      status: "Inactive",
+    },
+  ]);
 
-  const [staffList, setStaffList] = useState([]);
+  // const [staffList, setStaffList] = useState([]);
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 

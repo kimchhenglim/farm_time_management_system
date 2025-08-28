@@ -5,9 +5,11 @@ import Avatar from "../assets/avatar.svg";
 import Email from "../assets/email.svg";
 import Phone from "../assets/phone.svg";
 import Home from "../assets/home.svg";
+import ConfirmationModal from "../modals/ConfirmationModal";
 import EditStaffModal from "../modals/EditStaffModal";
 function StaffDetail() {
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   return (
     <div className="w-full h-[calc(100%)] p-4">
       {/* header */}
@@ -29,9 +31,29 @@ function StaffDetail() {
           >
             <img src={Edit} alt="edit" /> Edit this staff
           </button>
-          <button className="bg-[#F5F5F5] px-[24px] py-[16px] cursor-pointer">
-            Inactive User
-          </button>
+          {isActive ? (
+            <ConfirmationModal
+              propID="confirm1"
+              title="Confirm Registration"
+              message="Are you sure you want to register this staff?"
+              confirmLabel="Confirm"
+              cancelLabel="Cancel"
+              submitLabel="Mark as Inactive"
+              style="bg-[#F5F5F5] px-[24px] py-[16px] cursor-pointer rounded-sm"
+              handleSubmit={() => {
+                setIsActive((prev) => !prev);
+              }}
+            />
+          ) : (
+            <button
+              className="bg-[#daf1e1] px-[24px] py-[16px] cursor-pointer text-[#16A34A] rounded-sm"
+              onClick={() => {
+                setIsActive((prev) => !prev);
+              }}
+            >
+              Mark as Active
+            </button>
+          )}
         </div>
       </div>
       {/* content */}
@@ -45,9 +67,15 @@ function StaffDetail() {
                 <span className=" text-[#16A34A] w-[40px] flex items-center justify-center">
                   FT101
                 </span>
-                <span className="text-[#16A34A] p-2 bg-[#F0FDF4] rounded-4xl w-[80px] flex items-center justify-center">
-                  Active
-                </span>
+                {isActive ? (
+                  <span className="text-[#16A34A] p-2 bg-[#F0FDF4] rounded-4xl w-[80px] flex items-center justify-center">
+                    Active
+                  </span>
+                ) : (
+                  <span className="text-[#566074] p-2 bg-[#F5F5F5] rounded-4xl w-[80px] flex items-center justify-center">
+                    Inactive
+                  </span>
+                )}
               </div>
             </div>
           </div>

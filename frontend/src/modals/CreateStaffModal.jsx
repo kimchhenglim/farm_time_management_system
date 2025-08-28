@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ConfirmModal from "./ConfirmationModal";
 import UploadAvatar from "../assets/uploadAvatar.svg";
-
+import Avatar from "../assets/avatar.svg";
 function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
@@ -136,7 +136,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
             <div className="grid grid-cols-2 gap-4 col-span-2 mb-2">
               <div className="flex items-center justify-center gap-3">
                 <img
-                  src="/path/to/avatar.jpg"
+                  src={Avatar}
                   alt="Avatar"
                   className="w-16 h-16 rounded-full object-cover border border-gray-300"
                 />
