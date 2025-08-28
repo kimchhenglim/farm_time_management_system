@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ConfirmModal from "./ConfirmationModal";
 
-function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
+function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
   const modalRef = useRef(null);
   const [isConfirm, setIsConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
   //   return () => document.removeEventListener("mousedown", handleClickOutside);
   // }, [onClose]);
 
-  if (!isOpenModel) return null;
+  if (!isOpenModal) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -86,7 +86,7 @@ function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
   return (
     <div
       className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
-      onClick={handleCloseModal}
+      onMouseDown={handleCloseModal}
     >
       {/* open register staff modal */}
       <div
@@ -292,7 +292,7 @@ function EditStaffModal({ isOpenModel, setIsOpenModel, onClose }) {
               title="Confirm edits"
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
-              setIsOpenModel={setIsOpenModel}
+              setIsOpenModal={setIsOpenModal}
               submitLabel="Save"
             />
           </div>

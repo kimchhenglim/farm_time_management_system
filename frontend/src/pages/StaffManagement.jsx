@@ -8,55 +8,56 @@ import ConfirmationModal from "../modals/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
 
 function StaffManagement() {
-  const [staffList, setStaffList] = useState([
-    {
-      id: "001",
-      name: "Jasmine Lee",
-      role: "Technician",
-      contract: "Full-Time",
-      payRate: "$42/hr",
-      task: "Sensor Calibration",
-      shift: "Aug 25, 08:00–16:00",
-      status: "Active",
-    },
-    {
-      id: "002",
-      name: "Marco Tan",
-      role: "Supervisor",
-      contract: "Part-Time",
-      payRate: "$55/hr",
-      task: "System Check",
-      shift: "Aug 25, 12:00–20:00",
-      status: "Inactive",
-    },
-    {
-      id: "003",
-      name: "Aiden Clarke",
-      role: "Field Engineer",
-      contract: "Full-Time",
-      payRate: "$48/hr",
-      task: "Equipment Diagnostics",
-      shift: "Aug 26, 07:00–15:00",
-      status: "Active",
-    },
-    {
-      id: "004",
-      name: "Sofia Nguyen",
-      role: "Data Analyst",
-      contract: "Part-Time",
-      payRate: "$38/hr",
-      task: "Sensor Data Review",
-      shift: "Aug 26, 14:00–20:00",
-      status: "Inactive",
-    },
-  ]);
+  // const [staffList, setStaffList] = useState([
+  //   {
+  //     id: "001",
+  //     name: "Jasmine Lee",
+  //     role: "Technician",
+  //     contract: "Full-Time",
+  //     payRate: "$42/hr",
+  //     task: "Sensor Calibration",
+  //     shift: "Aug 25, 08:00–16:00",
+  //     status: "Active",
+  //   },
+  //   {
+  //     id: "002",
+  //     name: "Marco Tan",
+  //     role: "Supervisor",
+  //     contract: "Part-Time",
+  //     payRate: "$55/hr",
+  //     task: "System Check",
+  //     shift: "Aug 25, 12:00–20:00",
+  //     status: "Inactive",
+  //   },
+  //   {
+  //     id: "003",
+  //     name: "Aiden Clarke",
+  //     role: "Field Engineer",
+  //     contract: "Full-Time",
+  //     payRate: "$48/hr",
+  //     task: "Equipment Diagnostics",
+  //     shift: "Aug 26, 07:00–15:00",
+  //     status: "Active",
+  //   },
+  //   {
+  //     id: "004",
+  //     name: "Sofia Nguyen",
+  //     role: "Data Analyst",
+  //     contract: "Part-Time",
+  //     payRate: "$38/hr",
+  //     task: "Sensor Data Review",
+  //     shift: "Aug 26, 14:00–20:00",
+  //     status: "Inactive",
+  //   },
+  // ]);
 
-  // const [staffList, setStaffList] = useState([]);
+  const [staffList, setStaffList] = useState([]);
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
 
+  // Sorting function
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
@@ -100,22 +101,30 @@ function StaffManagement() {
 
   const confirmAddStaff = async () => {
     try {
+      // Convert FormData to plain object
+      const obj = Object.fromEntries(pendingPayload.entries());
+
+      // If any numeric field, convert to number
+      if (obj.payRate)
+        obj.payRate = parseFloat(obj.payRate.replace(/[^0-9.]/g, ""));
+
+      // Send to backend as JSON
       const response = await fetch("backend api for adding staff", {
         method: "POST",
-        body: pendingPayload,
+        body: JSON.stringify(obj),
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) throw new Error("Failed to register staff");
 
-      setIsModalOpen(false);
+      // Close modal and refresh staff list
+      setIsOpenModal(false);
       await fetchStaffList();
 
+      // Show success confirmation
       setConfirmType("success");
       setPendingPayload(null);
-
-      setTimeout(() => {
-        setIsConfirmOpen(false);
-      }, 2000);
+      setTimeout(() => setIsConfirmOpen(false), 2000);
     } catch (error) {
       console.error("Error submitting staff:", error);
       alert("Failed to register staff. Please try again.");
@@ -158,7 +167,9 @@ function StaffManagement() {
           </button>
           <button
             className="flex items-center gap-2 bg-[#16A34A] px-4 py-3 rounded-[5px] cursor-pointer"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setIsOpenModal(true);
+            }}
           >
             <img src={Add} alt="add" />
             <div className="text-white font-semibold">Register New Staff</div>
@@ -272,7 +283,11 @@ function StaffManagement() {
         </table>
       </div>
       <CreateStaffModal
-        onClose={() => setIsModalOpen(false)}
+        isOpenModal={isOpenModal}
+        setIsOpenModal={setIsOpenModal}
+        onClose={() => {
+          setIsOpenModal(false);
+        }}
         onSubmit={handleAddStaff}
       />
       <ConfirmationModal

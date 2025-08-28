@@ -25,15 +25,15 @@ function Login() {
         <div className="mt-[32px]">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2.5">
-              <label htmlFor="username" className="font-medium text-[#566074]">
-                Username
+              <label htmlFor="email" className="font-medium text-[#566074]">
+                Email
               </label>
               <div className="w-full border-[2px] rounded-md flex border-[#ADADAD]">
                 <input
-                  placeholder="Type your username"
+                  placeholder="Type your email"
                   type="text"
-                  name="username"
-                  id="username"
+                  name="email"
+                  id="email"
                   className="w-full  border-[#ADADAD] p-4 rounded-md outline-0"
                 />
               </div>

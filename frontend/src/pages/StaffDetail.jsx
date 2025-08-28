@@ -7,7 +7,7 @@ import Phone from "../assets/phone.svg";
 import Home from "../assets/home.svg";
 import EditStaffModal from "../modals/EditStaffModal";
 function StaffDetail() {
-  const [isOpenModel, setIsOpenModel] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
   return (
     <div className="w-full h-[calc(100%)] p-4">
       {/* header */}
@@ -15,7 +15,7 @@ function StaffDetail() {
         <div className="breadcrumbs text-2xl cursor-pointer">
           <ul>
             <li className="">
-              <Link to="/staff-managment">Staff List</Link>
+              <Link to="/staff-management">Staff List</Link>
             </li>
             <li className="text-[#566074]">Staff detail</li>
           </ul>
@@ -24,7 +24,7 @@ function StaffDetail() {
           <button
             className="bg-[#16A34A] text-white font-medium px-[24px] py-[16px] flex items-center gap-2.5 rounded-sm cursor-pointer"
             onClick={() => {
-              setIsOpenModel(true);
+              setIsOpenModal(true);
             }}
           >
             <img src={Edit} alt="edit" /> Edit this staff
@@ -99,12 +99,12 @@ function StaffDetail() {
         </div>
         <div className="w-[70%] h-full"></div>
       </div>
-      {isOpenModel && (
+      {isOpenModal && (
         <EditStaffModal
-          isOpenModel={isOpenModel}
-          setIsOpenModel={setIsOpenModel}
+          isOpenModal={isOpenModal}
+          setIsOpenModal={setIsOpenModal}
           onClose={() => {
-            setIsOpenModel(false);
+            setIsOpenModal(false);
           }}
         />
       )}

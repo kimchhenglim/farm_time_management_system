@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import ConfirmModal from "./ConfirmationModal";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 
-function CreateStaffModal({ isOpen, onClose, onSubmit }) {
+function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
+  const fileInputRef = useRef(null);
   const modalRef = useRef(null);
-
+  const [isConfirm, setIsConfirm] = useState(false);
   const [formData, setFormData] = useState({
     biometricId: "",
     firstName: "",
@@ -16,11 +18,11 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
     role: "",
     contractType: "",
     payRate: "",
-    task: "",
+    location: "",
     avatar: null,
   });
 
-  if (!isOpen) return null;
+  if (!isOpenModal) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,18 +36,7 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        payload.append(key, value);
-      }
-    });
-
-    onSubmit(payload);
-
+  const resetForm = () => {
     setFormData({
       biometricId: "",
       firstName: "",
@@ -58,30 +49,88 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
       role: "",
       contractType: "",
       payRate: "",
-      task: "",
+      location: "",
       avatar: null,
     });
   };
 
+  const submitFormData = () => {
+    const payload = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null) {
+        payload.append(key, value);
+      }
+    });
+
+    // console.log("Form Data Submitted:", formData);
+    onSubmit(payload);
+    resetForm();
+    setIsOpenModal(false);
+  };
+
+  const handleCloseModal = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const validateForm = () => {
+    //required fields
+    const requiredFields = [
+      "biometricId",
+      "firstName",
+      "lastName",
+      "dateOfBirth",
+      "gender",
+      "email",
+      "phoneNumber",
+      "address",
+      "role",
+      "contractType",
+      "payRate",
+      "location",
+    ];
+
+    for (let field of requiredFields) {
+      if (!formData[field] || formData[field].toString().trim() === "") {
+        alert(`${field} is required.`);
+        return false;
+      }
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <div
-      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-50"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
+      onMouseDown={handleCloseModal}
     >
       {/* open register staff modal */}
       <div
         ref={modalRef}
-        className="bg-white rounded-lg p-6 w-[977px] shadow-lg text-[#565656]"
+        className="bg-white rounded-lg p-6 w-[977px] shadow-lg text-[#565656] z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold text-[#566074] mb-4">
-          Register New Staff
+          Register Staff
         </h2>
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (validateForm()) {
+              setIsConfirm(true);
+              document.getElementById("confirm_modal").showModal();
+            }
+          }}
+        >
           <div className="grid grid-cols-2 gap-4">
             {/* Avatar and Upload */}
             <div className="grid grid-cols-2 gap-4 col-span-2 mb-2">
@@ -91,9 +140,17 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
                   alt="Avatar"
                   className="w-16 h-16 rounded-full object-cover border border-gray-300"
                 />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                />
                 <button
                   type="button"
                   className="flex items-center gap-2 bg-[#F5F5F5] text-[#566074] px-4 py-2 rounded-md font-medium cursor-pointer"
+                  onClick={() => fileInputRef.current.click()}
                 >
                   <img src={UploadAvatar} alt="Upload Avatar" />
                   Upload Avatar
@@ -103,10 +160,12 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
               <div className="flex flex-col justify-center">
                 <label className="text-sm font-medium mb-1">Biometric ID</label>
                 <input
+                  type="text"
                   name="biometricId"
                   value={formData.biometricId}
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
+                  required
                 />
               </div>
             </div>
@@ -115,10 +174,12 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">First Name</label>
               <input
+                type="text"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
@@ -126,10 +187,12 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Last Name</label>
               <input
+                type="text"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
@@ -137,11 +200,14 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Date of Birth</label>
               <input
-                name="dateOfBirth"
                 type="date"
+                name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                min="1900-01-01"
+                max={new Date().toISOString().split("T")[0]}
+                required
               />
             </div>
 
@@ -153,11 +219,11 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
                 value={formData.gender}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
-                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -165,11 +231,12 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Email</label>
               <input
-                name="email"
                 type="email"
+                name="email"
                 value={formData.email}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
@@ -177,10 +244,14 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Phone Number</label>
               <input
+                type="text"
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+                pattern="^0[23478]\d{8}$|^04\d{8}$"
+                placeholder="e.g., 0452345678"
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
@@ -188,10 +259,12 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col col-span-2">
               <label className="text-sm font-medium mb-1">Address</label>
               <input
+                type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
@@ -203,6 +276,7 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
                 value={formData.role}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               >
                 <option value="">Select Role</option>
                 <option value="Technician">Technician</option>
@@ -220,6 +294,7 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
                 value={formData.contractType}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               >
                 <option value="">Select Contract</option>
                 <option value="Full-Time">Full-Time</option>
@@ -232,30 +307,31 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Pay Rate</label>
               <input
+                type="text"
                 name="payRate"
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
             </div>
 
-            {/* Task */}
+            {/* Location */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Task</label>
+              <label className="text-sm font-medium mb-1">Location</label>
               <select
-                name="task"
-                value={formData.task}
+                name="location"
+                value={formData.location}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               >
-                <option value="">Select Task</option>
-                <option value="Sensor Calibration">Sensor Calibration</option>
-                <option value="System Check">System Check</option>
-                <option value="Equipment Diagnostics">
-                  Equipment Diagnostics
-                </option>
-                <option value="Sensor Data Review">Sensor Data Review</option>
+                <option value="">Select Location</option>
+                <option value="Shed 1">Shed 1</option>
+                <option value="Shed 2">Shed 2</option>
+                <option value="Shed 3">Shed 3</option>
+                <option value="Shed 4">Shed 4</option>
               </select>
             </div>
           </div>
@@ -265,7 +341,10 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             <button
               type="button"
               className="px-4 py-2 bg-gray-300 rounded text-[#565656] cursor-pointer"
-              onClick={onClose}
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
             >
               Cancel
             </button>
@@ -277,6 +356,16 @@ function CreateStaffModal({ isOpen, onClose, onSubmit }) {
             </button>
           </div>
         </form>
+
+        <ConfirmModal
+          propID="confirm_modal"
+          confirmLabel="Confirm"
+          cancelLabel="Cancel"
+          title="Confirm edits"
+          message="Are you sure all information are correct?"
+          handleSubmit={submitFormData}
+          setIsOpenModal={setIsConfirm}
+        />
       </div>
     </div>
   );

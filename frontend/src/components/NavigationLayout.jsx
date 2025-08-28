@@ -52,7 +52,6 @@ function TopNavBar() {
 function SideNavBar() {
   const location = useLocation();
   const currentPath = location.pathname;
-  console.log(currentPath);
   return (
     <aside className="w-64 h-screen bg-white border-r border-gray-200 shadow-sm border-t-[2px] ">
       <nav className="flex flex-col pt-6 s64pace-y-2 ">
