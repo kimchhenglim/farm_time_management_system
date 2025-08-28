@@ -7,15 +7,19 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+import org.springframework.data.util.Pair;
+
 @Setter
 @Getter
 @Valid
 public class UpdateUserDTO {
     // Optional User fields
     @Size(max = 50, message = "First name must be at most 50 characters")
+    @NotBlank
     private String firstName;
 
     @Size(max = 50, message = "Last name must be at most 50 characters")
+    @NotBlank
     private String lastName;
 
     private LocalDate dob;
@@ -23,9 +27,11 @@ public class UpdateUserDTO {
     private UserEnum gender;
 
     @Email(message = "Invalid email format")
+    @NotNull
     private String email;
 
     @Pattern(regexp = "^\\+?[0-9]*$", message = "Invalid mobile number")
+    @NotNull
     private String mobileNumber;
 
     @Size(max = 255, message = "Address too long")
@@ -36,6 +42,8 @@ public class UpdateUserDTO {
     private String cardId;
 
     private UserEnum contractType;
+
+    @NotNull
     private UserEnum role;
 
     @Positive(message = "Pay rate must be greater than zero")
@@ -43,5 +51,22 @@ public class UpdateUserDTO {
 
     private String task;
 
+    @NotNull
     private Boolean isActive;
+
+    public Pair<Boolean, String> validateEnumValues() {
+        if (this.getGender() != null && this.getGender().getGroup() != UserEnum.Group.GENDER) {
+            return Pair.of(false, "Gender can only be MALE | FEMALE | OTHER");
+        }
+
+        if (this.getContractType() != null && this.getContractType().getGroup() != UserEnum.Group.CONTRACT_TYPE) {
+            return Pair.of(false, "Contract type can only be FULLTIME | PARTTIME | CASUAL");
+        }
+
+        if (this.getRole() != null && this.getRole().getGroup() != UserEnum.Group.ROLE) {
+            return Pair.of(false, "Role can only be ADMIN | STAFF");
+        }
+
+        return Pair.of(true, "");
+    }
 }

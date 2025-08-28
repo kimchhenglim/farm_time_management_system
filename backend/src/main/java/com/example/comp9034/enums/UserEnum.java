@@ -20,6 +20,10 @@ public enum UserEnum {
         this.group = group;
     }
 
+    public Group getGroup() {
+        return this.group;
+    }
+
     public enum Group {
         ROLE,
         GENDER,

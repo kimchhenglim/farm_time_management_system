@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BeanPropertyBindingResult;
 
 import java.util.Optional;
 
@@ -184,6 +185,12 @@ public class UserServiceImpl implements UserService {
                     log.error("User not found with code: {}", employeeId);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name());
                 });
+
+        //check enum values
+        var userEnumValidator = updateUserDTO.validateEnumValues();
+        if (!userEnumValidator.getFirst()) {
+            throw new IllegalArgumentException(userEnumValidator.getSecond());
+        }
 
         //update role first if exists since role datatype is mismatched
         if (updateUserDTO.getRole() != null) {
