@@ -34,8 +34,8 @@ function StaffDetail() {
           {isActive ? (
             <ConfirmationModal
               propID="confirm1"
-              title="Confirm Registration"
-              message="Are you sure you want to register this staff?"
+              title="Inactive this staff?"
+              message="Are you sure you want to mark this staff as Inactive?"
               confirmLabel="Confirm"
               cancelLabel="Cancel"
               submitLabel="Mark as Inactive"
@@ -45,14 +45,18 @@ function StaffDetail() {
               }}
             />
           ) : (
-            <button
-              className="bg-[#daf1e1] px-[24px] py-[16px] cursor-pointer text-[#16A34A] rounded-sm"
-              onClick={() => {
+            <ConfirmationModal
+              propID="confirm1"
+              title="Active this staff?"
+              message="Are you sure you want to mark this staff as Active?"
+              confirmLabel="Confirm"
+              cancelLabel="Cancel"
+              submitLabel="Mark as Active"
+              style="bg-[#daf1e1] px-[24px] py-[16px] cursor-pointer text-[#16A34A] rounded-sm"
+              handleSubmit={() => {
                 setIsActive((prev) => !prev);
               }}
-            >
-              Mark as Active
-            </button>
+            />
           )}
         </div>
       </div>
