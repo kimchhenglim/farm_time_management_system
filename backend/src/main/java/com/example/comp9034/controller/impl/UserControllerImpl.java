@@ -29,7 +29,7 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> logout(LoginDTO registerRequest) {
+    public ResponseEntity<ResponseBody<Object>> logout(LogoutDTO registerRequest) {
         CompleteResponse<Object> response = userService.logout(registerRequest);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
@@ -47,8 +47,8 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
-        CompleteResponse<Object> response = userService.updateUser(updateUserDTO, employeeId);
+    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO) {
+        CompleteResponse<Object> response = userService.updateUser(updateUserDTO);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 

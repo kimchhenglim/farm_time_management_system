@@ -55,6 +55,7 @@ public enum ErrorCodeEnum {
     USER_EXISTED("E029", "User existed", COMMON, HttpStatusCodeEnum.CONFLICT),
     REFRESH_TOKEN_INVALID("E030", "Token refresh invalid", TOKEN, HttpStatusCodeEnum.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED("E031", "Token refresh expired", TOKEN, HttpStatusCodeEnum.UNAUTHORIZED),
+    INVALID_USER_ROLE("E032", "Invalid user role", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
     ;
 
 

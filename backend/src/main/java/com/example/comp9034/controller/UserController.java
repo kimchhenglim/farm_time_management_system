@@ -1,30 +1,27 @@
 package com.example.comp9034.controller;
 
-import com.example.comp9034.dto.CreateUserDTO;
-import com.example.comp9034.dto.ForgotPasswordDTO;
-import com.example.comp9034.dto.LoginDTO;
-import com.example.comp9034.dto.UpdateUserDTO;
+import com.example.comp9034.dto.*;
 import jakarta.validation.Valid;
 import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RequestMapping("/users/")
 public interface UserController {
-    @PostMapping("/register/admin")
+    @PostMapping("/admin/register")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
 
     @PostMapping("/login")
     ResponseEntity<ResponseBody<Object>> login(@Valid @RequestBody LoginDTO loginRequest);
 
     @PostMapping("/logout")
-    ResponseEntity<ResponseBody<Object>> logout(@Valid @RequestBody LoginDTO logoutRequest);
+    ResponseEntity<ResponseBody<Object>> logout(@Valid @RequestBody LogoutDTO logoutRequest);
 
     @PostMapping("/forgot-pass")
     ResponseEntity<ResponseBody<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordRequest);
 
-
-    @PutMapping("/users/{employeeId}")
-    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("employeeId") String employeeId);
+    @PostMapping("/admin/update")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO);
 
      @GetMapping("/users")
      ResponseEntity<ResponseBody<Object>> getAllUsers(

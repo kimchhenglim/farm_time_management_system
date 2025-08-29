@@ -1,14 +1,16 @@
 package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.*;
+import com.example.comp9034.entity.RoleEntity;
 import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.exception_handler.BusinessException;
-import com.example.comp9034.mapper.UserMapper;
+import com.example.comp9034.mapper.DataMapper;
+import com.example.comp9034.mapper.UserDataMapperHelper;
 import com.example.comp9034.repository.ErrorCodeRepository;
+import com.example.comp9034.repository.RoleRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
-import com.example.comp9034.service.RoleCache;
 import com.example.comp9034.service.UserService;
 import lombok.extern.log4j.Log4j2;
 
@@ -21,14 +23,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BeanPropertyBindingResult;
 
 import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
@@ -41,21 +41,23 @@ import static com.example.comp9034.util.DateTimeFormatter.toLocalDate;
 public class UserServiceImpl implements UserService {
     private final ErrorCodeRepository errorCodeRepository;
     private final UserRepository userRepository;
-    private final RoleCache roleCache;
-    private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
+    private final DataMapper dataMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UserDataMapperHelper userDataMapperHelper;
 
-    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleCache roleCache, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, UserDataMapperHelper userDataMapperHelper) {
         this.errorCodeRepository = errorCodeRepository;
         this.userRepository = userRepository;
-        this.roleCache = roleCache;
-        this.userMapper = userMapper;
+        this.roleRepository = roleRepository;
+        this.dataMapper = dataMapper;
         this.passwordEncoder = passwordEncoder;
+        this.userDataMapperHelper = userDataMapperHelper;
     }
 
     @Override
-    public CompleteResponse<Object> logout(LoginDTO loginRequest) {
-        String username = loginRequest.getUsername();
+    public CompleteResponse<Object> logout(LogoutDTO loginRequest) {
+        String username = loginRequest.getEmail();
         try {
             // Check if the user exists
             Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(loginRequest.getEmail(), true);
@@ -78,7 +80,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public CompleteResponse<Object> login(LoginDTO loginRequest) {
         try {
-            String username = loginRequest.getUsername();
+            String username = loginRequest.getEmail();
             Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(loginRequest.getEmail(), true);
             // Check if user existed
             if (userOptional.isEmpty()) {
@@ -88,30 +90,35 @@ public class UserServiceImpl implements UserService {
             UserEntity userEntity = userOptional.get();
             if (!passwordEncoder.matches(loginRequest.getPassword(), userEntity.getPassword())) {
                 log.info("Password does not match for user {}!", username);
-                throw new BusinessException(USER_NOT_FOUND, LOGIN.name());
+                throw new BusinessException(PASSWORD_NOT_CORRECT, LOGIN.name());
             }
-            log.info("Current user: {}", username);
+            log.info("Current logged-in user: {}", username);
             // Create an authentication object from the user
             Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, userEntity.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return getCompleteResponse(errorCodeRepository, LOGIN_SUCCESS, LOGIN.name(), null);
+        } catch (BusinessException e) {
+            throw e;
         } catch (
                 Exception e) {
-            log.error("There has been an error in logging in for user {}!", loginRequest.getUsername(), e);
+            log.error("There has been an error in logging in for user {}!", loginRequest.getEmail(), e);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name());
         }
     }
 
     @Override
     public CompleteResponse<Object> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
-        //Check if email/phone existed
+        //Check if email existed
         String email = forgotPasswordDTO.getEmail();
         Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(email, true);
         if (userOptional.isEmpty()) {
             log.error("User {} not found to reset password!", email);
             throw new BusinessException(USER_NOT_FOUND, FORGOT_PASSWORD.name());
         }
-//        UserEntity user = userOptional.get();
+        UserEntity user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(forgotPasswordDTO.getNewPassword()));
+        userRepository.save(user);
+        log.info("User password has been updated!");
         //Verify otp
 //        String verifyOtpErrorCode = otpServiceImpl.verifyOtp(new OtpDTO(username, forgotPasswordDTO.getOtp())).getResponseBody().getCode();
 //        if (verifyOtpErrorCode.equals(OTP_VERIFICATION_SUCCESS.getCode())) {
@@ -139,19 +146,24 @@ public class UserServiceImpl implements UserService {
 //                log.info("OTP is empty/ invalid!");
 //                throw new BusinessException(OTP_BLOCKED_OR_NOT_FOUND, REGISTER.name());
 //            }
-            UserEntity newUser;
-            int roleId = roleCache.getRoleIdByDescription(registerRequest.getRole().name());
-            if (registerRequest.getRole().equals(UserEnum.ADMIN.name())) {
-                newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
-                        toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), roleId, passwordEncoder.encode(registerRequest.getPassword()));
-            } else if (registerRequest.getRole().equals(UserEnum.STAFF.name())) {
-                newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
-                        toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), roleId, null);
-            } else {
-                log.info("User role is not valid: {} !", registerRequest.getRole());
+            Optional<RoleEntity> roleOptional = roleRepository.findByName(registerRequest.getRole().toUpperCase());
+            if (roleOptional.isEmpty()) {
+                log.info("User role is not valid: {}!", registerRequest.getRole());
                 throw new BusinessException(INVALID_INPUT, REGISTER.name());
+            }
+            RoleEntity role = roleOptional.get();
+            UserEntity newUser;
+            if (registerRequest.getRole().toUpperCase().equals(UserEnum.ADMIN.name())) {
+                newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
+                        toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
+            } else if (registerRequest.getRole().toUpperCase().equals(UserEnum.STAFF.name())) {
+                newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
+                        toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), role, null);
+            } else {
+                log.info("User role is not valid: {}!", registerRequest.getRole());
+                throw new BusinessException(INVALID_USER_ROLE, REGISTER.name());
             }
             userRepository.save(newUser);
             log.info("User {} has been created!", newUser.getEmail());
@@ -165,48 +177,26 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-//    @Override
-//    public CompleteResponse<Object> checkUserInfo(String userInput) {
-//        try {
-//            return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, REGISTER.name(), null);
-//        } catch (
-//                BusinessException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            log.error("There has been an error in registering a new user!", e);
-//            throw new BusinessException(INTERNAL_SERVER_ERROR, REGISTER.name());
-//        }
-//    }
-
     @Override
-    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
-        UserEntity existingUser = userRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> {
-                    log.error("User not found with code: {}", employeeId);
-                    return new BusinessException(USER_NOT_FOUND, COMMON.name());
-                });
+    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO) {
+        try {
+            UserEntity existingUser = userRepository.findByEmail(updateUserDTO.getEmail())
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", updateUserDTO.getEmail());
+                        return new BusinessException(USER_NOT_FOUND, COMMON.name());
+                    });
 
-        //check enum values
-        var userEnumValidator = updateUserDTO.validateEnumValues();
-        if (!userEnumValidator.getFirst()) {
-            throw new IllegalArgumentException(userEnumValidator.getSecond());
+            //update entire entity
+            dataMapper.updateUserEntityFromDto(updateUserDTO, existingUser, userDataMapperHelper);
+            existingUser.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(existingUser);
+
+            UserDTO responseDTO = dataMapper.toUserDTO(existingUser, userDataMapperHelper);
+            return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
+        } catch (Exception e) {
+            log.error("There has been an error in updating user {}!", updateUserDTO.getEmail(), e);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, REGISTER.name());
         }
-
-        //update role first if exists since role datatype is mismatched
-        if (updateUserDTO.getRole() != null) {
-            existingUser.setRoleId(roleCache.getRoleIdByDescription(updateUserDTO.getRole().name()));
-        }
-        
-        //update entire entity
-        userMapper.updateEntityFromDto(updateUserDTO, existingUser);
-        existingUser.setUpdatedAt(LocalDateTime.now());
-
-        userRepository.save(existingUser);
-
-
-        UserDTO responseDTO = userMapper.toUserDTO(existingUser);
-        responseDTO.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(existingUser.getRoleId())));
-        return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
     }
 
     @Override
@@ -234,15 +224,17 @@ public class UserServiceImpl implements UserService {
 
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
-        //map content to DTO
-        List<UserDTO> dtoList = page.getContent().stream()
-                .map(user -> {
-                    UserDTO dto = userMapper.toUserDTO(user);
-                    dto.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(user.getRoleId())));
-                    
-                    return dto;
-                })
-                .collect(Collectors.toList());
+//        //map content to DTO
+//        List<UserDTO> dtoList = page.getContent().stream()
+//                .map(user -> {
+//                    UserDTO dto = userMapper.toUserDTO(user);
+//                    dto.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(user.getRoleId())));
+//
+//                    return dto;
+//                })
+//                .collect(Collectors.toList());
+
+        List<UserDTO> dtoList = null;
 
         Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());
 

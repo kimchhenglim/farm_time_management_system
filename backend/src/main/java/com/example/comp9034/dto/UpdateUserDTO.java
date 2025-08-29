@@ -5,68 +5,46 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
-import org.springframework.data.util.Pair;
-
 @Setter
 @Getter
 @Valid
 public class UpdateUserDTO {
     // Optional User fields
     @Size(max = 50, message = "First name must be at most 50 characters")
-    @NotBlank
     private String firstName;
 
     @Size(max = 50, message = "Last name must be at most 50 characters")
-    @NotBlank
     private String lastName;
 
-    private LocalDate dob;
+    private String dob;
 
-    private UserEnum gender;
+    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "Gender can only be MALE | FEMALE | OTHER")
+    private String gender;
 
-    @Email(message = "Invalid email format")
-    @NotNull
+    @Email(regexp = "^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" ,message = "Invalid email format")
+    @NotBlank
     private String email;
 
     @Pattern(regexp = "^\\+?[0-9]*$", message = "Invalid mobile number")
-    @NotNull
     private String mobileNumber;
 
     @Size(max = 255, message = "Address too long")
     private String address;
 
-    // Optional Staff fields
-    //@Size(max = 20, message = "CardId must be at most 20 characters")
     private String cardId;
 
+//    @Pattern(regexp = "FULLTIME|PARTTIME|CASUAL", message = "Contract type can only be FULLTIME | PARTTIME | CASUAL")
     private UserEnum contractType;
 
-    @NotNull
-    private UserEnum role;
+    @Pattern(regexp = "ADMIN|STAFF", message = "Role can only be ADMIN | STAFF")
+    private String role;
 
     @Positive(message = "Pay rate must be greater than zero")
     private Double payRate;
 
     private String task;
 
-    @NotNull
+    private String employeeId;
+
     private Boolean isActive;
-
-    public Pair<Boolean, String> validateEnumValues() {
-        if (this.getGender() != null && this.getGender().getGroup() != UserEnum.Group.GENDER) {
-            return Pair.of(false, "Gender can only be MALE | FEMALE | OTHER");
-        }
-
-        if (this.getContractType() != null && this.getContractType().getGroup() != UserEnum.Group.CONTRACT_TYPE) {
-            return Pair.of(false, "Contract type can only be FULLTIME | PARTTIME | CASUAL");
-        }
-
-        if (this.getRole() != null && this.getRole().getGroup() != UserEnum.Group.ROLE) {
-            return Pair.of(false, "Role can only be ADMIN | STAFF");
-        }
-
-        return Pair.of(true, "");
-    }
 }

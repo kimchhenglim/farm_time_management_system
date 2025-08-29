@@ -17,7 +17,7 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-public class UserEntity implements Serializable, UserDetails{
+public class UserEntity implements Serializable, UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -53,12 +53,15 @@ public class UserEntity implements Serializable, UserDetails{
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    private int roleId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private RoleEntity role; //
 
     public UserEntity() {
 
     }
-    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, int roleId, String password) {
+
+    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, RoleEntity role, String password) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -72,17 +75,17 @@ public class UserEntity implements Serializable, UserDetails{
         this.payRate = payRate;
         this.task = task;
         this.createdAt = createdAt;
-        this.roleId = roleId;
+        this.role = role;
         this.password = password;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(role);
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return email;
     }
 }

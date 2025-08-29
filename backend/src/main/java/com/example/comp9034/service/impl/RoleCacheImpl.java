@@ -19,10 +19,10 @@ public class RoleCacheImpl implements RoleCache{
         this.roleRepository = roleRepository;
     }
 
-    @PostConstruct
-    public void init() {
-        roleRepository.findAll().forEach(r -> roleMap.put(r.getId(), r.getDescription()));
-    }
+//    @PostConstruct
+//    public void init() {
+//        roleRepository.findAll().forEach(r -> roleMap.put(r.getId(), r.getDescription()));
+//    }
 
     @Override
     public Map<Integer, String> getAllRoles() {

@@ -39,14 +39,14 @@ public class CreateUserDTO {
     @NotBlank(message = "Last name cannot be null or empty")
     private String lastName;
 
-    @NotBlank(message = "Gender name cannot be null or empty")
+    @NotNull(message = "Gender name cannot be null or empty")
     private UserEnum gender;
 
     @NotBlank(message = "Address name cannot be null or empty")
     private String address;
 
     @NotBlank(message = "Role name cannot be null or empty")
-    private UserEnum role;
+    private String role;
 
     private LocalDateTime createdAt;
 
@@ -60,7 +60,7 @@ public class CreateUserDTO {
 
     private String task;
 
-    @NotBlank(message = "Activity status name cannot be null or empty")
+    @NotNull(message = "Activity status name cannot be null or empty")
     private Boolean isActive;
 
     public CreateUserDTO(String email, String password) {

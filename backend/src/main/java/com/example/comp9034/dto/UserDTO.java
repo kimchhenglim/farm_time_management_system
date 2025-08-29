@@ -1,9 +1,6 @@
 package com.example.comp9034.dto;
 import com.example.comp9034.enums.*;
-import com.example.comp9034.entity.RoleEntity;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,11 +16,11 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private LocalDate dob;
-    private UserEnum gender;
+    private String gender;
     private String email;
     private String mobileNumber;
     private String address;
-    private UserEnum role;
+    private String role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String cardId;
@@ -31,4 +28,5 @@ public class UserDTO {
     private Double payRate;
     private String task;
     private Boolean isActive;
+
 }

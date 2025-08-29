@@ -11,9 +11,9 @@ import lombok.Setter;
 @Getter
 @Valid
 public class ForgotPasswordDTO {
-    @NotBlank(message = "Password cannot be null or empty")
+    @NotBlank(message = "New password cannot be null or empty")
     @Size(min = 8, max = 20, message = "Password must be between 3 and 20 characters")
-    private String password;
+    private String newPassword;
 
     @NotBlank(message = "Email cannot be null or empty")
     private String email;
@@ -21,9 +21,9 @@ public class ForgotPasswordDTO {
     @NotBlank(message = "OTP cannot be null or empty")
     private String otp;
 
-    public ForgotPasswordDTO(String email, String password) {
+    public ForgotPasswordDTO(String email, String newPassword) {
         this.email = email;
-        this.password = password;
+        this.newPassword = newPassword;
     }
 }
 
