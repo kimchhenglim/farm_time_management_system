@@ -3,6 +3,7 @@ import com.example.comp9034.repository.ConfigurationRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,6 +16,7 @@ import static com.example.comp9034.util.Common.getNonAuthenticatedUrls;
 
 @Log4j2
 @Configuration
+@Profile("!test")  // Exclude this config when test profile is active
 public class SecurityConfig {
     private final ConfigurationRepository configurationRepository;
 
