@@ -1,21 +1,50 @@
 import "./App.css";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Roster from "./pages/Roster";
 import NavigationLayout from "./components/NavigationLayout";
 import StaffManagement from "./pages/StaffManagement";
+import StaffDetail from "./pages/StaffDetail";
+import { Toaster } from "react-hot-toast";
 import Report from "./pages/Report";
+import { useEffect } from "react";
+import useAuthStore from "./stores/useAuthStore";
 function App() {
+  //import checkAuth from the useAuthStore
+  const { checkAuth, authUser } = useAuthStore();
+  //using useEffect to check for authuser
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+  console.log(authUser);
   return (
     <NavigationLayout>
-      <main className="h-screen w-screen overflow-y-auto bg-gray-50">
+      <main className="w-full h-full overflow-y-auto bg-gray-50">
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/roster" element={<Roster />} />
-          <Route path="/staff-management" element={<StaffManagement />} />
-          <Route path="/report" element={<Report />} />
+          <Route
+            path="/login"
+            element={authUser ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/"
+            element={authUser ? <Roster /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/staff-management"
+            element={authUser ? <StaffManagement /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/staff-management/staff/:staffID"
+            element={authUser ? <StaffDetail /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/report"
+            element={authUser ? <Report /> : <Navigate to="/login" />}
+          />
+          {/* <Route path="/staff/:id" element={<StaffDetail />} /> */}
         </Routes>
       </main>
+      <Toaster />
     </NavigationLayout>
   );
 }

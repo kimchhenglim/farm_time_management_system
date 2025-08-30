@@ -1,6 +1,6 @@
 package com.example.comp9034.service.impl;
 
-import com.example.comp9034.entity.User;
+import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.ErrorCodeEnum;
 import com.example.comp9034.exception_handler.BusinessException;
 import com.example.comp9034.repository.ConfigurationRepository;
@@ -47,14 +47,14 @@ public class TokenServiceImpl implements TokenService {
         try {
             log.info("Start generating access token!");
             long expirationTime = convertStringToLong(getConfigValue(ACCESS_TOKEN_EXPIRATION_TIME.name(), configurationRepository, "300000L"));
-            User user = userRepository.findByUsernameAndActive(username, true).orElseGet(() -> {
-                log.error("There is user as {}", username);
-                throw new BusinessException(USER_NOT_FOUND, COMMON.name());
-            });
+//            User user = userRepository.findByUsernameAndActive(username, true).orElseGet(() -> {
+//                log.error("There is user as {}", username);
+//                throw new BusinessException(USER_NOT_FOUND, COMMON.name());
+//            });
             String token = Jwts.builder()
                     .setSubject(username)
                     .setIssuedAt(new Date())
-                    .claim("roles", user.getAuthorities())
+                    /*.claim("roles", user.getAuthorities())*/
                     .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                     .signWith(getSecretKey()) // Specify the signing algorithm
                     .compact();
@@ -84,18 +84,18 @@ public class TokenServiceImpl implements TokenService {
         log.info("Start validating access token!");
         String username;
         Claims claims;
-        Optional<User> userOptional;
+        Optional<UserEntity> userOptional;
         try {
             claims = Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(accessToken) // This validates the token
                     .getBody();
             username = claims.getSubject();
             // Validate if the token's user exists
             log.info("Start checking if user {} is registered!", username);
-            userOptional = userRepository.findByUsernameAndActive(username, true);
-            if (userOptional.isEmpty()) {
-                log.error("There is no user as {}", username);
-                return getCompleteResponse(errorCodeRepository, USER_NOT_FOUND, TOKEN.name(), null);
-            }
+//            userOptional = userRepository.findByUsernameAndActive(username, true);
+//            if (userOptional.isEmpty()) {
+//                log.error("There is no user as {}", username);
+//                return getCompleteResponse(errorCodeRepository, USER_NOT_FOUND, TOKEN.name(), null);
+//            }
             log.info("The token is valid for user {}", username);
             return getCompleteResponse(errorCodeRepository, TOKEN_VERIFY_SUCCESS, TOKEN.name(), claims);
         } catch (ExpiredJwtException e) {
