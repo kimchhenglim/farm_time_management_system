@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
@@ -178,20 +179,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO) {
+    public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
         try {
-            UserEntity existingUser = userRepository.findByEmail(updateUserDTO.getEmail())
+            UserEntity existingUser = userRepository.findByEmployeeId(employeeId)
                     .orElseThrow(() -> {
                         log.error("User not found with email: {}", updateUserDTO.getEmail());
                         return new BusinessException(USER_NOT_FOUND, COMMON.name());
                     });
 
             //update entire entity
-            dataMapper.updateUserEntityFromDto(updateUserDTO, existingUser, userDataMapperHelper);
+            dataMapper.updateEntityFromDto(updateUserDTO, existingUser);
             existingUser.setUpdatedAt(LocalDateTime.now());
             userRepository.save(existingUser);
 
-            UserDTO responseDTO = dataMapper.toUserDTO(existingUser, userDataMapperHelper);
+            UserDTO responseDTO = dataMapper.toUserDto(existingUser);
             return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
         } catch (Exception e) {
             log.error("There has been an error in updating user {}!", updateUserDTO.getEmail(), e);
@@ -224,17 +225,14 @@ public class UserServiceImpl implements UserService {
 
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
-//        //map content to DTO
-//        List<UserDTO> dtoList = page.getContent().stream()
-//                .map(user -> {
-//                    UserDTO dto = userMapper.toUserDTO(user);
-//                    dto.setRole(UserEnum.valueOf(roleCache.getRoleDescriptionById(user.getRoleId())));
-//
-//                    return dto;
-//                })
-//                .collect(Collectors.toList());
+        //map content to DTO
+        List<UserDTO> dtoList = page.getContent().stream()
+                .map(user -> {
+                    UserDTO dto = dataMapper.toUserDto(user);
 
-        List<UserDTO> dtoList = null;
+                    return dto;
+                })
+                .toList();
 
         Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());
 

@@ -47,13 +47,13 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO) {
-        CompleteResponse<Object> response = userService.updateUser(updateUserDTO);
+    public ResponseEntity<ResponseBody<Object>> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
+        CompleteResponse<Object> response = userService.updateUser(updateUserDTO, employeeId);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> getAllUsers(String employeeId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
+    public ResponseEntity<ResponseBody<Object>> getUsers(String employeeId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(
             page,
             size,

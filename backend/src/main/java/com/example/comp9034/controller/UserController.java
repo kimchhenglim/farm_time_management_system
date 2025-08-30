@@ -6,7 +6,6 @@ import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/users/")
 public interface UserController {
     @PostMapping("/admin/register")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
@@ -20,11 +19,11 @@ public interface UserController {
     @PostMapping("/forgot-pass")
     ResponseEntity<ResponseBody<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordRequest);
 
-    @PostMapping("/admin/update")
-    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO);
+    @PutMapping("/admin/users/{employeeId}")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("employeeId") String employeeId);
 
      @GetMapping("/users")
-     ResponseEntity<ResponseBody<Object>> getAllUsers(
+     ResponseEntity<ResponseBody<Object>> getUsers(
         @RequestParam(required = false) String employeeId,
         @RequestParam(required = false) String name,
         @RequestParam(required = false) String email,

@@ -16,6 +16,7 @@ public class UpdateUserDTO {
     @Size(max = 50, message = "Last name must be at most 50 characters")
     private String lastName;
 
+    @Pattern(regexp = "^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$", message = "Invalid date format, must be DD/MM/YYYY")
     private String dob;
 
     @Pattern(regexp = "MALE|FEMALE|OTHER", message = "Gender can only be MALE | FEMALE | OTHER")
