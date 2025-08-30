@@ -10,6 +10,7 @@ import User_active from "../assets/users-active.svg";
 import Report_active from "../assets/report-active.svg";
 import Ellipse from "../assets/Ellipse.svg";
 import { Link, useLocation } from "react-router-dom";
+import useAuthStore from "../stores/useAuthStore";
 function TopNavBar() {
   return (
     <header className="flex items-center justify-between bg-white px-6 py-2 shadow-2xs h-[87px]">
@@ -124,11 +125,12 @@ function SideNavBar() {
 }
 
 function NavigationLayout({ children }) {
+  const { authUser } = useAuthStore();
   return (
     <div className="flex flex-col h-screen">
-      <TopNavBar />
+      {authUser && <TopNavBar />}
       <div className="flex flex-1 overflow-hidden">
-        <SideNavBar />
+        {authUser && <SideNavBar />}
         <main className="w-screen h-full flex-1 bg-gray-50">{children}</main>
       </div>
     </div>
