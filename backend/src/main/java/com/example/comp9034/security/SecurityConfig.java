@@ -38,9 +38,11 @@ public class SecurityConfig {
                                 log.info("Permitting public URL: {}", url);
                                 auth.requestMatchers(url).permitAll();
                             });
+                    // Secure admin-only APIs
+                    auth.requestMatchers("/admin/**").hasRole("ADMIN");
                     auth.anyRequest().authenticated();
-                })
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class); // Add the token filter
+                });
+                //.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class); // Add the token filter
         return http.build();
     }
 

@@ -1,20 +1,36 @@
 package com.example.comp9034.controller;
 
-import com.example.comp9034.dto.CreateUserDTO;
+import com.example.comp9034.dto.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/public/api/users/")
 public interface UserController {
-    @PostMapping("/register")
-    ResponseEntity<ResponseBody<Object>> createNewUser(@Valid @RequestBody CreateUserDTO registerRequest);
-
-    @PostMapping("/register/admin")
+    @PostMapping("/admin/register")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
 
-    @GetMapping("/get/user")
-    ResponseEntity<ResponseBody<Object>> checkUserExisted(@NotNull @RequestParam(name = "userInput") String userInput);
+    @PostMapping("/login")
+    ResponseEntity<ResponseBody<Object>> login(@Valid @RequestBody LoginDTO loginRequest);
+
+    @PostMapping("/logout")
+    ResponseEntity<ResponseBody<Object>> logout(@Valid @RequestBody LogoutDTO logoutRequest);
+
+    @PostMapping("/forgot-pass")
+    ResponseEntity<ResponseBody<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordRequest);
+
+    @PutMapping("/admin/users/{employeeId}")
+    ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("employeeId") String employeeId);
+
+     @GetMapping("/users")
+     ResponseEntity<ResponseBody<Object>> getUsers(
+        @RequestParam(required = false) String employeeId,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phoneNumber,
+        @RequestParam(defaultValue = "0") int page,   // page number
+        @RequestParam(defaultValue = "10") int size,  // page size
+        @RequestParam(defaultValue = "id") String sortBy, // sort field
+        @RequestParam(defaultValue = "asc") String sortDir // asc or desc
+     );
 }
