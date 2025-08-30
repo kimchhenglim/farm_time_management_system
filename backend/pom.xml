@@ -170,6 +170,11 @@
                             <artifactId>mapstruct-processor</artifactId>
                             <version>1.5.5.Final</version>
                         </path>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId> <!-- IMPORTANT - ADD THIS DEPENDENCY -->
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </dependency>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
