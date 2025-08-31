@@ -1,0 +1,131 @@
+name: Frontend Workflow (CI/CD)
+on:
+  push:
+    branches: [main,test,dev]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    branches: [main,test,dev]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  syntax-check:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend 
+    steps:
+      - name: Checkout Sourcecode
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with: 
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+  docker-build:
+    name: Docker build
+    if: ${{ github.event_name == 'push'}}
+    needs: [syntax-check]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      environment: ${{ steps.generateglobaltag.outputs.environment }}
+    steps:
+      - name: Checkout Sourcecode
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate Tags
+        id: generatetag
+        shell: bash
+        env:
+          IMAGE_REGISTRY: ghcr.io/${{ github.repository }}/frontend
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          tags=("${IMAGE_REGISTRY}:${BRANCH}" "${IMAGE_REGISTRY}:${SHA}")
+          if [ "$BRANCH" = "main" ]; then
+            tags=("${IMAGE_REGISTRY}:latest" "${tags[@]}")
+          fi
+          {
+            echo "tags<<EOF"
+            printf "%s\n" "${tags[@]}"
+            echo "EOF" 
+          } >> $GITHUB_OUTPUT
+
+      - name: Docker Information
+        id: generateglobaltag
+        run: |
+          environment="${{ github.ref_name }}"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            environment="prod"
+          fi
+          echo "environment=$environment" >> $GITHUB_OUTPUT
+
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.generatetag.outputs.tags }}
+          build-args: |
+            MODE=${{ steps.generateglobaltag.outputs.environment }}
+
+  docker-deploy:
+    name: Docker deploy
+    needs: [syntax-check, docker-build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: ${{ needs.docker-build.outputs.environment }}
+    steps:
+      - name: Variable from docker build
+        run: |
+          echo "environment: ${{ needs.docker-build.outputs.environment }}"
+
+      - name: Add droplet to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DO_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/app
+            
+            # pull and restart service
+            # docker compose pull
+            # docker compose up -d
+            docker compose --profile frontend_${{ needs.docker-build.outputs.environment }} up -d --pull always --no-deps
+
+            # clean
+            docker image prune -f
