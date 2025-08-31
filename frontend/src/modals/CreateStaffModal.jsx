@@ -1,26 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
-import ConfirmModal from "./ConfirmationModal";
+import React, { useRef, useState } from "react";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
-function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
+
+function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
-  const modalRef = useRef(null);
-  const [isConfirm, setIsConfirm] = useState(false);
   const [formData, setFormData] = useState({
-    biometricId: "",
+    cardId: "",
     firstName: "",
     lastName: "",
-    dateOfBirth: "",
+    dob: "",
     gender: "",
     email: "",
-    phoneNumber: "",
+    mobileNumber: "",
     address: "",
     role: "",
     contractType: "",
     payRate: "",
     location: "",
     avatar: null,
+    isActive: true,
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpenModal) return null;
 
@@ -31,60 +32,36 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, avatar: file }));
-    }
+    if (file) setFormData((prev) => ({ ...prev, avatar: file }));
   };
 
   const resetForm = () => {
     setFormData({
-      biometricId: "",
+      cardId: "",
       firstName: "",
       lastName: "",
-      dateOfBirth: "",
+      dob: "",
       gender: "",
       email: "",
-      phoneNumber: "",
+      mobileNumber: "",
       address: "",
       role: "",
       contractType: "",
       payRate: "",
       location: "",
       avatar: null,
+      isActive: true,
     });
-  };
-
-  const submitFormData = () => {
-    const payload = new FormData();
-
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null) {
-        payload.append(key, value);
-      }
-    });
-
-    // console.log("Form Data Submitted:", formData);
-    onSubmit(payload);
-    resetForm();
-    setIsOpenModal(false);
-  };
-
-  const handleCloseModal = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
   };
 
   const validateForm = () => {
-    //required fields
     const requiredFields = [
-      "biometricId",
       "firstName",
       "lastName",
-      "dateOfBirth",
+      "dob",
       "gender",
       "email",
-      "phoneNumber",
+      "mobileNumber",
       "address",
       "role",
       "contractType",
@@ -108,31 +85,60 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
     return true;
   };
 
+  const handleSaveClick = async () => {
+    if (!validateForm()) return;
+
+    const payload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: "12345678",
+      mobileNumber: formData.mobileNumber.startsWith("0")
+        ? "+61" + formData.mobileNumber.slice(1)
+        : formData.mobileNumber,
+      dob: formData.dob.split("-").reverse().join("/"),
+      gender: formData.gender,
+      address: formData.address,
+      role: formData.role,
+      isActive: formData.isActive,
+      contractType: formData.contractType,
+      payRate: parseFloat(formData.payRate),
+      location: formData.location,
+    };
+
+    try {
+      setIsLoading(true);
+      await onSubmit(payload); // assuming onSubmit handles the POST
+      setIsLoading(false);
+      resetForm();
+      setIsOpenModal(false);
+    } catch (err) {
+      setIsLoading(false);
+      alert("Failed to register staff. Please try again.");
+    }
+  };
+
+  const handleCloseModal = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
       onMouseDown={handleCloseModal}
     >
-      {/* open register staff modal */}
       <div
-        ref={modalRef}
         className="bg-white rounded-lg p-6 w-[977px] shadow-lg text-[#565656] z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold text-[#566074] mb-4">
           Register Staff
         </h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (validateForm()) {
-              setIsConfirm(true);
-              document.getElementById("confirm_modal").showModal();
-            }
-          }}
-        >
+        <form>
           <div className="grid grid-cols-2 gap-4">
-            {/* Avatar and Upload */}
+            {/* Avatar & Biometric ID */}
             <div className="grid grid-cols-2 gap-4 col-span-2 mb-2">
               <div className="flex items-center justify-center gap-3">
                 <img
@@ -156,16 +162,14 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                   Upload Avatar
                 </button>
               </div>
-              {/* Biometric ID */}
               <div className="flex flex-col justify-center">
                 <label className="text-sm font-medium mb-1">Biometric ID</label>
                 <input
                   type="text"
-                  name="biometricId"
-                  value={formData.biometricId}
+                  name="cardId"
+                  value={formData.cardId}
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
-                  required
                 />
               </div>
             </div>
@@ -201,8 +205,8 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
               <label className="text-sm font-medium mb-1">Date of Birth</label>
               <input
                 type="date"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
+                name="dob"
+                value={formData.dob}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
                 min="1900-01-01"
@@ -222,8 +226,8 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 required
               >
                 <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
               </select>
             </div>
 
@@ -245,8 +249,8 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
               <label className="text-sm font-medium mb-1">Phone Number</label>
               <input
                 type="text"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                name="mobileNumber"
+                value={formData.mobileNumber}
                 onChange={handleChange}
                 pattern="^0[23478]\d{8}$|^04\d{8}$"
                 placeholder="e.g., 0452345678"
@@ -279,10 +283,8 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 required
               >
                 <option value="">Select Role</option>
-                <option value="Technician">Technician</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Field Engineer">Field Engineer</option>
-                <option value="Data Analyst">Data Analyst</option>
+                <option value="ADMIN">Admin</option>
+                <option value="STAFF">Staff</option>
               </select>
             </div>
 
@@ -297,9 +299,9 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 required
               >
                 <option value="">Select Contract</option>
-                <option value="Full-Time">Full-Time</option>
-                <option value="Part-Time">Part-Time</option>
-                <option value="Casual">Casual</option>
+                <option value="FULLTIME">Full-Time</option>
+                <option value="PARTTIME">Part-Time</option>
+                <option value="CASUAL">Casual</option>
               </select>
             </div>
 
@@ -345,27 +347,22 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 resetForm();
                 onClose();
               }}
+              disabled={isLoading}
             >
               Cancel
             </button>
             <button
-              type="submit"
-              className="px-4 py-2 bg-[#16A34A] text-white rounded cursor-pointer"
+              type="button"
+              className={`px-4 py-2 rounded cursor-pointer ${
+                isLoading ? "bg-gray-400" : "bg-[#16A34A] text-white"
+              }`}
+              onClick={handleSaveClick}
+              disabled={isLoading}
             >
-              Save
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
-
-        <ConfirmModal
-          propID="confirm_modal"
-          confirmLabel="Confirm"
-          cancelLabel="Cancel"
-          title="Confirm edits"
-          message="Are you sure all information are correct?"
-          handleSubmit={submitFormData}
-          setIsOpenModal={setIsConfirm}
-        />
       </div>
     </div>
   );

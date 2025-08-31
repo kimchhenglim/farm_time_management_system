@@ -16,7 +16,6 @@ function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  console.log(authUser);
   return (
     <NavigationLayout>
       <main className="w-full h-full overflow-y-auto bg-gray-50">
