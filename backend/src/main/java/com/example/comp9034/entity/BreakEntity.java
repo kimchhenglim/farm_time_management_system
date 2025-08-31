@@ -16,7 +16,7 @@ public class BreakEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private Long clockingId;
+    private int clockingId;
     private LocalDateTime breakStartTime;
     private LocalDateTime breakEndTime;
     private String reason;
