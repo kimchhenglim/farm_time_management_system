@@ -26,7 +26,7 @@ public class UserDTO {
     private String cardId;
     private UserEnum contractType;
     private Double payRate;
-    private String task;
+    private String location;
     private Boolean isActive;
-
+    private String upComingShift;
 }
