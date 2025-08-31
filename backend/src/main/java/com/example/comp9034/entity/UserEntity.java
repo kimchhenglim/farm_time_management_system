@@ -32,9 +32,10 @@ public class UserEntity implements Serializable, UserDetails {
     @Enumerated(EnumType.STRING)
     private UserEnum gender;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(unique = true)
     private String mobileNumber;
     private String address;
 
@@ -45,7 +46,7 @@ public class UserEntity implements Serializable, UserDetails {
     private UserEnum contractType;
 
     private Double payRate;
-    private String task;
+    private String location;
     private Boolean isActive = true;
 
     private String password;
@@ -61,7 +62,7 @@ public class UserEntity implements Serializable, UserDetails {
 
     }
 
-    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String task, LocalDateTime createdAt, RoleEntity role, String password) {
+    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String location, LocalDateTime createdAt, RoleEntity role, String password) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -73,7 +74,7 @@ public class UserEntity implements Serializable, UserDetails {
         this.cardId = cardId;
         this.contractType = contractType;
         this.payRate = payRate;
-        this.task = task;
+        this.location = location;
         this.createdAt = createdAt;
         this.role = role;
         this.password = password;
