@@ -17,7 +17,7 @@ public class RosterEntity {
 
     private String employeeId;
 
-    private LocalDateTime startTime = LocalDateTime.now();
+    private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     private String createdBy;

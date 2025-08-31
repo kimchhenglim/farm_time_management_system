@@ -58,7 +58,7 @@ public class CreateUserDTO {
 
     private Double payRate;
 
-    private String task;
+    private String location;
 
     @NotNull(message = "Activity status name cannot be null or empty")
     private Boolean isActive;
