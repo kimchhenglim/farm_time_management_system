@@ -17,7 +17,7 @@ function App() {
     checkAuth();
   }, [checkAuth]);
   console.log(authUser);
-  if (authUser === null) {
+  if (isCheckingAuth) {
     return (
       <div className="flex justify-center items-center h-screen">
         <span className="loading loading-spinner loading-xl"></span>
