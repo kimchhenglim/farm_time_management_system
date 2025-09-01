@@ -17,7 +17,8 @@ function App() {
     checkAuth();
   }, [checkAuth]);
   console.log(authUser);
-  if (isCheckingAuth) {
+  I
+  if (sessionStorage.getItem("authUser") !== null && authUser === null) {
     return (
       <div className="flex justify-center items-center h-screen">
         <span className="loading loading-spinner loading-xl"></span>
