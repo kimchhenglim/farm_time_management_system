@@ -248,13 +248,10 @@ public class UserServiceImpl implements UserService {
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
         List<String> employeeIds = page.getContent().stream()
-                .map(UserEntity::getEmployeeId)
-                .toList();
-
         List<Object[]> upComingShifts = rosterRepository.findUpcomingShiftsForUsers(employeeIds);
 
         Map<String, String> shiftMap = new HashMap<>();
-        for (var row : upComingShifts) {
+        for (var row: upComingShifts) {
             String currId = (String) row[0];
             LocalDateTime start = (LocalDateTime) row[1];
             LocalDateTime end = (LocalDateTime) row[2];
