@@ -41,9 +41,22 @@ function TopNavBar() {
             <span className="text-gray-500">Admin</span>
           </div>
           {/* Dropdown */}
-          <button className="text-gray-600">
-            <img src={Dropdown} className="w-6 h-6" />
-          </button>
+          <div className=" dropdown dropdown-end">
+            <button tabIndex={0} className="text-gray-600 cursor-pointer">
+              <img src={Dropdown} className="w-6 h-6" />
+            </button>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-[#F9FBFC] text-black rounded-box z-10 w-52 p-2 shadow-lg mt-1 ring ring-gray-500"
+            >
+              <li className="hover:bg-gray-300 rounded-sm">
+                <a>Logout</a>
+              </li>
+              <li className="hover:bg-gray-300 rounded-sm">
+                <a>Settings</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </header>
