@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Edit from "../assets/edit.svg";
 import Avatar from "../assets/avatar.svg";
 import Email from "../assets/email.svg";
@@ -7,9 +7,15 @@ import Phone from "../assets/phone.svg";
 import Home from "../assets/home.svg";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import EditStaffModal from "../modals/EditStaffModal";
+import useStaffStore from "../stores/useStaffStore";
 function StaffDetail() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  //get param
+  const { staffID } = useParams();
+  //get staffList from useStaffStore
+  const { staffList } = useStaffStore();
+  const staffInfo = staffList.find((item) => item.id == staffID);
   return (
     <div className="w-full h-[calc(100%)] p-4">
       {/* header */}
@@ -66,12 +72,14 @@ function StaffDetail() {
           <div className="h-[40%] w-full flex flex-col items-center justify-center mt-[28px] gap-[15px]">
             <img src={Avatar} alt="avatar" className="size-[120px]" />
             <div className="flex flex-col justify-center items-center w-[190px] gap-[8px]">
-              <span className="text-[#566074] text-lg">Firstname Lastname</span>
+              <span className="text-[#566074] text-lg">
+                {staffInfo?.firstName + " " + staffInfo?.lastName}
+              </span>
               <div className="flex gap-3 items-center justify-center text-sm">
                 <span className=" text-[#16A34A] w-[40px] flex items-center justify-center">
-                  FT101
+                  FT{staffID}
                 </span>
-                {isActive ? (
+                {staffInfo?.isActive ? (
                   <span className="text-[#16A34A] p-2 bg-[#F0FDF4] rounded-4xl w-[80px] flex items-center justify-center">
                     Active
                   </span>
@@ -86,45 +94,57 @@ function StaffDetail() {
           <div className="flex flex-col gap-[20px]">
             <div className="text-[#8D8D8D] flex flex-col gap-1.5 ml-[32px] mt-[20px]">
               <div>
-                Gender: <span className="text-[#8D8D8D] font-thin">Male</span>
+                Gender:{" "}
+                <span className="text-[#8D8D8D] font-thin">
+                  {staffInfo?.gender}
+                </span>
               </div>
               <div>
                 DOB:{" "}
                 <span className="text-[#8D8D8D] font-thin">
-                  23th September 1989
+                  {staffInfo?.dob}
                 </span>
               </div>
               <div>
-                Role: <span className="text-[#16A34A] font-thin">Employee</span>
+                Role:{" "}
+                <span className="text-[#16A34A] font-thin">
+                  {staffInfo?.role}
+                </span>
               </div>
               <div>
-                Task:{" "}
-                <span className="text-[#16A34A] font-thin">Cut grass</span>
+                Location:{" "}
+                <span className="text-[#16A34A] font-thin">
+                  {staffInfo?.location}
+                </span>
               </div>
               <div>
                 Contract:{" "}
-                <span className="text-[#16A34A] font-thin">Part-time</span>
+                <span className="text-[#16A34A] font-thin">
+                  {staffInfo?.contractType}
+                </span>
               </div>
               <div>
                 Pay rate:{" "}
-                <span className="text-[#16A34A] font-thin">$30.00</span>
+                <span className="text-[#16A34A] font-thin">
+                  ${staffInfo?.payRate}
+                </span>
               </div>
             </div>
             {/* line */}
             <div className="bg-gray-50 h-[1px] w-[80%]"></div>
             {/* social */}
             <div className="text-[#566074] ml-[32px] flex flex-col gap-2">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-4">
                 <img src={Email} alt="email" className="w-[20px]" />
-                <a href="">example@gmail.com</a>
+                <a href="">{staffInfo?.email}</a>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-4">
                 <img src={Phone} alt="phone" className="w-[20px]" />
-                0449210924
+                {staffInfo?.mobileNumber}
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-4">
                 <img src={Home} alt="home" className="w-[20px]" />
-                123 Grote St, Adelaide SA 5000
+                {staffInfo?.address}
               </div>
             </div>
           </div>
