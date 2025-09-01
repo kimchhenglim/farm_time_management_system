@@ -6,29 +6,14 @@ import DescSort from "../assets/descsort.svg";
 import CreateStaffModal from "../modals/CreateStaffModal";
 import { axiosInstances } from "../libs/axios";
 import { useNavigate } from "react-router-dom";
+import useStaffStore from "../stores/useStaffStore";
 
 function StaffManagement() {
-  const [staffList, setStaffList] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [isOpenModal, setIsOpenModal] = useState(false);
-
+  //import from useStaffStore
+  const { staffList, fetchStaffList } = useStaffStore();
   const navigate = useNavigate();
-
-  // Fetch staff from API
-  const fetchStaffList = async () => {
-    try {
-      const response = await axiosInstances.get("/users");
-      const data =
-        response.data?.body?.content &&
-        Array.isArray(response.data.body.content)
-          ? response.data.body.content
-          : [];
-      setStaffList(data);
-    } catch (error) {
-      console.error("Error fetching staff list:", error);
-      setStaffList([]);
-    }
-  };
 
   useEffect(() => {
     fetchStaffList();
