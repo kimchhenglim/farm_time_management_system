@@ -4,7 +4,6 @@ import Avatar from "../assets/avatar.svg";
 
 function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
-  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     cardId: "",
     firstName: "",
@@ -70,22 +69,20 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       "location",
     ];
 
-    const newErrors = {};
-
     for (let field of requiredFields) {
       if (!formData[field] || formData[field].toString().trim() === "") {
-        newErrors[field] = "This field is required";
+        alert(`${field} is required.`);
+        return false;
       }
     }
 
     const emailRegex = /\S+@\S+\.\S+/;
     if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+      alert("Please enter a valid email address.");
+      return false;
     }
 
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleSaveClick = async () => {
@@ -111,7 +108,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
 
     try {
       setIsLoading(true);
-      await onSubmit(payload);
+      await onSubmit(payload); // assuming onSubmit handles the POST
       setIsLoading(false);
       resetForm();
       setIsOpenModal(false);
@@ -184,19 +181,10 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="text"
                 name="firstName"
                 value={formData.firstName}
-                onChange={(e) => {
-                  handleChange(e);
-                  setErrors({ ...errors, firstName: null });
-                }}
-                className={`border px-3 py-2 rounded ${
-                  errors.firstName ? "border-red-500" : "border-[#ADADAD]"
-                }`}
+                onChange={handleChange}
+                className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
-              {errors.firstName && (
-                <span className="text-red-500 text-xs mt-1">
-                  {errors.firstName}
-                </span>
-              )}
             </div>
 
             {/* Last Name */}
@@ -206,19 +194,10 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="text"
                 name="lastName"
                 value={formData.lastName}
-                onChange={(e) => {
-                  handleChange(e);
-                  setErrors({ ...errors, lastName: null });
-                }}
-                className={`border px-3 py-2 rounded ${
-                  errors.lastName ? "border-red-500" : "border-[#ADADAD]"
-                }`}
+                onChange={handleChange}
+                className="border border-[#ADADAD] px-3 py-2 rounded"
+                required
               />
-              {errors.lastName && (
-                <span className="text-red-500 text-xs mt-1">
-                  {errors.lastName}
-                </span>
-              )}
             </div>
 
             {/* Date of Birth */}
