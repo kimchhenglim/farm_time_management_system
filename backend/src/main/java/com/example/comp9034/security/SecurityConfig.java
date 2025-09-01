@@ -1,4 +1,5 @@
 package com.example.comp9034.security;
+import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.repository.ConfigurationRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Arrays;
@@ -26,10 +28,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenFilter tokenFilter) throws Exception {
-        //String contextPath = environment.getProperty("server.servlet.context-path", "/The-Project");
         // Configure HttpSecurity with dynamic non-authenticated URLs
         http
                 .csrf().disable()
+                .logout().disable()
                 .authorizeHttpRequests(auth -> {
                     // Permit the non-authenticated URLs dynamically
                     Arrays.stream(getNonAuthenticatedUrls(configurationRepository))
@@ -39,10 +41,11 @@ public class SecurityConfig {
                                 auth.requestMatchers(url).permitAll();
                             });
                     // Secure admin-only APIs
-                    auth.requestMatchers("/admin/**").hasRole("ADMIN");
+                    auth.requestMatchers("/admin/**").hasRole(UserEnum.ADMIN.name());
+                    //auth.requestMatchers("/admin/**").hasAuthority("ROLE_" + UserEnum.ADMIN.name());
                     auth.anyRequest().authenticated();
-                });
-                //.addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class); // Add the token filter
+                })
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class); // Add the token filter
         return http.build();
     }
 

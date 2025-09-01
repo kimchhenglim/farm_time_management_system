@@ -53,14 +53,16 @@ public class UserServiceImpl implements UserService {
     private final RosterRepository rosterRepository;
     private final DataMapper dataMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TokenServiceImpl tokenServiceImpl;
 
-    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, RosterRepository rosterRepository) {
+    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, RosterRepository rosterRepository, TokenServiceImpl tokenServiceImpl) {
         this.errorCodeRepository = errorCodeRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.dataMapper = dataMapper;
         this.passwordEncoder = passwordEncoder;
         this.rosterRepository = rosterRepository;
+        this.tokenServiceImpl = tokenServiceImpl;
     }
 
     @Override
@@ -104,7 +106,14 @@ public class UserServiceImpl implements UserService {
             // Create an authentication object from the user
             Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, userEntity.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return getCompleteResponse(errorCodeRepository, LOGIN_SUCCESS, LOGIN.name(), null);
+            log.info("User {} roles from token: {}", username, authentication);
+            UserDTO responseDto = dataMapper.toUserDto(userEntity);
+
+            if (userEntity.getRole().getName().toUpperCase().equals(UserEnum.ADMIN.name())) {
+                String accessToken = tokenServiceImpl.generateAccessToken(username).getResponseBody().getBody().toString();
+                responseDto.setLoginToken(accessToken);
+            }
+            return getCompleteResponse(errorCodeRepository, LOGIN_SUCCESS, LOGIN.name(), responseDto);
         } catch (BusinessException e) {
             throw e;
         } catch (
@@ -157,7 +166,7 @@ public class UserServiceImpl implements UserService {
             Optional<RoleEntity> roleOptional = roleRepository.findByName(registerRequest.getRole().toUpperCase());
             if (roleOptional.isEmpty()) {
                 log.info("User role is not valid: {}!", registerRequest.getRole());
-                throw new BusinessException(INVALID_INPUT, REGISTER.name());
+                throw new BusinessException(INVALID_USER_ROLE, REGISTER.name());
             }
             RoleEntity role = roleOptional.get();
             UserEntity newUser;
@@ -175,7 +184,7 @@ public class UserServiceImpl implements UserService {
             }
             userRepository.save(newUser);
             log.info("User {} has been created!", newUser.getEmail());
-            return getCompleteResponse(errorCodeRepository, USER_CREATED, REGISTER.name(), null);
+            return getCompleteResponse(errorCodeRepository, USER_CREATED, REGISTER.name(), dataMapper.toUserDto(newUser));
         } catch (
                 BusinessException e) {
             throw e;
