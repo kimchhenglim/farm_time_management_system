@@ -24,8 +24,7 @@ public class WebConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(getAllowedCORSUrls(configurationRepository))
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        // .allowedHeaders("*")
-                        .allowedHeaders("Authorization","Content-Type","Accept","Origin","X-Requested-With")
+                        .allowedHeaders("*")
                         .allowCredentials(true);
             }
         };
