@@ -16,8 +16,7 @@ function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  console.log(authUser);
-  I
+
   if (sessionStorage.getItem("authUser") !== null && authUser === null) {
     return (
       <div className="flex justify-center items-center h-screen">
