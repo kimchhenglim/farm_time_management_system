@@ -48,8 +48,9 @@ public class TokenServiceImpl implements TokenService {
             log.info("Start generating access token!");
             long expirationTime = convertStringToLong(getConfigValue(ACCESS_TOKEN_EXPIRATION_TIME.name(), configurationRepository, "300000L"));
             UserEntity user = userRepository.findByEmailAndActive(username, true).orElseGet(() -> {
-                log.error("There is no user as {}", username);
-                throw new BusinessException(USER_NOT_FOUND, COMMON.name());
+                String message = "There is no user as " + username;
+                log.error(message);
+                throw new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
             });
             String token = Jwts.builder()
                     .setSubject(username)
@@ -69,8 +70,9 @@ public class TokenServiceImpl implements TokenService {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Jwt token generated failed!");
-            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name());
+            String message = "Jwt token generated failed!";
+            log.error(message);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), message);
         }
     }
 
@@ -114,8 +116,9 @@ public class TokenServiceImpl implements TokenService {
         String secret = getConfigValue(SECRET_KEY_CONFIG, configurationRepository, TOKEN.name());
         // Ensure the key is at least 256 bits for HS512
         if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            log.error("Secret key must be at least 256 bits (32 bytes) for HS512!");
-            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name());
+            String message = "Secret key must be at least 256 bits (32 bytes) for HS512!";
+            log.error(message);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), message);
         }
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
