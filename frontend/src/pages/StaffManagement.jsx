@@ -88,8 +88,16 @@ function StaffManagement() {
   // Handle POST
   const handleAddStaff = async (payload) => {
     try {
+      const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+      const token = authUser?.body.loginToken;
+
+      console.log(token);
+
       await axiosInstances.post("/admin/register", payload, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       await fetchStaffList();
     } catch (error) {

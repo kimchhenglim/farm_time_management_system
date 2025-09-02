@@ -30,6 +30,7 @@ const useAuthStore = create((set, get) => ({
       const res = await axiosInstances.post("/login", data);
       if (res) {
         set({ authUser: res.data });
+        console.log(res.data);
         toast.success("successfully Login!");
         //add chat-user into sessionStorage when browser close the session get delete
         sessionStorage.setItem("authUser", JSON.stringify(res.data));
