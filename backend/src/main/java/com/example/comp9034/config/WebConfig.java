@@ -25,7 +25,7 @@ public class WebConfig {
                         .allowedOrigins(getAllowedCORSUrls(configurationRepository))
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         // .allowedHeaders("*")
-                        .allowedHeaders("Authorization", "Content-Type")
+                        .allowedHeaders("Authorization","Content-Type","Accept","Origin","X-Requested-With")
                         .allowCredentials(true);
             }
         };
