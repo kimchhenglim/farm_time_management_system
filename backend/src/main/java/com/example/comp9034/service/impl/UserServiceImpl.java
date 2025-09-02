@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CompleteResponse<Object> getUserByFilter(String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
+    public CompleteResponse<Object> getUserByFilter(Integer id, String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
         Specification<UserEntity> spec = Specification.where(null);
 
         //only show STAFF users
@@ -228,6 +228,10 @@ public class UserServiceImpl implements UserService {
 
         if (employeeId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), employeeId));
+        }
+
+        if (id != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), id));
         }
 
         if (name != null) {
