@@ -4,8 +4,11 @@ import { axiosInstances } from "../libs/axios";
 
 const useStaffStore = create((set, get) => ({
   staffList: [],
+  isFetchingStaff: false,
+  isEditingStaff: false,
   fetchStaffList: async () => {
     try {
+      set({ isFetchingStaff: true });
       const response = await axiosInstances.get("/users");
       const data =
         response.data?.body?.content &&
@@ -16,6 +19,19 @@ const useStaffStore = create((set, get) => ({
     } catch (error) {
       console.error("Error fetching staff list:", error);
       set({ staffList: [] });
+    } finally {
+      set({ isFetchingStaff: false });
+    }
+  },
+  editStaffDetail: async () => {
+    try {
+      set({ isEditingStaff: true });
+      
+    } catch (error) {
+      console.error("Error editing staff list:", error);
+      set({ staffList: [] });
+    } finally {
+      set({ isEditingStaff: false });
     }
   },
 }));
