@@ -17,8 +17,9 @@ public class InputValidator {
 
     private static boolean validateInput(String input, Optional<ConfigurationEntity> configEntity, String defaultPattern, String logMessage) {
         if (input == null || input.isEmpty()) {
-            log.error("The input value is invalid!");
-            throw new BusinessException(INVALID_INPUT, COMMON.name());
+            String message = "The input value is invalid!";
+            log.error(message);
+            throw new BusinessException(INVALID_INPUT, COMMON.name(), message);
         }
 
         String patternString = configEntity.map(ConfigurationEntity::getConfigValue).orElseGet(() -> {
