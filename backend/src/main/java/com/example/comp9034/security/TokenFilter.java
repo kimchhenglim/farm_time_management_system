@@ -122,14 +122,17 @@ public class TokenFilter extends OncePerRequestFilter {
 
     private void handleFailTokenValidation(String responseCode) {
         if (responseCode.equals(USER_NOT_FOUND.getCode())) {
-            log.error("No user found as {}", SecurityContextHolder.getContext().getAuthentication().getCredentials());
-            throw new BusinessException(USER_NOT_FOUND, TOKEN.name());
+            String message = "No user found as " + SecurityContextHolder.getContext().getAuthentication().getCredentials();
+            log.error(message);
+            throw new BusinessException(USER_NOT_FOUND, TOKEN.name(), message);
         } else if (responseCode.equals(TOKEN_EXPIRE.getCode())) {
-            log.error("Token expires!");
-            throw new BusinessException(TOKEN_EXPIRE, TOKEN.name());
+            String message = "Token expires!";
+            log.error(message);
+            throw new BusinessException(TOKEN_EXPIRE, TOKEN.name(), message);
         } else {
-            log.error("Token verification failed!");
-            throw new BusinessException(TOKEN_VERIFY_FAIL, TOKEN.name());
+            String message = "Token verification failed!";
+            log.error(message);
+            throw new BusinessException(TOKEN_VERIFY_FAIL, TOKEN.name(), message);
         }
     }
 

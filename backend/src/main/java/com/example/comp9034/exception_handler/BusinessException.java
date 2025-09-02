@@ -12,9 +12,11 @@ public class BusinessException extends RuntimeException {
 
     private final ErrorCodeEnum errorCodeEnum;
     private final String flow;
+    private final Object object;
 
-    public BusinessException(ErrorCodeEnum errorCodeEnum, String flow) {
+    public BusinessException(ErrorCodeEnum errorCodeEnum, String flow, Object object) {
         this.errorCodeEnum = errorCodeEnum;
         this.flow = flow;
+        this.object = object;
     }
 }

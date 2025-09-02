@@ -26,7 +26,7 @@ public class UserDataMapperHelper {
     public RoleEntity mapRole(String role) {
         if (role == null) return null;
         return roleRepository.findByName(role.toUpperCase())
-                .orElseThrow(() -> new BusinessException(ErrorCodeEnum.INVALID_USER_ROLE, COMMON.name()));
+                .orElseThrow(() -> new BusinessException(ErrorCodeEnum.INVALID_USER_ROLE, COMMON.name(), "Cannot find role name" + role.toUpperCase()));
     }
 
 
