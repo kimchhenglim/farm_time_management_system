@@ -53,13 +53,13 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> getUsers(String employeeId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
+    public ResponseEntity<ResponseBody<Object>> getUsers(Integer id, String employeeId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(
             page,
             size,
             sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
         
-        CompleteResponse<Object> response = userService.getUserByFilter(employeeId, name, email, phoneNumber, pageable);
+        CompleteResponse<Object> response = userService.getUserByFilter(id, employeeId, name, email, phoneNumber, pageable);
         
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }

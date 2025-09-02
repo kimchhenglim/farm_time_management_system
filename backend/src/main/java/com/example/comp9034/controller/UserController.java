@@ -24,6 +24,7 @@ public interface UserController {
 
      @GetMapping("/users")
      ResponseEntity<ResponseBody<Object>> getUsers(
+        @RequestParam(required = false) Integer id,
         @RequestParam(required = false) String employeeId,
         @RequestParam(required = false) String name,
         @RequestParam(required = false) String email,

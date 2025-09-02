@@ -23,7 +23,6 @@ public class UpdateUserDTO {
     private String gender;
 
     @Email(regexp = "^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" ,message = "Invalid email format")
-    @NotBlank
     private String email;
 
     @Pattern(regexp = "^\\+?[0-9]*$", message = "Invalid mobile number")
