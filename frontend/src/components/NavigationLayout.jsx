@@ -11,7 +11,7 @@ import Report_active from "../assets/report-active.svg";
 import Ellipse from "../assets/Ellipse.svg";
 import { Link, useLocation } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
-function TopNavBar() {
+function TopNavBar({ fullName }) {
   return (
     <header className="flex items-center justify-between bg-white px-6 py-2 shadow-2xs h-[87px]">
       <div className="flex items-center space-x-6 w-full ">
@@ -37,7 +37,7 @@ function TopNavBar() {
         <div className="flex items-center w-[200px] gap-4">
           <img src={Ellipse} alt="Profile" className="h-10 w-10 rounded-full" />
           <div className="flex flex-col text-sm">
-            <span className="font-bold text-gray-700">User Name</span>
+            <span className="font-bold text-gray-700">{fullName} </span>
             <span className="text-gray-500">Admin</span>
           </div>
           {/* Dropdown */}
@@ -139,9 +139,16 @@ function SideNavBar() {
 
 function NavigationLayout({ children }) {
   const { authUser } = useAuthStore();
+  console.log(authUser);
   return (
     <div className="flex flex-col h-screen">
-      {authUser && <TopNavBar />}
+      {authUser && (
+        <TopNavBar
+          fullName={`${authUser?.body.firstName || ""} ${
+            authUser?.body.lastName || ""
+          }`}
+        />
+      )}
       <div className="flex flex-1 overflow-hidden">
         {authUser && <SideNavBar />}
         <main className="w-screen h-full flex-1 bg-gray-50">{children}</main>

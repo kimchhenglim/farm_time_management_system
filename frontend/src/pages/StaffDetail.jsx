@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Edit from "../assets/edit.svg";
 import Avatar from "../assets/avatar.svg";
@@ -14,8 +14,18 @@ function StaffDetail() {
   //get param
   const { staffID } = useParams();
   //get staffList from useStaffStore
-  const { staffList } = useStaffStore();
+  const { staffList, fetchStaffList, isFetchingStaff } = useStaffStore();
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
   const staffInfo = staffList.find((item) => item.id == staffID);
+  if (isFetchingStaff) {
+    return (
+      <div className="w-full h-full p-4 flex items-center justify-center">
+        <span className="loading loading-spinner loading-xl text-black"></span>
+      </div>
+    );
+  }
   return (
     <div className="w-full h-[calc(100%)] p-4">
       {/* header */}
@@ -158,6 +168,7 @@ function StaffDetail() {
           onClose={() => {
             setIsOpenModal(false);
           }}
+          staffInfo={staffInfo}
         />
       )}
     </div>

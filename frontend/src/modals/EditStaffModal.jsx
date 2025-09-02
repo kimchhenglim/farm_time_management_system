@@ -2,23 +2,28 @@ import React, { useEffect, useRef, useState } from "react";
 import ConfirmModal from "./ConfirmationModal";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
-function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
+import { useParams } from "react-router-dom";
+function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
   const modalRef = useRef(null);
   const [isConfirm, setIsConfirm] = useState(false);
   const fileInputRef = useRef(null);
+  const { staffID } = useParams();
+
+  console.log(staffInfo);
   const [formData, setFormData] = useState({
-    biometricId: "",
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    gender: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-    role: "",
-    contractType: "",
-    payRate: "",
-    task: "",
+    employeeId: staffInfo?.employeeId,
+    biometricId: staffInfo?.employeeId,
+    firstName: staffInfo?.firstName,
+    lastName: staffInfo?.lastName,
+    dateOfBirth: staffInfo?.dob,
+    gender: staffInfo?.gender || "",
+    email: staffInfo?.email,
+    phoneNumber: staffInfo?.mobileNumber,
+    address: staffInfo?.address,
+    role: staffInfo?.role || "",
+    contractType: staffInfo?.contractType || "",
+    payRate: staffInfo?.payRate,
+    location: staffInfo?.location,
     avatar: null,
   });
 
@@ -52,32 +57,9 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    console.log("Data", formData);
     setIsOpenModal(false);
-    // const payload = new FormData();
-    // Object.entries(formData).forEach(([key, value]) => {
-    //   if (value !== null) {
-    //     payload.append(key, value);
-    //   }
-    // });
-
-    // onSubmit(payload);
-
-    // setFormData({
-    //   biometricId: "",
-    //   firstName: "",
-    //   lastName: "",
-    //   dateOfBirth: "",
-    //   gender: "",
-    //   email: "",
-    //   phoneNumber: "",
-    //   address: "",
-    //   role: "",
-    //   contractType: "",
-    //   payRate: "",
-    //   task: "",
-    //   avatar: null,
-    // });
   };
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -131,6 +113,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 <input
                   name="biometricId"
                   value={formData.biometricId}
+                  disabled
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
                 />
@@ -181,9 +164,10 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
                 <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="MALE">Male</option>
+                {/* should have male not MALE */}
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
               </select>
             </div>
 
@@ -231,7 +215,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
                 <option value="">Select Role</option>
-                <option value="Technician">Technician</option>
+                <option value="STAFF">Staff</option>
                 <option value="Supervisor">Supervisor</option>
                 <option value="Field Engineer">Field Engineer</option>
                 <option value="Data Analyst">Data Analyst</option>
@@ -248,9 +232,9 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
                 <option value="">Select Contract</option>
-                <option value="Full-Time">Full-Time</option>
-                <option value="Part-Time">Part-Time</option>
-                <option value="Casual">Casual</option>
+                <option value="FULLTIME">Full-Time</option>
+                <option value="PARTTIME">Part-Time</option>
+                <option value="CASUAL">Casual</option>
               </select>
             </div>
 
@@ -268,20 +252,18 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose }) {
 
             {/* Task */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Task</label>
+              <label className="text-sm font-medium mb-1">Location</label>
               <select
                 name="task"
-                value={formData.task}
+                value={formData.location}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
-                <option value="">Select Task</option>
-                <option value="Sensor Calibration">Sensor Calibration</option>
-                <option value="System Check">System Check</option>
-                <option value="Equipment Diagnostics">
-                  Equipment Diagnostics
-                </option>
-                <option value="Sensor Data Review">Sensor Data Review</option>
+                <option value="">Select Location</option>
+                <option value="Shed 1">Shed 1</option>
+                <option value="Shed 2">Shed 2</option>
+                <option value="Shed 3">Shed 3</option>
+                <option value="Shed 4">Shed 4</option>
               </select>
             </div>
           </div>
