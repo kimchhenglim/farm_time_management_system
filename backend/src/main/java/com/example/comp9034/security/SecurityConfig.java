@@ -32,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenFilter tokenFilter, CorsConfigurationSource corsConfigurationSource) throws Exception {
         // Configure HttpSecurity with dynamic non-authenticated URLs
         http
-        //        .cors(c -> c.configurationSource(corsConfigurationSource))
+                .cors(c -> c.configurationSource(corsConfigurationSource))
                 .csrf().disable()
                 .logout().disable()
                 .authorizeHttpRequests(auth -> {
