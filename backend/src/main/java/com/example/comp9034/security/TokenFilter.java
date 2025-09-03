@@ -53,12 +53,12 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Always let CORS preflight through (no token required)
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            // Continue the chain, lets CorsFilter add headers)…
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        // Always let CORS preflight through (no token required)
+//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+//            // Continue the chain, lets CorsFilter add headers)…
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         // Skip token validation for non-required-authenticated URLs
         if (isNonAuthenticatedRequest(request)) {
