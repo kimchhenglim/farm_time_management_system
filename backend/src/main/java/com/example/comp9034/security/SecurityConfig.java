@@ -45,7 +45,7 @@ public class SecurityConfig {
                                 auth.requestMatchers(url).permitAll();
                             });
                     // Secure admin-only APIs
-                    auth.requestMatchers("/admin/**").hasRole(UserEnum.ADMIN.name());
+                    //auth.requestMatchers("/admin/**").hasRole(UserEnum.ADMIN.name());
                     //auth.requestMatchers("/admin/**").hasAuthority("ROLE_" + UserEnum.ADMIN.name());
                     auth.anyRequest().authenticated();
                 })
