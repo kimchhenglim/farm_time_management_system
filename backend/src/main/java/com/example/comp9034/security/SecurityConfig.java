@@ -5,11 +5,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
 
@@ -27,12 +29,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenFilter tokenFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenFilter tokenFilter, CorsConfigurationSource corsConfigurationSource) throws Exception {
         // Configure HttpSecurity with dynamic non-authenticated URLs
         http
+                .cors(c -> c.configurationSource(corsConfigurationSource))
                 .csrf().disable()
                 .logout().disable()
                 .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     // Permit the non-authenticated URLs dynamically
                     Arrays.stream(getNonAuthenticatedUrls(configurationRepository))
                             .filter(url -> url != null && !url.trim().isEmpty())
