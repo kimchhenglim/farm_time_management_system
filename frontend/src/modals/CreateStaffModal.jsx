@@ -272,8 +272,12 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="text"
                 name="mobileNumber"
                 value={formData.mobileNumber}
-                onChange={handleChange}
-                pattern="^0[23478]\d{8}$|^04\d{8}$"
+                onChange={(e) => {
+                  // Only allow field to have 10 digits
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setFormData((prev) => ({ ...prev, mobileNumber: val }));
+                  setErrors({ ...errors, mobileNumber: null });
+                }}
                 placeholder="e.g., 0452345678"
                 className="border border-[#ADADAD] px-3 py-2 rounded"
                 required
@@ -330,12 +334,12 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Pay Rate</label>
               <input
-                type="text"
+                type="number"
                 name="payRate"
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
-                className="border border-[#ADADAD] px-3 py-2 rounded"
+                className="border border-[#ADADAD] px-3 py-2 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 required
               />
             </div>
