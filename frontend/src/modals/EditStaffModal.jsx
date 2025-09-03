@@ -4,6 +4,7 @@ import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
 import { useParams } from "react-router-dom";
 import useStaffStore from "../stores/useStaffStore";
+import toast from "react-hot-toast";
 function EditStaffModal({
   isOpenModal,
   setIsOpenModal,
@@ -19,10 +20,10 @@ function EditStaffModal({
     biometricId: currentStaff?.employeeId,
     firstName: currentStaff?.firstName,
     lastName: currentStaff?.lastName,
-    dateOfBirth: currentStaff?.dob,
+    dob: currentStaff?.dob,
     gender: currentStaff?.gender || "",
     email: currentStaff?.email,
-    phoneNumber: currentStaff?.mobileNumber,
+    mobileNumber: currentStaff?.mobileNumber,
     address: currentStaff?.address,
     role: currentStaff?.role || "",
     contractType: currentStaff?.contractType || "",
@@ -61,7 +62,25 @@ function EditStaffModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await editStaffDetail(formData);
+
+    const regex = /^[A-Za-z]+$/; // only letters
+    const phoneNumberRegex = /^\+61[0-9]{9}$/;
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!regex.test(formData.firstName) || !regex.test(formData.lastName)) {
+      toast.error("Only letters allowed for firstName or lastName!");
+      return;
+    } else if (!phoneNumberRegex.test(formData.mobileNumber)) {
+      toast.error("Enter a valid Australian phone number starting with +61");
+      return;
+    } else if (!emailRegex.test(formData.email)) {
+      toast.error("Enter a valid email address!");
+      return;
+    }
+    const payload = {
+      ...formData,
+      dob: formData.dob.split("-").reverse().join("/"),
+    };
+    await editStaffDetail(payload);
 
     setIsOpenModal(false);
   };
@@ -130,6 +149,8 @@ function EditStaffModal({
               <input
                 name="firstName"
                 value={formData.firstName}
+                pattern="^[A-Za-z]+$"
+                type="text"
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -140,6 +161,8 @@ function EditStaffModal({
               <label className="text-sm font-medium mb-1">Last Name</label>
               <input
                 name="lastName"
+                pattern="^[A-Za-z]+$"
+                type="text"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
@@ -150,9 +173,9 @@ function EditStaffModal({
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Date of Birth</label>
               <input
-                name="dateOfBirth"
+                name="dob"
                 type="date"
-                value={formData.dateOfBirth}
+                value={formData.dob}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -171,7 +194,6 @@ function EditStaffModal({
                 <option value="MALE">Male</option>
                 {/* should have male not MALE */}
                 <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
               </select>
             </div>
 
@@ -191,8 +213,8 @@ function EditStaffModal({
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Phone Number</label>
               <input
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                name="mobileNumber"
+                value={formData.mobileNumber}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -220,9 +242,6 @@ function EditStaffModal({
               >
                 <option value="">Select Role</option>
                 <option value="STAFF">Staff</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Field Engineer">Field Engineer</option>
-                <option value="Data Analyst">Data Analyst</option>
               </select>
             </div>
 
@@ -259,7 +278,7 @@ function EditStaffModal({
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Location</label>
               <select
-                name="task"
+                name="location"
                 value={formData.location}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
