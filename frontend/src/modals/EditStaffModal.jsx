@@ -3,27 +3,31 @@ import ConfirmModal from "./ConfirmationModal";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
 import { useParams } from "react-router-dom";
-function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
+import useStaffStore from "../stores/useStaffStore";
+function EditStaffModal({
+  isOpenModal,
+  setIsOpenModal,
+  onClose,
+  currentStaff,
+}) {
   const modalRef = useRef(null);
-  const [isConfirm, setIsConfirm] = useState(false);
   const fileInputRef = useRef(null);
-  const { staffID } = useParams();
-
-  console.log(staffInfo);
+  const { editStaffDetail } = useStaffStore();
+  // console.log(staffInfo);
   const [formData, setFormData] = useState({
-    employeeId: staffInfo?.employeeId,
-    biometricId: staffInfo?.employeeId,
-    firstName: staffInfo?.firstName,
-    lastName: staffInfo?.lastName,
-    dateOfBirth: staffInfo?.dob,
-    gender: staffInfo?.gender || "",
-    email: staffInfo?.email,
-    phoneNumber: staffInfo?.mobileNumber,
-    address: staffInfo?.address,
-    role: staffInfo?.role || "",
-    contractType: staffInfo?.contractType || "",
-    payRate: staffInfo?.payRate,
-    location: staffInfo?.location,
+    employeeId: currentStaff?.employeeId,
+    biometricId: currentStaff?.employeeId,
+    firstName: currentStaff?.firstName,
+    lastName: currentStaff?.lastName,
+    dateOfBirth: currentStaff?.dob,
+    gender: currentStaff?.gender || "",
+    email: currentStaff?.email,
+    phoneNumber: currentStaff?.mobileNumber,
+    address: currentStaff?.address,
+    role: currentStaff?.role || "",
+    contractType: currentStaff?.contractType || "",
+    payRate: currentStaff?.payRate,
+    location: currentStaff?.location,
     avatar: null,
   });
 
@@ -55,10 +59,10 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    await editStaffDetail(formData);
 
-    console.log("Data", formData);
     setIsOpenModal(false);
   };
   const handleCloseModal = (e) => {
@@ -246,6 +250,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
+                maxLength={3}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
             </div>
@@ -263,7 +268,6 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
                 <option value="Shed 1">Shed 1</option>
                 <option value="Shed 2">Shed 2</option>
                 <option value="Shed 3">Shed 3</option>
-                <option value="Shed 4">Shed 4</option>
               </select>
             </div>
           </div>

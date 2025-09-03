@@ -11,7 +11,9 @@ import Report_active from "../assets/report-active.svg";
 import Ellipse from "../assets/Ellipse.svg";
 import { Link, useLocation } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
-function TopNavBar({ fullName }) {
+function TopNavBar({ fullName, email, token }) {
+  //import from useAuthStore
+  const { logout } = useAuthStore();
   return (
     <header className="flex items-center justify-between bg-white px-6 py-2 shadow-2xs h-[87px]">
       <div className="flex items-center space-x-6 w-full ">
@@ -49,11 +51,13 @@ function TopNavBar({ fullName }) {
               tabIndex={0}
               className="dropdown-content menu bg-[#F9FBFC] text-black rounded-box z-10 w-52 p-2 shadow-lg mt-1 ring ring-gray-500"
             >
-              <li className="hover:bg-gray-300 rounded-sm">
+              <li
+                className="hover:bg-gray-300 rounded-sm"
+                onClick={() => {
+                  logout(email, token);
+                }}
+              >
                 <a>Logout</a>
-              </li>
-              <li className="hover:bg-gray-300 rounded-sm">
-                <a>Settings</a>
               </li>
             </ul>
           </div>
@@ -147,6 +151,8 @@ function NavigationLayout({ children }) {
           fullName={`${authUser?.body.firstName || ""} ${
             authUser?.body.lastName || ""
           }`}
+          email={authUser?.body.email}
+          token={authUser?.body.loginToken}
         />
       )}
       <div className="flex flex-1 overflow-hidden">
