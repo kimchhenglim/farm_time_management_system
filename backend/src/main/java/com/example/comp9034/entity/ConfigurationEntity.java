@@ -20,13 +20,13 @@ public class ConfigurationEntity {
     @Column(name = "config_code", nullable = false, unique = true)
     private String configCode;
 
-    @Column(name = "config_value", nullable = false)
+    @Column(name = "config_value", nullable = false, columnDefinition = "TEXT")
     private String configValue;
 
     @Column(name = "config_message", nullable = false)
     private String configMessage;
 
-    @Column(name = "created_date", unique = true)
+    @Column(name = "created_date")
     private LocalDate createdDate;
 
     @Column(name = "modified_date")

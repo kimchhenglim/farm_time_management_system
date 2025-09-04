@@ -29,4 +29,5 @@ public class UserDTO {
     private String location;
     private Boolean isActive;
     private String upComingShift;
+    private String loginToken;
 }

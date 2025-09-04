@@ -1,4 +1,5 @@
 import React from "react";
+import useStaffStore from "../stores/useStaffStore";
 
 function ConfirmModal({
   propID,
@@ -11,11 +12,17 @@ function ConfirmModal({
   setIsOpenModal,
   style,
 }) {
-  const handleOnSubmit = (e) => {
-    handleSubmit(e);
-    // setIsOpenModal(false);
-    document.getElementById(propID).close();
+  const { isEditingStaff } = useStaffStore();
+
+  const handleOnSubmit = async (e) => {
+    try {
+      await handleSubmit(e); // your async action will toggle isEditingStaff
+      document.getElementById(propID).close();
+    } catch (error) {
+      console.log("Submit failed");
+    }
   };
+
   return (
     <div>
       {submitLabel && (
@@ -42,16 +49,18 @@ function ConfirmModal({
               {cancelLabel}
             </button>
             <button
-              className="w-full px-4 py-2 font-semibold bg-[#16A34A] text-white rounded cursor-pointer"
+              className="w-full px-4 py-2 font-semibold bg-[#16A34A] text-white rounded cursor-pointer flex items-center justify-center"
               onClick={handleOnSubmit}
+              disabled={isEditingStaff}
             >
-              {confirmLabel}
+              {isEditingStaff ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                confirmLabel
+              )}
             </button>
           </div>
         </div>
-        <form method="dialog" className="modal-backdrop hidden">
-          <button>close</button>
-        </form>
       </dialog>
     </div>
   );

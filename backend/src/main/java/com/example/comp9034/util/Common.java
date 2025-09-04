@@ -37,9 +37,9 @@ public class Common {
                     );
         } catch (IllegalArgumentException e) {
             // Log and return default if mapping fails
-            log.error("There is an error extracting http code for {}",
-                    errorCode);
-            throw new BusinessException(UNDEFINED_HTTP_CODE, COMMON.name());
+            String message = "There is an error extracting http code for {}" + errorCode;
+            log.error(message);
+            throw new BusinessException(UNDEFINED_HTTP_CODE, COMMON.name(), message);
         }
     }
 
@@ -51,9 +51,9 @@ public class Common {
         try {
             return errorCodeEntity.getErrorCode();
         } catch (IllegalArgumentException e) {
-            log.error("There is an error extracting error code for {}!",
-                    errorCodeEntity.getErrorEnum());
-            throw new BusinessException(UNDEFINED_ERROR_CODE, COMMON.name());
+            String message = "There is an error extracting error code for {}!" + errorCodeEntity.getErrorEnum();
+            log.error(message);
+            throw new BusinessException(UNDEFINED_ERROR_CODE, COMMON.name(), message);
         }
     }
 
@@ -65,9 +65,9 @@ public class Common {
         try {
             return errorCodeEntity.getErrorMessage();
         } catch (IllegalArgumentException e) {
-            log.error("There is an error extracting error code message for {}",
-                    errorCodeEntity.getErrorEnum());
-            throw new BusinessException(UNDEFINED_ERROR_CODE, COMMON.name());
+            String message = "There is an error extracting error code message for " + errorCodeEntity.getErrorEnum();
+            log.error(message);
+            throw new BusinessException(UNDEFINED_ERROR_CODE, COMMON.name(), message);
         }
     }
 
@@ -75,8 +75,9 @@ public class Common {
         return configurationRepository.findByConfigCode(commonEnum.name())
                 .map(ConfigurationEntity::getConfigValue)
                 .orElseGet(() -> {
-                    log.error("There is no config value for {}", commonEnum.name());
-                    throw new BusinessException(CONFIG_NOT_FOUND, flow);
+                    String message = "There is no config value for " + commonEnum.name();
+                    log.error(message);
+                    throw new BusinessException(CONFIG_NOT_FOUND, flow, message);
                 });
     }
 
@@ -93,8 +94,9 @@ public class Common {
         try {
             return Long.parseLong(string);
         } catch (NumberFormatException e) {
-            log.error("There is an error converting the string to a long", e);
-            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name());
+            String message = "There is an error converting the string to a long" + e;
+            log.error(message);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), message);
         }
     }
 

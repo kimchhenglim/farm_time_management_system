@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Edit from "../assets/edit.svg";
 import Avatar from "../assets/avatar.svg";
@@ -8,14 +8,26 @@ import Home from "../assets/home.svg";
 import ConfirmationModal from "../modals/ConfirmationModal";
 import EditStaffModal from "../modals/EditStaffModal";
 import useStaffStore from "../stores/useStaffStore";
+import useAuthStore from "../stores/useAuthStore";
 function StaffDetail() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const { authUser } = useAuthStore();
   //get param
   const { staffID } = useParams();
   //get staffList from useStaffStore
-  const { staffList } = useStaffStore();
-  const staffInfo = staffList.find((item) => item.id == staffID);
+  const { fetchCurrentStaff, isFetchingStaff, currentStaff, editStaffStatus } =
+    useStaffStore();
+  useEffect(() => {
+    fetchCurrentStaff(staffID);
+  }, []);
+  if (isFetchingStaff) {
+    return (
+      <div className="w-full h-full p-4 flex items-center justify-center">
+        <span className="loading loading-spinner loading-xl text-black"></span>
+      </div>
+    );
+  }
   return (
     <div className="w-full h-[calc(100%)] p-4">
       {/* header */}
@@ -37,7 +49,7 @@ function StaffDetail() {
           >
             <img src={Edit} alt="edit" /> Edit this staff
           </button>
-          {isActive ? (
+          {currentStaff?.isActive ? (
             <ConfirmationModal
               propID="confirm1"
               title="Inactive this staff?"
@@ -47,7 +59,7 @@ function StaffDetail() {
               submitLabel="Mark as Inactive"
               style="bg-[#F5F5F5] px-[24px] py-[16px] cursor-pointer rounded-sm"
               handleSubmit={() => {
-                setIsActive((prev) => !prev);
+                editStaffStatus(currentStaff?.employeeId, false);
               }}
             />
           ) : (
@@ -60,7 +72,7 @@ function StaffDetail() {
               submitLabel="Mark as Active"
               style="bg-[#daf1e1] px-[24px] py-[16px] cursor-pointer text-[#16A34A] rounded-sm"
               handleSubmit={() => {
-                setIsActive((prev) => !prev);
+                setIsActive(editStaffStatus(currentStaff?.employeeId, true));
               }}
             />
           )}
@@ -73,13 +85,13 @@ function StaffDetail() {
             <img src={Avatar} alt="avatar" className="size-[120px]" />
             <div className="flex flex-col justify-center items-center w-[190px] gap-[8px]">
               <span className="text-[#566074] text-lg">
-                {staffInfo?.firstName + " " + staffInfo?.lastName}
+                {currentStaff?.firstName + " " + currentStaff?.lastName}
               </span>
               <div className="flex gap-3 items-center justify-center text-sm">
                 <span className=" text-[#16A34A] w-[40px] flex items-center justify-center">
                   FT{staffID}
                 </span>
-                {staffInfo?.isActive ? (
+                {currentStaff?.isActive ? (
                   <span className="text-[#16A34A] p-2 bg-[#F0FDF4] rounded-4xl w-[80px] flex items-center justify-center">
                     Active
                   </span>
@@ -96,37 +108,37 @@ function StaffDetail() {
               <div>
                 Gender:{" "}
                 <span className="text-[#8D8D8D] font-thin">
-                  {staffInfo?.gender}
+                  {currentStaff?.gender}
                 </span>
               </div>
               <div>
                 DOB:{" "}
                 <span className="text-[#8D8D8D] font-thin">
-                  {staffInfo?.dob}
+                  {currentStaff?.dob}
                 </span>
               </div>
               <div>
                 Role:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {staffInfo?.role}
+                  {currentStaff?.role}
                 </span>
               </div>
               <div>
                 Location:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {staffInfo?.location}
+                  {currentStaff?.location}
                 </span>
               </div>
               <div>
                 Contract:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {staffInfo?.contractType}
+                  {currentStaff?.contractType}
                 </span>
               </div>
               <div>
                 Pay rate:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  ${staffInfo?.payRate}
+                  ${currentStaff?.payRate}
                 </span>
               </div>
             </div>
@@ -136,15 +148,15 @@ function StaffDetail() {
             <div className="text-[#566074] ml-[32px] flex flex-col gap-2">
               <div className="flex items-center gap-4">
                 <img src={Email} alt="email" className="w-[20px]" />
-                <a href="">{staffInfo?.email}</a>
+                <a href="">{currentStaff?.email}</a>
               </div>
               <div className="flex items-center gap-4">
                 <img src={Phone} alt="phone" className="w-[20px]" />
-                {staffInfo?.mobileNumber}
+                {currentStaff?.mobileNumber}
               </div>
               <div className="flex items-center gap-4">
                 <img src={Home} alt="home" className="w-[20px]" />
-                {staffInfo?.address}
+                {currentStaff?.address}
               </div>
             </div>
           </div>
@@ -158,6 +170,7 @@ function StaffDetail() {
           onClose={() => {
             setIsOpenModal(false);
           }}
+          currentStaff={currentStaff}
         />
       )}
     </div>
