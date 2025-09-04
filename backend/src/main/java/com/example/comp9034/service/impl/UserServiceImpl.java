@@ -2,6 +2,7 @@ package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.*;
 import com.example.comp9034.entity.RoleEntity;
+import com.example.comp9034.entity.RosterEntity;
 import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.exception_handler.BusinessException;
@@ -9,9 +10,12 @@ import com.example.comp9034.mapper.DataMapper;
 import com.example.comp9034.mapper.UserDataMapperHelper;
 import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.RoleRepository;
+import com.example.comp9034.repository.RosterRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.service.UserService;
+
+import jakarta.persistence.criteria.Join;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +31,10 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -43,17 +50,17 @@ public class UserServiceImpl implements UserService {
     private final ErrorCodeRepository errorCodeRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final RosterRepository rosterRepository;
     private final DataMapper dataMapper;
     private final PasswordEncoder passwordEncoder;
-    private final UserDataMapperHelper userDataMapperHelper;
 
-    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, UserDataMapperHelper userDataMapperHelper) {
+    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, RosterRepository rosterRepository) {
         this.errorCodeRepository = errorCodeRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.dataMapper = dataMapper;
         this.passwordEncoder = passwordEncoder;
-        this.userDataMapperHelper = userDataMapperHelper;
+        this.rosterRepository = rosterRepository;
     }
 
     @Override
@@ -157,11 +164,11 @@ public class UserServiceImpl implements UserService {
             if (registerRequest.getRole().toUpperCase().equals(UserEnum.ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().toUpperCase().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getTask(), LocalDateTime.now(), role, null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, null);
             } else {
                 log.info("User role is not valid: {}!", registerRequest.getRole());
                 throw new BusinessException(INVALID_USER_ROLE, REGISTER.name());
@@ -204,6 +211,12 @@ public class UserServiceImpl implements UserService {
     public CompleteResponse<Object> getUserByFilter(String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
         Specification<UserEntity> spec = Specification.where(null);
 
+        //only show STAFF users
+        spec = spec.and((root, query, cb) -> {
+            Join<UserEntity, RoleEntity> roleJoin = root.join("role");
+            return cb.equal(roleJoin.get("name"), UserEnum.STAFF.name());
+        });
+
         if (employeeId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), employeeId));
         }
@@ -225,17 +238,33 @@ public class UserServiceImpl implements UserService {
 
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
-        //map content to DTO
-        List<UserDTO> dtoList = page.getContent().stream()
-                .map(user -> {
-                    UserDTO dto = dataMapper.toUserDto(user);
+        List<String> employeeIds = page.getContent().stream()
+                            .map(UserEntity::getEmployeeId)
+                            .toList();
+        
+        List<Object[]> upComingShifts = rosterRepository.findUpcomingShiftsForUsers(employeeIds);
 
-                    return dto;
-                })
-                .toList();
+        Map<String, String> shiftMap = new HashMap<>();
+        for (var row: upComingShifts) {
+            String currId = (String) row[0];
+            LocalDateTime start = (LocalDateTime) row[1];
+            LocalDateTime end = (LocalDateTime) row[2];
+            shiftMap.put(currId, formatShift(start, end));
+        }
 
-        Page<UserDTO> dtoPage = new PageImpl<>(dtoList, pageable, page.getTotalElements());
+        var dtoPage = page.map(user -> {
+            String shift = shiftMap.getOrDefault(user.getEmployeeId(), "No upcoming shift");
+            UserDTO dto = dataMapper.toUserDto(user);
+            dto.setUpComingShift(shift);
+            return dto;
+        });
 
         return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, COMMON.name(), dtoPage);
+    }
+
+    private String formatShift(LocalDateTime start, LocalDateTime end) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEE dd/MM/yyyy h:mma");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mma");
+        return start.format(dateFormatter) + " - " + end.format(timeFormatter);
     }
 }

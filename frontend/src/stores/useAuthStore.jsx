@@ -6,23 +6,22 @@ import { axiosInstances } from "../libs/axios";
 
 const useAuthStore = create((set, get) => ({
   authUser: null,
-  isCheckingAuth: true,
+  isCheckingAuth: false,
   isLoggingIn: false,
   checkAuth: async () => {
     try {
-      if (sessionStorage.getItem("authUser")) {
-        // const res = await axiosInstances.get("/login");
-        set({ authUser: sessionStorage.getItem("authUser") }); //set the state
+      set({ isCheckingAuth: true });
+      const storedUser = sessionStorage.getItem("authUser");
+      if (storedUser) {
+        set({ authUser: JSON.parse(storedUser) }); // 🔑 FIX: parse it
+      } else {
+        set({ authUser: null });
       }
     } catch (error) {
-      if (error.response?.status === 404) {
-        // ✅ Handle 404 silently without logging it as an error
-        set({ authUser: null });
-      } else {
-        console.error("Unexpected error in checkAuth:", error.message); // ✅ Log only unexpected errors
-      }
+      console.error("Unexpected error in checkAuth:", error.message);
+      set({ authUser: null });
     } finally {
-      set({ isCheckingAuth: false }); //set the state
+      set({ isCheckingAuth: false });
     }
   },
   login: async (data) => {

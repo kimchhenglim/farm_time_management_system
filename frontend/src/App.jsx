@@ -11,12 +11,19 @@ import { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
 function App() {
   //import checkAuth from the useAuthStore
-  const { checkAuth, authUser } = useAuthStore();
+  const { checkAuth, authUser, isCheckingAuth } = useAuthStore();
   //using useEffect to check for authuser
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
   console.log(authUser);
+  if (isCheckingAuth) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner loading-xl"></span>
+      </div>
+    );
+  }
   return (
     <NavigationLayout>
       <main className="w-full h-full overflow-y-auto bg-gray-50">
