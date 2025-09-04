@@ -15,9 +15,11 @@ function CardRoster({ staffName, location, time }) {
     >
       <span className=" font-semibold text-[14px]">{staffName}</span>
       <div className="flex gap-2 items-center">
-        <span className=" font-medium">{time}</span>
-        <div className="w-[3px] h-[3px] rounded-full bg-[#19A598]"></div>
-        <span className="italic">{location}</span>
+        <span className=" font-medium 2xl:text-[10px] xl:text-[10px]">
+          {time}
+        </span>
+        <div className="w-[3px] h-[3px] rounded-full bg-[#19A598] "></div>
+        <span className="italic xl:text-[10px]">{location}</span>
       </div>
     </div>
   );
