@@ -1,6 +1,5 @@
 package com.example.comp9034.service.impl;
 
-import com.example.comp9034.Comp9034FarmProjectManagementApplication;
 import com.example.comp9034.dto.*;
 import com.example.comp9034.entity.RoleEntity;
 import com.example.comp9034.entity.RosterEntity;
@@ -50,8 +49,6 @@ import static com.example.comp9034.util.DateTimeFormatter.toLocalDate;
 @Service
 @Log4j2
 public class UserServiceImpl implements UserService {
-
-    private final Comp9034FarmProjectManagementApplication comp9034FarmProjectManagementApplication;
     private final ErrorCodeRepository errorCodeRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -60,7 +57,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenServiceImpl tokenServiceImpl;
 
-    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, RosterRepository rosterRepository, TokenServiceImpl tokenServiceImpl, Comp9034FarmProjectManagementApplication comp9034FarmProjectManagementApplication) {
+    public UserServiceImpl(ErrorCodeRepository errorCodeRepository, UserRepository userRepository, RoleRepository roleRepository, DataMapper dataMapper, PasswordEncoder passwordEncoder, RosterRepository rosterRepository, TokenServiceImpl tokenServiceImpl) {
         this.errorCodeRepository = errorCodeRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -68,7 +65,6 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
         this.rosterRepository = rosterRepository;
         this.tokenServiceImpl = tokenServiceImpl;
-        this.comp9034FarmProjectManagementApplication = comp9034FarmProjectManagementApplication;
     }
 
     @Override
