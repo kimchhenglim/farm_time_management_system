@@ -4,8 +4,10 @@ import com.example.comp9034.dto.*;
 import jakarta.validation.Valid;
 import com.example.comp9034.response_template.ResponseBody;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Validated
 public interface UserController {
     @PostMapping("/admin/register")
     ResponseEntity<ResponseBody<Object>> createNewUserAdmin(@Valid @RequestBody CreateUserDTO registerRequest);
@@ -23,15 +25,5 @@ public interface UserController {
     ResponseEntity<ResponseBody<Object>> updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO, @PathVariable("employeeId") String employeeId);
 
      @GetMapping("/users")
-     ResponseEntity<ResponseBody<Object>> getUsers(
-        @RequestParam(required = false) Integer id,
-        @RequestParam(required = false) String employeeId,
-        @RequestParam(required = false) String name,
-        @RequestParam(required = false) String email,
-        @RequestParam(required = false) String phoneNumber,
-        @RequestParam(defaultValue = "0") int page,   // page number
-        @RequestParam(defaultValue = "10") int size,  // page size
-        @RequestParam(defaultValue = "id") String sortBy, // sort field
-        @RequestParam(defaultValue = "asc") String sortDir // asc or desc
-     );
+     ResponseEntity<ResponseBody<Object>> getUsers(@Validated @ModelAttribute UserFilterDTO filter);
 }
