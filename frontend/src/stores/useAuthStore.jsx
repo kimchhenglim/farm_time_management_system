@@ -42,5 +42,30 @@ const useAuthStore = create((set, get) => ({
       set({ isLoggingIn: false });
     }
   },
+  logout: async (email, token) => {
+    // console.log(email, token);
+    try {
+      const res = await axiosInstances.post(
+        "/logout",
+        { email }, // request body
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(res);
+      if (res) {
+        sessionStorage.clear();
+        toast.success("Successfully logout!");
+        set({ authUser: null });
+      }
+    } catch (error) {
+      console.log("Logout ", error);
+      toast.error("Logout error!");
+    }
+  },
 }));
 export default useAuthStore;
