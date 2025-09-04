@@ -8,16 +8,22 @@ const useStaffStore = create((set, get) => ({
   currentStaff: {},
   isFetchingStaff: false,
   isEditingStaff: false,
-  fetchStaffList: async () => {
+  fetchStaffList: async (pageNum = 0, size = 10, filters = {}) => {
     try {
       set({ isFetchingStaff: true });
-      const response = await axiosInstances.get("/users");
+      const response = await axiosInstances.get("/users", {
+        params: { page: pageNum, size, sortDir: "Desc", ...filters },
+      });
+      const body = response.data?.body;
       const data =
-        response.data?.body?.content &&
-        Array.isArray(response.data.body.content)
-          ? response.data.body.content
-          : [];
-      set({ staffList: data });
+        body?.content && Array.isArray(body.content) ? body.content : [];
+      set({
+        staffList: data,
+        page: body?.number ?? 0,
+        totalPages: body?.totalPages ?? 0,
+        totalElements: body?.totalElements ?? 0,
+        numberOfElements: body?.numberOfElements ?? 0,
+      });
     } catch (error) {
       console.error("Error fetching staff list:", error);
       set({ staffList: [] });
@@ -53,7 +59,6 @@ const useStaffStore = create((set, get) => ({
   fetchCurrentStaff: async (ID) => {
     try {
       set({ isFetchingStaff: true });
-      console.log(ID);
       const res = await axiosInstances.get(`/users?id=${ID}`);
       if (res) {
         set({ currentStaff: res.data?.body?.content[0] });
@@ -80,8 +85,14 @@ const useStaffStore = create((set, get) => ({
           },
         }
       );
-      console.log(res.data);
-      set({ currentStaff: res?.data?.body });
+      const updatedStaff = res?.data?.body;
+
+      set((state) => ({
+        staffList: state.staffList.map((s) =>
+          s.id === employeeId ? updatedStaff : s
+        ),
+        currentStaff: updatedStaff,
+      }));
       if (isActive) {
         toast.success("Successfullt Active staff!");
       } else {
