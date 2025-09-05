@@ -4,7 +4,10 @@ import Globe from "../assets/globe.svg";
 import Plus from "../assets/plus.svg";
 
 import WeekNavigator from "../components/WeekNavigator";
+import ShiftModal from "../modals/ShiftModal";
 function Dashboard() {
+  //create trigger for Modal
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className=" w-full h-full px-4 bg-[#FFFFFF]">
       {/* header */}
@@ -29,9 +32,12 @@ function Dashboard() {
             }}
           />
           {/* create shift button */}
-          <button className="flex items-center gap-3 justify-center px-[24px] py-[15.5px] bg-[#16A34A] rounded-[5px] cursor-pointer">
+          <button
+            className="flex items-center gap-3 justify-center px-[24px] py-[15.5px] bg-[#16A34A] rounded-[5px] cursor-pointer"
+            onClick={() => setIsOpen(true)}
+          >
             <img src={Plus} alt="plus+" />{" "}
-            <span className="font-semibold">Create new shift</span>
+            <span className="font-semibold text-white">Create new shift</span>
           </button>
         </div>
       </div>
@@ -39,6 +45,12 @@ function Dashboard() {
       <div className=" w-full h-[calc(100%-70px)] mt-[10px] pt-[32px] rounded-[15px] shadow-[var(--custom-shadow)]">
         {<WeekNavigator />}
       </div>
+      <ShiftModal
+        isOpenModal={isOpen}
+        setIsOpenModal={setIsOpen}
+        title="Create new shift"
+        onClose={() => setIsOpen(false)}
+      />
     </div>
   );
 }

@@ -193,7 +193,10 @@ function WeekNavigator() {
         <div className="w-full h-[80px] grid grid-cols-7">
           {week?.map((item, index) => {
             return (
-              <div className="flex items-center justify-center flex-col">
+              <div
+                className="flex items-center justify-center flex-col"
+                key={index}
+              >
                 <div
                   className={`w-[30%] h-full flex items-center justify-center flex-col p-2 ${
                     item.getFullYear() +
@@ -236,16 +239,20 @@ function WeekNavigator() {
             );
           })}
         </div>
-        <div className="w-full h-[calc(100%-80px)] grid grid-cols-7 p-5 overflow-y-auto">
+        <div className="w-full h-[calc(100%-80px)] grid grid-cols-7  overflow-y-auto">
           {week?.map((item, index) => {
             return (
-              <div className="border-[1px] flex items-center  flex-col p-2 gap-2.5">
-                {roster[index]?.data?.map((shift) => {
+              <div
+                className="border-[1px] border-[#EDEDED] flex items-center  flex-col p-2 gap-2.5"
+                key={index}
+              >
+                {roster[index]?.data?.map((shift, index) => {
                   return (
                     <CardRoster
                       staffName={shift.staffName}
                       location={shift.location}
                       time={shift.time}
+                      key={index}
                     />
                   );
                 })}

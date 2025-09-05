@@ -1,17 +1,17 @@
 import React from "react";
 
-function CardRoster({ staffName, location, time }) {
+function CardRoster({ staffName, location, time, index }) {
   //pre-define color for shift
   const locationColors = {
     "Shed 1": "bg-[#D1EEEC] text-[#19A598]",
     "Shed 2": "bg-[#FFD0E0] text-[#C41651]",
     "Shed 3": "bg-[#C8EDFD] text-[#1773E0]",
   };
-  console.log(locationColors["Shed 1"].bg);
-  console.log(location);
+
   return (
     <div
       className={` w-full h-[70px] p-2 flex flex-col gap-2 ${locationColors[location]}  rounded-[5px]`}
+      key={index}
     >
       <span className=" font-semibold text-[14px]">{staffName}</span>
       <div className="flex gap-2 items-center">
