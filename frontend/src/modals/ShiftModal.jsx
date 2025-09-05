@@ -1,73 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { useParams } from "react-router-dom";
-import useStaffStore from "../stores/useStaffStore";
 import toast from "react-hot-toast";
 import ConfirmModal from "./ConfirmationModal";
 import Filter from "../assets/filter.svg";
 import DropDown from "../assets/dropdown.svg";
 import Avatar from "../assets/avatar.svg";
 import Search from "../assets/search.svg";
+import useRosterStore from "../stores/useRosterStore";
 function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
   const modalRef = useRef(null);
   //create selectedUser to help with assign user
   const [selectedUser, setSelectedUser] = useState(null);
-  const { editStaffDetail } = useStaffStore();
-  // console.log(staffInfo);
-  const [formData, setFormData] = useState({
-    cardId: "",
-    firstName: "",
-    lastName: "",
-    dob: "",
-    gender: "",
-    email: "",
-    mobileNumber: "",
-    address: "",
-    role: "",
-    contractType: "",
-    payRate: "",
-    location: "",
-    avatar: null,
-    isActive: true,
-  });
-  const staffList = [
-    {
-      id: 1,
-      name: "Chingsien Ly",
-      type: "Full-time",
-      payRate: "32",
-      selected: true,
-    },
-    {
-      id: 2,
-      name: "Masanori Isono",
-      type: "Part-time",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 3,
-      name: "Eri Higuchi",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 4,
-      name: "Yudou Han",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 5,
-      name: "Kimchheng Lim",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-  ];
+  const { staffActiveList } = useRosterStore();
+  const [today, setToday] = useState(new Date().toISOString().split("T")[0]);
+  //use useEffect to check every minute to refresh the date
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setToday(new Date().toISOString().split("T")[0]);
+    }, 60 * 1000); // check every 1 min
 
+    return () => clearInterval(interval); // cleanup
+  }, []); // empty deps → runs once on mount
+
+  console.log(today);
+  const [formData, setFormData] = useState({
+    date: "",
+    location: "",
+    startTime: "",
+    endTime: "",
+    StaffName: "",
+    staffID: "",
+  });
   if (!isOpenModal) return null;
 
   const handleChange = (e) => {
@@ -77,6 +40,13 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
 
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
+      setSelectedUser(null);
+      setFormData({
+        date: "",
+        location: "",
+        startTime: "",
+        endTime: "",
+      });
       onClose();
       console.log(e.target.className);
     }
@@ -84,9 +54,52 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsOpenModal(false);
-  };
 
+    if (!selectedUser) {
+      toast.error("Please select staff!");
+      return;
+    } else if (formData.date === "") {
+      toast.error("Please enter date");
+      return;
+    } else if (formData.date < today) {
+      toast.error("You cannot assign shift in the past!");
+      return;
+    } else if (formData.location === "") {
+      toast.error("Please enter location!");
+      return;
+    } else if (formData.startTime === "" || formData.endTime === "") {
+      toast.error("Please enter shift time!");
+      return;
+    } else if (formData.startTime < "09:00") {
+      //when can start time
+      toast.error("Shift must start at 09:00!");
+      return;
+    } else if (formData.endTime > "17:00") {
+      toast.error("Shift must end before 17:00!");
+      return;
+    } else if (formData.endTime < formData.startTime) {
+      //when can end time
+      toast.error("Start time must not be bigger than End time!");
+      return;
+    }
+    setFormData({
+      ...formData,
+      staffID: selectedUser.id,
+      staffName: selectedUser.staffName,
+    });
+    console.log(formData, selectedUser.id, selectedUser.staffName);
+    setIsOpenModal(false);
+    setSelectedUser(null);
+    setFormData({
+      date: "",
+      location: "",
+      startTime: "",
+      endTime: "",
+      StaffName: "",
+      staffID: "",
+    });
+  };
+  console.log(selectedUser);
   return (
     <div
       className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
@@ -97,17 +110,22 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
         <h2 className="text-xl font-semibold text-[#566074] mb-4">{title}</h2>
         {/* <div className="h-[1px] w-full bg-[#ADADAD] px-[-24px] absolute top-[60px] left-0"></div> */}
         <div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 border-y-[1px] border-[#ADADAD] p-2">
             <div className="p-2 flex flex-col gap-8">
               <div className="w-full flex gap-8 items-center">
                 <img src={Avatar} className="size-[100px]" alt="avatar" />
                 {selectedUser ? (
                   <div className="flex flex-col gap-[6px]">
                     <span className="text-[24px] font-semibold text-[#566074]">
-                      Chingsien Ly
+                      {selectedUser?.staffName}
                     </span>
                     <span className="text-[#ADADAD]">
-                      Full-time Pay rate: $32/hrs
+                      {selectedUser.type +
+                        " " +
+                        "Pay rate: " +
+                        "$" +
+                        selectedUser.payRate +
+                        "/hr"}
                     </span>
                   </div>
                 ) : (
@@ -124,7 +142,10 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                   </label>
                   <input
                     type="date"
+                    name="date"
+                    id="date"
                     placeholder="Type here"
+                    onChange={handleChange}
                     className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                   />
                 </div>
@@ -161,6 +182,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                       id="startTime"
                       name="startTime"
+                      onChange={handleChange}
                     />
                   </div>
                   <div className="flex flex-col gap-[10px]">
@@ -175,6 +197,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                       id="endTime"
                       name="endTime"
+                      onChange={handleChange}
                     />
                   </div>
                 </div>
@@ -206,18 +229,33 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
               </label>
               <div className="w-full h-[300px] overflow-y-auto flex flex-col ">
                 {/* list of user */}
-                {staffList?.map((staff, index) => {
+                {staffActiveList?.map((staff, index) => {
                   return (
                     <div
                       key={index}
-                      className="p-2 flex gap-[14px] items-center"
+                      className={`p-2 flex gap-[14px] items-center cursor-pointer ${
+                        selectedUser?.id === staff.id ? "bg-[#F0FDF4]" : ""
+                      }`}
+                      onClick={() => setSelectedUser(staff)}
                     >
                       <img src={Avatar} alt="avatar" className="size-[60px]" />
                       <div className="flex flex-col">
-                        <span className="Masanori Isono text-[14px] font-semibold">
-                          {staff.name}
+                        <span
+                          className={`Masanori Isono text-[14px] font-semibold ${
+                            selectedUser?.id === staff.id
+                              ? "text-[#16A34A]"
+                              : "text-[#ADADAD]"
+                          }`}
+                        >
+                          {staff.staffName}
                         </span>
-                        <span className="text-[12px] text-[#ADADAD]">
+                        <span
+                          className={`text-[12px] ${
+                            selectedUser?.id === staff.id
+                              ? "text-[#16A34A]"
+                              : "text-[#ADADAD]"
+                          }`}
+                        >
                           {staff.type +
                             " " +
                             "Pay rate: " +
@@ -237,7 +275,10 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
             <button
               type="button"
               className="px-4 py-2 bg-gray-300 rounded text-[#565656] cursor-pointer"
-              onClick={onClose}
+              onClick={() => {
+                setSelectedUser(null);
+                onClose();
+              }}
             >
               Cancel
             </button>
@@ -249,7 +290,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
               title="Confirm create shift"
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
-              submitLabel="Create shift"
+              submitLabel="Create"
             />
           </div>
         </div>

@@ -6,6 +6,7 @@ import useAuthStore from "./useAuthStore";
 const useStaffStore = create((set, get) => ({
   staffList: [],
   currentStaff: {},
+
   isFetchingStaff: false,
   isEditingStaff: false,
   fetchStaffList: async (pageNum = 0, size = 10, filters = {}) => {
