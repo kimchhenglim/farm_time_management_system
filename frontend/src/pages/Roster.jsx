@@ -5,9 +5,11 @@ import Plus from "../assets/plus.svg";
 
 import WeekNavigator from "../components/WeekNavigator";
 import ShiftModal from "../modals/ShiftModal";
+import useRosterStore from "../stores/useRosterStore";
 function Dashboard() {
   //create trigger for Modal
   const [isOpen, setIsOpen] = useState(false);
+  const { addRoster } = useRosterStore();
   return (
     <div className=" w-full h-full px-4 bg-[#FFFFFF]">
       {/* header */}
@@ -50,6 +52,7 @@ function Dashboard() {
         setIsOpenModal={setIsOpen}
         title="Create new shift"
         onClose={() => setIsOpen(false)}
+        onSubmitFunction={addRoster}
       />
     </div>
   );

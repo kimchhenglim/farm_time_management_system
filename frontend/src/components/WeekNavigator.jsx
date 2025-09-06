@@ -165,13 +165,18 @@ function WeekNavigator() {
                 className="border-[1px] border-[#EDEDED] flex items-center  flex-col p-2 gap-2.5"
                 key={index}
               >
-                {roster[index]?.data?.map((shift, index) => {
+                {roster[index]?.data?.map((shift, indexShift) => {
                   return (
                     <CardRoster
                       staffName={shift.staffName}
                       location={shift.location}
                       time={shift.time}
-                      key={index}
+                      index={indexShift}
+                      columnIndex={index}
+                      staffID={shift.id}
+                      date={roster[index]?.date}
+                      payRate={shift.payRate}
+                      type={shift.type}
                     />
                   );
                 })}

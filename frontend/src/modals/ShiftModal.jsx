@@ -7,8 +7,15 @@ import DropDown from "../assets/dropdown.svg";
 import Avatar from "../assets/avatar.svg";
 import Search from "../assets/search.svg";
 import useRosterStore from "../stores/useRosterStore";
-function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
-  const modalRef = useRef(null);
+function ShiftModal({
+  isOpenModal,
+  setIsOpenModal,
+  onClose,
+  title,
+  data,
+  onSubmitFunction,
+}) {
+  console.log(data);
   //create selectedUser to help with assign user
   const [selectedUser, setSelectedUser] = useState(null);
   const { staffActiveList } = useRosterStore();
@@ -18,18 +25,31 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
     const interval = setInterval(() => {
       setToday(new Date().toISOString().split("T")[0]);
     }, 60 * 1000); // check every 1 min
-
+    setSelectedUser(data);
     return () => clearInterval(interval); // cleanup
   }, []); // empty deps → runs once on mount
-
+  // to re-store data from selectedUser
+  useEffect(() => {
+    if (data) {
+      setSelectedUser(data);
+      setFormData({
+        date: data.date || "",
+        location: data.location || "",
+        startTime: data.startTime || "",
+        endTime: data.endTime || "",
+        staffName: data.staffName || "",
+        id: data.id || "",
+      });
+    }
+  }, [data]); // 👈 run whenever CardRoster passes new data
   console.log(today);
   const [formData, setFormData] = useState({
-    date: "",
-    location: "",
-    startTime: "",
-    endTime: "",
-    StaffName: "",
-    staffID: "",
+    date: data?.date || "",
+    location: data?.location || "",
+    startTime: data?.startTime || "",
+    endTime: data?.endTime || "",
+    staffName: data?.staffName || "",
+    id: data?.id || "",
   });
   if (!isOpenModal) return null;
 
@@ -84,25 +104,37 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
     }
     setFormData({
       ...formData,
-      staffID: selectedUser.id,
+      id: selectedUser.id,
       staffName: selectedUser.staffName,
     });
-    console.log(formData, selectedUser.id, selectedUser.staffName);
+    //for adding roster
+    onSubmitFunction(
+      formData.date,
+      selectedUser.id,
+      selectedUser.staffName,
+      formData.location,
+      formData.startTime,
+      formData.endTime,
+      selectedUser.type,
+      selectedUser.payRate
+    );
+    // console.log(selectedUser);
     setIsOpenModal(false);
     setSelectedUser(null);
+
     setFormData({
       date: "",
       location: "",
       startTime: "",
       endTime: "",
       StaffName: "",
-      staffID: "",
+      id: "",
     });
   };
   console.log(selectedUser);
   return (
     <div
-      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
+      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-999"
       onMouseDown={handleCloseModal}
     >
       {/* open register staff modal */}
@@ -146,6 +178,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                     id="date"
                     placeholder="Type here"
                     onChange={handleChange}
+                    value={formData.date}
                     className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                   />
                 </div>
@@ -181,6 +214,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       type="time"
                       className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                       id="startTime"
+                      value={formData.startTime}
                       name="startTime"
                       onChange={handleChange}
                     />
@@ -198,6 +232,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       id="endTime"
                       name="endTime"
                       onChange={handleChange}
+                      value={formData.endTime}
                     />
                   </div>
                 </div>
@@ -241,7 +276,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       <img src={Avatar} alt="avatar" className="size-[60px]" />
                       <div className="flex flex-col">
                         <span
-                          className={`Masanori Isono text-[14px] font-semibold ${
+                          className={` text-[14px] font-semibold ${
                             selectedUser?.id === staff.id
                               ? "text-[#16A34A]"
                               : "text-[#ADADAD]"
