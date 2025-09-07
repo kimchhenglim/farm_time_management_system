@@ -1,13 +1,15 @@
 package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.*;
+import com.example.comp9034.dto.request.CreateUserDTO;
+import com.example.comp9034.dto.request.ForgotPasswordDTO;
+import com.example.comp9034.dto.request.LoginDTO;
+import com.example.comp9034.dto.request.LogoutDTO;
 import com.example.comp9034.entity.RoleEntity;
-import com.example.comp9034.entity.RosterEntity;
 import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.exception_handler.BusinessException;
 import com.example.comp9034.mapper.DataMapper;
-import com.example.comp9034.mapper.UserDataMapperHelper;
 import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.RoleRepository;
 import com.example.comp9034.repository.RosterRepository;
@@ -22,7 +24,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,10 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
+import static com.example.comp9034.enums.UserEnum.ADMIN;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 import static com.example.comp9034.util.DateTimeFormatter.toLocalDate;
 
@@ -76,8 +77,11 @@ public class UserServiceImpl implements UserService {
                 log.error(message);
                 throw new BusinessException(USER_NOT_FOUND, LOGOUT.name(), message);
             }
+            UserEntity user = userOptional.get();
             // Clear security context
             SecurityContextHolder.clearContext();
+         //   TokenBlackListEntity tokenBlackListEntity = new TokenBlackListEntity(user.getEmail(), );
+
             log.info("User {} logged out successfully!", username);
             return getCompleteResponse(errorCodeRepository, LOGOUT_SUCCESS, LOGOUT.name(), null);
         } catch (BusinessException e) {
@@ -93,10 +97,10 @@ public class UserServiceImpl implements UserService {
     public CompleteResponse<Object> login(LoginDTO loginRequest) {
         try {
             String username = loginRequest.getEmail();
-            Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(loginRequest.getEmail(), true);
+            Optional<UserEntity> userOptional = userRepository.findByEmailAndActiveAndRole(loginRequest.getEmail(), true, ADMIN.name());
             // Check if user existed
             if (userOptional.isEmpty()) {
-                String message = "User " + username + " does not exist!";
+                String message = "User " + username + " does not exist or does not have an admin role!";
                 log.error(message);
                 throw new BusinessException(USER_NOT_FOUND, LOGIN.name(), message);
             }
@@ -113,7 +117,7 @@ public class UserServiceImpl implements UserService {
             log.info("User {} roles from token: {}", username, authentication);
             UserDTO responseDto = dataMapper.toUserDto(userEntity);
 
-            if (userEntity.getRole().getName().toUpperCase().equals(UserEnum.ADMIN.name())) {
+            if (userEntity.getRole().getName().toUpperCase().equals(ADMIN.name())) {
                 String accessToken = tokenServiceImpl.generateAccessToken(username).getResponseBody().getBody().toString();
                 responseDto.setLoginToken(accessToken);
             }
@@ -131,9 +135,9 @@ public class UserServiceImpl implements UserService {
     public CompleteResponse<Object> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
         //Check if email existed
         String email = forgotPasswordDTO.getEmail();
-        Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(email, true);
+        Optional<UserEntity> userOptional = userRepository.findByEmailAndActiveAndRole(email, true, ADMIN.name());
         if (userOptional.isEmpty()) {
-            String message = "User " + email + " not found to reset password!";
+            String message = "User " + email + " not found or authorized to reset password!";
             log.error(message);
             throw new BusinessException(USER_NOT_FOUND, FORGOT_PASSWORD.name(), message);
         }
@@ -177,7 +181,7 @@ public class UserServiceImpl implements UserService {
             }
             RoleEntity role = roleOptional.get();
             UserEntity newUser;
-            if (registerRequest.getRole().toUpperCase().equals(UserEnum.ADMIN.name())) {
+            if (registerRequest.getRole().toUpperCase().equals(ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
                         registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
