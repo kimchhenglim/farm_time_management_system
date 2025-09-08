@@ -3,6 +3,10 @@ package com.example.comp9034.controller.impl;
 import com.example.comp9034.controller.UserController;
 import com.example.comp9034.dto.*;
 
+import com.example.comp9034.dto.request.CreateUserDTO;
+import com.example.comp9034.dto.request.ForgotPasswordDTO;
+import com.example.comp9034.dto.request.LoginDTO;
+import com.example.comp9034.dto.request.LogoutDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.UserService;

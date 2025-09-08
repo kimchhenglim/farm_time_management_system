@@ -23,6 +23,8 @@ public enum ErrorCodeEnum {
     PASSWORD_UPDATED_SUCCESS("E000", "New password updated successfully", REGISTER, HttpStatusCodeEnum.OK),
     SEARCH_INFO_SUCCESS("E000", "Search info successfully", COMMON, HttpStatusCodeEnum.OK),
     UPDATE_USER_SUCCESS("E000", "User updated successfully", COMMON, HttpStatusCodeEnum.OK),
+    CREATE_ROSTER_SUCCESS("E000", "Roster created successfully", ROSTER, HttpStatusCodeEnum.OK),
+    DELETE_ROSTER_SUCCESS("E000", "Roster deleted successfully", ROSTER, HttpStatusCodeEnum.OK),
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
     USERNAME_TAKEN("E002", "Username taken", REGISTER, HttpStatusCodeEnum.CONFLICT),
@@ -56,6 +58,10 @@ public enum ErrorCodeEnum {
     REFRESH_TOKEN_INVALID("E030", "Token refresh invalid", TOKEN, HttpStatusCodeEnum.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED("E031", "Token refresh expired", TOKEN, HttpStatusCodeEnum.UNAUTHORIZED),
     INVALID_USER_ROLE("E032", "Invalid user role", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
+    WEEKLY_HOUR_LIMIT_EXCEEDED("E033", "Weekly hour exceeded", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+    ROSTER_IMMUTABLE("E034", "Past rosters cannot be changed", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+    SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+    ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
     ;
 
 

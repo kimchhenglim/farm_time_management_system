@@ -15,6 +15,7 @@ public enum CommonEnum {
     OTP(Group.FLOW),
     SMS(Group.FLOW),
     EMAIL(Group.FLOW),
+    ROSTER(Group.FLOW),
 
     PASSWORD_PATTERN(Group.CONFIG),
     EMAIL_PATTERN(Group.CONFIG),
@@ -29,6 +30,7 @@ public enum CommonEnum {
     CURRENT_TOKEN_TIME_LEFT(Group.CONFIG),
     NON_AUTHENTICATED_REQUEST(Group.CONFIG),
     ALLOWED_CORS_URL_CONFIG(Group.CONFIG),
+    WEEKLY_LIMIT_MINUTES(Group.CONFIG),
 
     EMAIL_ADDRESS_CONFIG(Group.CONFIG),
     EMAIL_HOST_CONFIG(Group.CONFIG),

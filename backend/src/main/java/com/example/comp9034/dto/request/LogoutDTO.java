@@ -1,4 +1,4 @@
-package com.example.comp9034.dto;
+package com.example.comp9034.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

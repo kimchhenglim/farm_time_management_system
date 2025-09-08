@@ -1,4 +1,4 @@
-package com.example.comp9034.dto;
+package com.example.comp9034.dto.request;
 
 import com.example.comp9034.enums.UserEnum;
 

@@ -1,6 +1,10 @@
 package com.example.comp9034.service;
 
 import com.example.comp9034.dto.*;
+import com.example.comp9034.dto.request.CreateUserDTO;
+import com.example.comp9034.dto.request.ForgotPasswordDTO;
+import com.example.comp9034.dto.request.LoginDTO;
+import com.example.comp9034.dto.request.LogoutDTO;
 import org.springframework.data.domain.Pageable;
 
 import com.example.comp9034.response_template.CompleteResponse;
