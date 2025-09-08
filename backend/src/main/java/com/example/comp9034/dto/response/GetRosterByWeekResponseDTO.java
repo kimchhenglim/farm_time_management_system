@@ -12,12 +12,14 @@ import java.util.List;
 @AllArgsConstructor
 public class GetRosterByWeekResponseDTO {
     private LocalDate weekStart;        // normalized Monday
-    private LocalDate weekEndInclusive; // Sunday
-    private List<CreateRosterResponseDTO> items;
+    private LocalDate weekEnd; // Sunday
+    private List<GetRosterByWeekResponseDTO> items;
     private int page;
     private int size;
     private long totalElements;
     private int totalPages;
+
+    private long netMinutes;
 }
 
 

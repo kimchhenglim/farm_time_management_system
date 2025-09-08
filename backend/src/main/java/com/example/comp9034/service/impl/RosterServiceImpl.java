@@ -10,26 +10,31 @@ import com.example.comp9034.entity.RosterEntity;
 import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.RosterEnum;
 import com.example.comp9034.exception_handler.BusinessException;
+import com.example.comp9034.mapper.RosterMapper;
 import com.example.comp9034.repository.ConfigurationRepository;
 import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.RosterRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.service.RosterService;
-
+import org.springframework.data.jpa.domain.Specification;
 import lombok.extern.log4j.Log4j2;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.awt.print.Pageable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.criteria.Predicate;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
@@ -47,14 +52,15 @@ public class RosterServiceImpl implements RosterService {
     private final UserRepository userRepository;
     private final ErrorCodeRepository errorCodeRepository;
     private final ConfigurationRepository configurationRepository;
+    private final RosterMapper rosterMapper;
 
-    public RosterServiceImpl(RosterRepository rosterRepository, UserRepository userRepository, ErrorCodeRepository errorCodeRepository, ConfigurationRepository configurationRepository) {
+    public RosterServiceImpl(RosterRepository rosterRepository, UserRepository userRepository, ErrorCodeRepository errorCodeRepository, ConfigurationRepository configurationRepository, RosterMapper rosterMapper) {
         this.rosterRepository = rosterRepository;
         this.userRepository = userRepository;
         this.errorCodeRepository = errorCodeRepository;
         this.configurationRepository = configurationRepository;
+        this.rosterMapper = rosterMapper;
     }
-
 
     @Override
     public CompleteResponse<Object> createRoster(CreateRosterDTO createRosterDTO) {
@@ -76,8 +82,8 @@ public class RosterServiceImpl implements RosterService {
             }
 
             if (!endTime.isAfter(startTime)) {
-                String msg = "End time for the shift must be after start time";
-                log.info(msg);
+                String msg = "End time for the shift must be after start time to create a new roster";
+                log.error(msg);
                 throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
             }
 
@@ -92,7 +98,7 @@ public class RosterServiceImpl implements RosterService {
                 throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
             }
 
-            // 30 min if > 4h and no override
+            // 30 min if > 4h
             long shiftDurationMin = java.time.Duration.between(startTime, endTime).toMinutes();
             int breakMin = (createRosterDTO.getBreakMinutes() > 0)
                     ? createRosterDTO.getBreakMinutes()
@@ -107,7 +113,7 @@ public class RosterServiceImpl implements RosterService {
                         "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " +
                         "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) +
                         "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
-                log.info(msg);
+                log.error(msg);
                 throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
             }
 
@@ -116,7 +122,6 @@ public class RosterServiceImpl implements RosterService {
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
-            // 8) Build response DTO (swap with your mapper if desired)
             CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder()
                     .createdBy(roster.getCreatedBy())
                     .date(roster.getDate())
@@ -141,75 +146,118 @@ public class RosterServiceImpl implements RosterService {
     }
 
     @Override
-    public CompleteResponse<Object> getRoster(GetRosterByWeekDTO request) {
+    public CompleteResponse<Object> getRoster(String weekStart, List<String> employeeIdList, List<String> locationList, boolean includeCancelled,
+                                              boolean includeArchived, int page, int size) {
         try {
-            // 1) Parse & normalize to week range (Mon..Sun)
-            LocalDate anyDate = LocalDate.parse(request.getWeekStart());
-            LocalDate weekStart = anyDate.with(previousOrSame(DayOfWeek.MONDAY));
-            LocalDate weekEnd = weekStart.plusDays(6);
+            // Validate & normalize inputs
 
-            // 2) Paging + sort
-            int page = request.getPage() == null ? 0 : request.getPage();
-            int size = request.getSize() == null ? 100 : request.getSize();
-            Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by("startTime").ascending());
+            if (weekStart == null || weekStart.trim().isEmpty()) {
+                String msg = "weekStart cannot be null or empty";
+                log.error(msg);
+                throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
+            }
 
-            // 3) Fetch
-            String employeeId = (request.getEmployeeId() == null || request.getEmployeeId().isBlank())
-                    ? null : request.getEmployeeId().trim();
+            LocalDate weekAnyDate = LocalDate.parse(weekStart.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
 
-//            Page<RosterEntity> pageResult;
-//            boolean includeCancelled = Boolean.TRUE.equals(request.getIncludeCancelled());
-//
-//            if (employeeId == null) {
-//                pageResult = includeCancelled
-//                        ? rosterRepository.findByDateBetweenAndIsCancelledFalse(weekStart, weekEnd, pageable) // swap to method incl. cancelled if you add it
-//                        : rosterRepository.findByDateBetweenAndIsCancelledFalse(weekStart, weekEnd, pageable);
-//            } else {
-//                pageResult = includeCancelled
-//                        ? rosterRepository.findByEmployeeIdAndDateBetweenAndIsCancelledFalse(employeeId, weekStart, weekEnd, pageable)
-//                        : rosterRepository.findByEmployeeIdAndDateBetweenAndIsCancelledFalse(employeeId, weekStart, weekEnd, pageable);
-//            }
-//
-//            // 4) Map
-//            List<CreateRosterDTO> items = pageResult.getContent().stream().map(e ->
-//                    RosterItemDTO.builder()
-//                            .id(e.getId())
-//                            .employeeId(e.getEmployeeId())
-//                            .startTime(e.getStartTime() == null ? null : e.getStartTime().atZone(APP_ZONE).toOffsetDateTime().toString())
-//                            .endTime(e.getEndTime() == null ? null : e.getEndTime().atZone(APP_ZONE).toOffsetDateTime().toString())
-//                            .date(e.getDate())
-//                            .location(e.getLocation())
-//                            .breakMinutes(e.getBreakMinutes() == null ? 0 : e.getBreakMinutes())
-//                            .status(e.getStatus())
-//                            .createdBy(e.getCreatedBy())
-//                            .createdAt(e.getCreatedAt())
-//                            .build()
-//            ).toList();
+            LocalDate monday = weekAnyDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate nextMonday = monday.plusWeeks(1);
+            LocalDateTime startInclusive = monday.atStartOfDay();
+            LocalDateTime endExclusive = nextMonday.atStartOfDay();
 
-            GetRosterByWeekResponseDTO response = GetRosterByWeekResponseDTO.builder().build();
-//                    .weekStart(weekStart)
-//                    .weekEndInclusive(weekEnd)
-//                    .items(items)
-//                    .page(pageResult.getNumber())
-//                    .size(pageResult.getSize())
-//                    .totalElements(pageResult.getTotalElements())
-//                    .totalPages(pageResult.getTotalPages())
-//                    .build();
+            size = Math.min(size, 500);
 
-            return getCompleteResponse(errorCodeRepository, SEARCH_INFO_SUCCESS, ROSTER.name(), response);
+            Pageable pageable = PageRequest.of(
+                    page,
+                    size,
+                    Sort.by(Sort.Direction.ASC, "startTime").and(Sort.by("employeeId"))
+            );
+
+            // 2) Build Specification
+            Specification<RosterEntity> spec = buildWeekSpec(
+                    startInclusive,
+                    endExclusive,
+                    employeeIdList,
+                    safeList(locationList),
+                    Boolean.TRUE.equals(includeCancelled),
+                    Boolean.TRUE.equals(includeArchived)
+            );
+
+            // 3) Query
+            Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
+            log.info("Fetched {} rosters (page {}/{}) for week {} to {}",
+                    result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
+
+            List<GetRosterByWeekResponseDTO> response = rosterMapper.toWeekDtos(result.getContent());
+
+
+            // 5) Wrap a simple page payload
+            GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder()
+                    .weekStart(monday)
+                    .weekEnd(nextMonday.minusDays(1))
+                    .page(page)
+                    .size(size)
+                    .totalElements(result.getTotalElements())
+                    .totalPages(result.getTotalPages())
+                    .items(response)
+                    .build();
+
+            return getCompleteResponse(errorCodeRepository, GET_ROSTER_BY_WEEK_SUCCESS, ROSTER.name(), payload);
 
         } catch (BusinessException e) {
             throw e;
-        } catch (DateTimeParseException ex) {
-            throw new BusinessException(INVALID_INPUT, ROSTER.name(),
-                    "weekStart must be ISO date (e.g., 2025-09-08)");
         } catch (Exception e) {
-            String msg = "Error fetching roster for week " + request.getWeekStart() + " " + e;
+            String msg = "There has been an error getting rosters for weekStart " + weekStart + " " + e;
             log.error(msg, e);
-            throw new BusinessException(INTERNAL_SERVER_ERROR, ROSTER.name(), msg);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
-
     }
+
+    // ---------- helpers ----------
+
+    private Specification<RosterEntity> buildWeekSpec(
+            LocalDateTime startInclusive,
+            LocalDateTime endExclusive,
+            List<String> employeeIds,
+            List<String> locations,
+            boolean includeCancelled,
+            boolean includeArchived
+    ) {
+        return (root, query, cb) -> {
+            List<Predicate> ps = new ArrayList<>();
+
+            // overlap: (start < weekEnd) AND (end > weekStart)
+            ps.add(cb.lessThan(root.get("startTime"), endExclusive));
+            ps.add(cb.greaterThan(root.get("endTime"), startInclusive));
+
+            if (employeeIds != null && !employeeIds.isEmpty()) {
+                ps.add(root.get("employeeId").in(employeeIds));
+            }
+
+            if (locations != null && !locations.isEmpty()) {
+                ps.add(root.get("location").in(locations));
+            }
+
+            if (!includeCancelled) {
+                ps.add(cb.or(cb.isFalse(root.get("isCancelled")), cb.isNull(root.get("isCancelled"))));
+            }
+
+            // If your RosterEnum has ARCHIVED and you want to exclude unless included
+            if (!includeArchived) {
+                try {
+                    ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, "ARCHIVED")));
+                } catch (IllegalArgumentException ignored) {
+                    // Enum has no ARCHIVED; ignore silently
+                }
+            }
+
+            return cb.and(ps.toArray(new Predicate[0]));
+        };
+    }
+
+    private List<String> safeList(List<String> list) {
+        return (list == null) ? Collections.emptyList() : list;
+    }
+
 
     @Override
     public CompleteResponse<Object> deleteRoster(DeleteRosterDTO request) {
@@ -221,7 +269,7 @@ public class RosterServiceImpl implements RosterService {
 
             if (!endTime.isAfter(startTime)) {
                 String msg = "End time for the shift must be after start time";
-                log.info(msg);
+                log.error(msg);
                 throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
             }
 
@@ -242,7 +290,7 @@ public class RosterServiceImpl implements RosterService {
             }
             if (!hard && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
                 String msg = "Shift from " + startTime + " to " + endTime + " is already cancelled.";
-                log.info(msg);
+                log.error(msg);
                 throw new BusinessException(SHIFT_ALREADY_CANCELED, ROSTER.name(), msg);
             }
             DeleteRosterResponseDTO response;
@@ -264,7 +312,6 @@ public class RosterServiceImpl implements RosterService {
                 rosterEntity.setStatus(UPDATED);
                 rosterRepository.save(rosterEntity);
                 log.info("Cancel shift {} for employee {}", rosterId, employeeId);
-
                 response = DeleteRosterResponseDTO.builder()
                         .shiftId(rosterId)
                         .employeeId(employeeId)
@@ -276,12 +323,11 @@ public class RosterServiceImpl implements RosterService {
             }
             return getCompleteResponse(
                     errorCodeRepository, DELETE_ROSTER_SUCCESS, ROSTER.name(), response);
-
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "There has been an error deleting roster shift for user {}" + employeeId + " " + e;
-            log.error(msg, e);
+            String msg = "There has been an error deleting roster shift for user {}";
+            log.error(msg, employeeId);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }

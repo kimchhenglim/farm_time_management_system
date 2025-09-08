@@ -3,13 +3,14 @@ package com.example.comp9034.controller.impl;
 import com.example.comp9034.controller.RosterController;
 import com.example.comp9034.dto.request.CreateRosterDTO;
 import com.example.comp9034.dto.request.DeleteRosterDTO;
-import com.example.comp9034.dto.request.GetRosterByWeekDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.RosterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class RosterControllerImpl implements RosterController {
@@ -26,8 +27,9 @@ public class RosterControllerImpl implements RosterController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> getRoster(GetRosterByWeekDTO registerRequest) {
-        CompleteResponse<Object> response = rosterService.getRoster(registerRequest);
+    public ResponseEntity<ResponseBody<Object>> getRoster(String weekStart, List<String> employeeId, List<String> locations, boolean includeCancelled,
+                                                          boolean includeArchived, int page, int size) {
+        CompleteResponse<Object> response = rosterService.getRoster(weekStart, employeeId, locations, includeCancelled, includeArchived, page, size);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 
