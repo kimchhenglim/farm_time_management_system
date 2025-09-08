@@ -47,7 +47,7 @@ function CardRoster({
 
     // setIsOpen(true);
   };
-  console.log("index", index);
+
   return (
     <div
       className={`${
@@ -119,6 +119,7 @@ function CardRoster({
         isOpenModal={isOpen}
         setIsOpenModal={setIsOpen}
         title="Edit new shift"
+        submitLabel="Edit"
         onClose={() => setIsOpen(false)}
         data={data}
         onSubmitFunction={() => alert("To be implemented!")}

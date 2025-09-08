@@ -145,7 +145,7 @@ function NavigationLayout({ children }) {
   const { authUser } = useAuthStore();
   console.log(authUser);
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen w-screen">
       {authUser && (
         <TopNavBar
           fullName={`${authUser?.body.firstName || ""} ${

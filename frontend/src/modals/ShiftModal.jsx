@@ -7,6 +7,7 @@ import DropDown from "../assets/dropdown.svg";
 import Avatar from "../assets/avatar.svg";
 import Search from "../assets/search.svg";
 import useRosterStore from "../stores/useRosterStore";
+import Calendar from "../assets/calendar.svg";
 function ShiftModal({
   isOpenModal,
   setIsOpenModal,
@@ -14,20 +15,50 @@ function ShiftModal({
   title,
   data,
   onSubmitFunction,
+  submitLabel,
 }) {
-  console.log(data);
+  // console.log(data);
+  const inputRef = useRef(null);
   //create selectedUser to help with assign user
   const [selectedUser, setSelectedUser] = useState(null);
   const { staffActiveList } = useRosterStore();
-  const [today, setToday] = useState(new Date().toISOString().split("T")[0]);
+  const [today, setToday] = useState(
+    new Date()
+      .toLocaleDateString("en-AU") // "8/9/2025"
+      .split("/") // ["8","9","2025"]
+      .map((part) => part.padStart(2, "0")) // ["08","09","2025"]
+      .join("-") // "08-09-2025"
+  );
+  const [time, setTime] = useState(
+    new Date().toLocaleTimeString("en-AU", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+  );
   //use useEffect to check every minute to refresh the date
   useEffect(() => {
     const interval = setInterval(() => {
-      setToday(new Date().toISOString().split("T")[0]);
+      setToday(
+        new Date()
+          .toLocaleDateString("en-AU")
+          .split("/")
+          .map((part) => part.padStart(2, "0"))
+          .join("-")
+      );
+      setTime(
+        new Date().toLocaleTimeString("en-AU", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
     }, 60 * 1000); // check every 1 min
+
     setSelectedUser(data);
     return () => clearInterval(interval); // cleanup
-  }, []); // empty deps → runs once on mount
+  }, [data]); // depend on `data` so selectedUser updates too
+
   // to re-store data from selectedUser
   useEffect(() => {
     if (data) {
@@ -39,10 +70,11 @@ function ShiftModal({
         endTime: data.endTime || "",
         staffName: data.staffName || "",
         id: data.id || "",
+        totalHour: data.totalHour || "",
       });
     }
   }, [data]); // 👈 run whenever CardRoster passes new data
-  console.log(today);
+
   const [formData, setFormData] = useState({
     date: data?.date || "",
     location: data?.location || "",
@@ -68,21 +100,35 @@ function ShiftModal({
         endTime: "",
       });
       onClose();
-      console.log(e.target.className);
+      // console.log(e.target.className);
     }
   };
-
+  //to convert into AU format
+  function toAUFormat(isoDate) {
+    const [year, month, day] = isoDate.split("-");
+    return `${day}-${month}-${year}`;
+  }
+  //convert from string into float for time
+  function timeToFloat(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours + minutes / 60;
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    // console.log(time);
+    // console.log(formData.startTime);
+    // console.log(formData.endTime);
+    // console.log(
+    //   timeToFloat(formData.endTime) - timeToFloat(formData.startTime)
+    // );
     if (!selectedUser) {
       toast.error("Please select staff!");
       return;
     } else if (formData.date === "") {
       toast.error("Please enter date");
       return;
-    } else if (formData.date < today) {
-      toast.error("You cannot assign shift in the past!");
+    } else if (toAUFormat(formData.date) < today) {
+      toast.error("You cannot assign or edit shift in the past!");
       return;
     } else if (formData.location === "") {
       toast.error("Please enter location!");
@@ -90,18 +136,51 @@ function ShiftModal({
     } else if (formData.startTime === "" || formData.endTime === "") {
       toast.error("Please enter shift time!");
       return;
-    } else if (formData.startTime < "09:00") {
-      //when can start time
-      toast.error("Shift must start at 09:00!");
-      return;
-    } else if (formData.endTime > "17:00") {
-      toast.error("Shift must end before 17:00!");
+    } else if (formData.startTime < time) {
+      //when can end time
+      toast.error("Cannot create shift or edit at the past!");
       return;
     } else if (formData.endTime < formData.startTime) {
       //when can end time
       toast.error("Start time must not be bigger than End time!");
       return;
+    } else if (
+      timeToFloat(formData.endTime) - timeToFloat(formData.startTime) >
+      12
+    ) {
+      toast.error("Shift cannot be longer than 12 hours!");
+      return;
+    } else if (
+      selectedUser.type === "Full-time" ||
+      selectedUser.type === "Casual"
+    ) {
+      if (
+        timeToFloat(formData.endTime) -
+          timeToFloat(formData.startTime) +
+          selectedUser.totalHour >
+        38
+      ) {
+        toast.error(
+          "Cannot save shift. This would exceed the weekly limit of 38 hours. Current scheduled hours: " +
+            selectedUser.totalHour
+        );
+        return;
+      }
+    } else if (selectedUser.type === "Part-time") {
+      if (
+        timeToFloat(formData.endTime) -
+          timeToFloat(formData.startTime) +
+          selectedUser.totalHour >
+        20
+      ) {
+        toast.error(
+          "Cannot save shift. This would exceed the weekly limit of 20 hours. Current scheduled hours: " +
+            selectedUser.totalHour
+        );
+        return;
+      }
     }
+    console.log(formData.endTime + formData.startTime);
     setFormData({
       ...formData,
       id: selectedUser.id,
@@ -109,7 +188,7 @@ function ShiftModal({
     });
     //for adding roster
     onSubmitFunction(
-      formData.date,
+      toAUFormat(formData.date),
       selectedUser.id,
       selectedUser.staffName,
       formData.location,
@@ -131,7 +210,19 @@ function ShiftModal({
       id: "",
     });
   };
-  console.log(selectedUser);
+  // console.log(selectedUser);
+  //to open the calendar picker
+  const openCalendar = () => {
+    if (inputRef.current) {
+      // modern browsers
+      if (inputRef.current.showPicker) {
+        inputRef.current.showPicker();
+      } else {
+        // fallback
+        inputRef.current.focus();
+      }
+    }
+  };
   return (
     <div
       className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-999"
@@ -172,15 +263,41 @@ function ShiftModal({
                   <label htmlFor="date" className="text-[#565656] font-medium">
                     Date
                   </label>
-                  <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    placeholder="Type here"
-                    onChange={handleChange}
-                    value={formData.date}
-                    className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
-                  />
+                  <div className="relative border-[1px] border-[#ADADAD] rounded-[5px] flex items-center">
+                    {/* Styled text field to show AU format */}
+                    <input
+                      type="text"
+                      id="date"
+                      placeholder="dd/mm/yyyy"
+                      value={
+                        formData.date
+                          ? new Date(formData.date)
+                              .toLocaleDateString("en-AU")
+                              .split("/")
+                              .map((part) => part.padStart(2, "0"))
+                              .join("-")
+                          : ""
+                      }
+                      readOnly
+                      className="input bg-white focus:outline-hidden placeholder:text-[#ADADAD] w-full border-none"
+                    />
+                    {/* image */}
+                    <img
+                      src={Calendar}
+                      alt="calendar"
+                      className="size-[15px] mr-[3px]"
+                    />
+                    {/* Transparent date input overlay */}
+                    <input
+                      ref={inputRef}
+                      type="date"
+                      name="date"
+                      onChange={handleChange}
+                      value={formData.date}
+                      lang="en-AU"
+                      className="absolute top-0 left-0 w-full h-full opacity-0  cursor-pointer z-10"
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col gap-[10px]">
                   <label
@@ -325,7 +442,7 @@ function ShiftModal({
               title="Confirm create shift"
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
-              submitLabel="Create"
+              submitLabel={submitLabel}
             />
           </div>
         </div>

@@ -9,35 +9,40 @@ const useRosterStore = create((set, get) => ({
       staffName: "Chingsien Ly",
       type: "Full-time",
       payRate: "32",
+      totalHour: 34,
     },
     {
       id: 41,
       staffName: "Masanori Isono",
       type: "Part-time",
       payRate: "32",
+      totalHour: 19,
     },
     {
       id: 42,
       staffName: "Eri Higuchi",
       type: "Casual",
       payRate: "32",
+      totalHour: 21,
     },
     {
       id: 43,
       staffName: "Yudou Han",
       type: "Casual",
       payRate: "32",
+      totalHour: 22,
     },
     {
       id: 44,
       staffName: "Kimchheng Lim",
       type: "Casual",
       payRate: "32",
+      totalHour: 24,
     },
   ],
   roster: [
     {
-      date: "2025-09-01",
+      date: "08-09-2025",
       day: "Monday",
       data: [
         {
@@ -47,6 +52,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 25,
           type: "Full-time",
+          totalHour: 22,
         },
         {
           id: 2,
@@ -55,6 +61,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 28,
           type: "Part-time",
+          totalHour: 22,
         },
         {
           id: 3,
@@ -63,6 +70,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 27,
           type: "Casual",
+          totalHour: 22,
         },
         {
           id: 4,
@@ -71,6 +79,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 26,
           type: "Full-time",
+          totalHour: 28,
         },
         {
           id: 5,
@@ -79,6 +88,7 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 30,
           type: "Part-time",
+          totalHour: 28,
         },
         {
           id: 6,
@@ -87,6 +97,7 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 32,
           type: "Full-time",
+          totalHour: 28,
         },
         {
           id: 7,
@@ -95,6 +106,7 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 29,
           type: "Casual",
+          totalHour: 28,
         },
         {
           id: 8,
@@ -103,6 +115,7 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 24,
           type: "Part-time",
+          totalHour: 33,
         },
         {
           id: 9,
@@ -111,11 +124,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 31,
           type: "Full-time",
+          totalHour: 23,
         },
       ],
     },
     {
-      date: "2025-09-02",
+      date: "09-09-2025",
       day: "Tuesday",
       data: [
         {
@@ -125,6 +139,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 27,
           type: "Casual",
+          totalHour: 28,
         },
         {
           id: 11,
@@ -133,6 +148,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 26,
           type: "Full-time",
+          totalHour: 28,
         },
         {
           id: 12,
@@ -141,6 +157,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 25,
           type: "Part-time",
+          totalHour: 28,
         },
         {
           id: 13,
@@ -149,6 +166,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 28,
           type: "Full-time",
+          totalHour: 28,
         },
         {
           id: 14,
@@ -157,11 +175,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 30,
           type: "Casual",
+          totalHour: 28,
         },
       ],
     },
     {
-      date: "2025-09-03",
+      date: "10-09-2025",
       day: "Wednesday",
       data: [
         {
@@ -171,6 +190,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 25,
           type: "Full-time",
+          totalHour: 26,
         },
         {
           id: 16,
@@ -179,6 +199,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 26,
           type: "Casual",
+          totalHour: 26,
         },
         {
           id: 17,
@@ -187,6 +208,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 27,
           type: "Full-time",
+          totalHour: 26,
         },
         {
           id: 18,
@@ -195,6 +217,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 24,
           type: "Part-time",
+          totalHour: 26,
         },
         {
           id: 19,
@@ -203,11 +226,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 29,
           type: "Casual",
+          totalHour: 26,
         },
       ],
     },
     {
-      date: "2025-09-04",
+      date: "11-09-2025",
       day: "Thursday",
       data: [
         {
@@ -217,6 +241,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 28,
           type: "Part-time",
+          totalHour: 26,
         },
         {
           id: 21,
@@ -225,6 +250,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 27,
           type: "Full-time",
+          totalHour: 26,
         },
         {
           id: 22,
@@ -233,6 +259,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 25,
           type: "Casual",
+          totalHour: 26,
         },
         {
           id: 23,
@@ -241,6 +268,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 30,
           type: "Full-time",
+          totalHour: 0,
         },
         {
           id: 24,
@@ -249,11 +277,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 26,
           type: "Casual",
+          totalHour: 26,
         },
       ],
     },
     {
-      date: "2025-09-05",
+      date: "12-09-2025",
       day: "Friday",
       data: [
         {
@@ -263,6 +292,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 27,
           type: "Full-time",
+          totalHour: 26,
         },
         {
           id: 26,
@@ -271,6 +301,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 28,
           type: "Casual",
+          totalHour: 26,
         },
         {
           id: 27,
@@ -279,6 +310,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 25,
           type: "Part-time",
+          totalHour: 26,
         },
         {
           id: 28,
@@ -287,6 +319,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 29,
           type: "Full-time",
+          totalHour: 26,
         },
         {
           id: 29,
@@ -295,11 +328,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 30,
           type: "Casual",
+          totalHour: 26,
         },
       ],
     },
     {
-      date: "2025-09-06",
+      date: "13-09-2025",
       day: "Saturday",
       data: [
         {
@@ -309,6 +343,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 26,
           type: "Casual",
+          totalHour: 21,
         },
         {
           id: 31,
@@ -317,6 +352,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 25,
           type: "Full-time",
+          totalHour: 21,
         },
         {
           id: 32,
@@ -325,6 +361,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 27,
           type: "Part-time",
+          totalHour: 21,
         },
         {
           id: 33,
@@ -333,6 +370,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 24,
           type: "Full-time",
+          totalHour: 21,
         },
         {
           id: 34,
@@ -341,11 +379,12 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 28,
           type: "Casual",
+          totalHour: 21,
         },
       ],
     },
     {
-      date: "2025-09-07",
+      date: "14-09-2025",
       day: "Sunday",
       data: [
         {
@@ -355,6 +394,7 @@ const useRosterStore = create((set, get) => ({
           time: "08:00 - 12:00",
           payRate: 30,
           type: "Part-time",
+          totalHour: 21,
         },
         {
           id: 36,
@@ -363,6 +403,7 @@ const useRosterStore = create((set, get) => ({
           time: "09:00 - 13:00",
           payRate: 25,
           type: "Full-time",
+          totalHour: 21,
         },
         {
           id: 37,
@@ -371,6 +412,7 @@ const useRosterStore = create((set, get) => ({
           time: "10:00 - 14:00",
           payRate: 26,
           type: "Casual",
+          totalHour: 21,
         },
         {
           id: 38,
@@ -379,6 +421,7 @@ const useRosterStore = create((set, get) => ({
           time: "12:00 - 16:00",
           payRate: 29,
           type: "Part-time",
+          totalHour: 21,
         },
         {
           id: 39,
@@ -387,6 +430,7 @@ const useRosterStore = create((set, get) => ({
           time: "14:00 - 18:00",
           payRate: 27,
           type: "Full-time",
+          totalHour: 21,
         },
       ],
     },
