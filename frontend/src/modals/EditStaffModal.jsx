@@ -3,27 +3,32 @@ import ConfirmModal from "./ConfirmationModal";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
 import { useParams } from "react-router-dom";
-function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
+import useStaffStore from "../stores/useStaffStore";
+import toast from "react-hot-toast";
+function EditStaffModal({
+  isOpenModal,
+  setIsOpenModal,
+  onClose,
+  currentStaff,
+}) {
   const modalRef = useRef(null);
-  const [isConfirm, setIsConfirm] = useState(false);
   const fileInputRef = useRef(null);
-  const { staffID } = useParams();
-
-  console.log(staffInfo);
+  const { editStaffDetail } = useStaffStore();
+  // console.log(staffInfo);
   const [formData, setFormData] = useState({
-    employeeId: staffInfo?.employeeId,
-    biometricId: staffInfo?.employeeId,
-    firstName: staffInfo?.firstName,
-    lastName: staffInfo?.lastName,
-    dateOfBirth: staffInfo?.dob,
-    gender: staffInfo?.gender || "",
-    email: staffInfo?.email,
-    phoneNumber: staffInfo?.mobileNumber,
-    address: staffInfo?.address,
-    role: staffInfo?.role || "",
-    contractType: staffInfo?.contractType || "",
-    payRate: staffInfo?.payRate,
-    location: staffInfo?.location,
+    employeeId: currentStaff?.employeeId,
+    biometricId: currentStaff?.employeeId,
+    firstName: currentStaff?.firstName,
+    lastName: currentStaff?.lastName,
+    dob: currentStaff?.dob,
+    gender: currentStaff?.gender || "",
+    email: currentStaff?.email,
+    mobileNumber: currentStaff?.mobileNumber,
+    address: currentStaff?.address,
+    role: currentStaff?.role || "",
+    contractType: currentStaff?.contractType || "",
+    payRate: currentStaff?.payRate,
+    location: currentStaff?.location,
     avatar: null,
   });
 
@@ -55,10 +60,28 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Data", formData);
+    const regex = /^[A-Za-z]+$/; // only letters
+    const phoneNumberRegex = /^\+61[0-9]{9}$/;
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!regex.test(formData.firstName) || !regex.test(formData.lastName)) {
+      toast.error("Only letters allowed for firstName or lastName!");
+      return;
+    } else if (!phoneNumberRegex.test(formData.mobileNumber)) {
+      toast.error("Enter a valid Australian phone number starting with +61");
+      return;
+    } else if (!emailRegex.test(formData.email)) {
+      toast.error("Enter a valid email address!");
+      return;
+    }
+    const payload = {
+      ...formData,
+      dob: formData.dob.split("-").reverse().join("/"),
+    };
+    await editStaffDetail(payload);
+
     setIsOpenModal(false);
   };
   const handleCloseModal = (e) => {
@@ -126,6 +149,8 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
               <input
                 name="firstName"
                 value={formData.firstName}
+                pattern="^[A-Za-z]+$"
+                type="text"
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -136,6 +161,8 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
               <label className="text-sm font-medium mb-1">Last Name</label>
               <input
                 name="lastName"
+                pattern="^[A-Za-z]+$"
+                type="text"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
@@ -146,9 +173,9 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Date of Birth</label>
               <input
-                name="dateOfBirth"
+                name="dob"
                 type="date"
-                value={formData.dateOfBirth}
+                value={formData.dob}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -167,7 +194,6 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
                 <option value="MALE">Male</option>
                 {/* should have male not MALE */}
                 <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
               </select>
             </div>
 
@@ -187,8 +213,8 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Phone Number</label>
               <input
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                name="mobileNumber"
+                value={formData.mobileNumber}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
@@ -216,9 +242,6 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
               >
                 <option value="">Select Role</option>
                 <option value="STAFF">Staff</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Field Engineer">Field Engineer</option>
-                <option value="Data Analyst">Data Analyst</option>
               </select>
             </div>
 
@@ -246,6 +269,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
+                maxLength={3}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
             </div>
@@ -254,7 +278,7 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Location</label>
               <select
-                name="task"
+                name="location"
                 value={formData.location}
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
@@ -263,7 +287,6 @@ function EditStaffModal({ isOpenModal, setIsOpenModal, onClose, staffInfo }) {
                 <option value="Shed 1">Shed 1</option>
                 <option value="Shed 2">Shed 2</option>
                 <option value="Shed 3">Shed 3</option>
-                <option value="Shed 4">Shed 4</option>
               </select>
             </div>
           </div>

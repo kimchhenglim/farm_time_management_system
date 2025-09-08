@@ -24,7 +24,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -232,7 +235,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CompleteResponse<Object> getUserByFilter(Integer id, String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
+    public CompleteResponse<Object> getUserByFilter(UserFilterDTO filter) {
         Specification<UserEntity> spec = Specification.where(null);
 
         //only show STAFF users
@@ -241,28 +244,42 @@ public class UserServiceImpl implements UserService {
             return cb.equal(roleJoin.get("name"), UserEnum.STAFF.name());
         });
 
-        if (employeeId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), employeeId));
+        if (filter.getId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), filter.getId()));
         }
 
-        if (id != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), id));
+        if (filter.getEmployeeId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), filter.getEmployeeId()));
         }
 
-        if (name != null) {
+        if (filter.getName() != null) {
             spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("firstName")), "%" + name.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("lastName")), "%" + name.toLowerCase() + "%")
+                    cb.like(cb.lower(root.get("firstName")), "%" + filter.getName().toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("lastName")), "%" + filter.getName().toLowerCase() + "%")
             ));
         }
 
-        if (email != null) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
+        if (filter.getEmail() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + filter.getEmail().toLowerCase() + "%"));
         }
 
-        if (mobileNumber != null) {
-            spec = spec.and((root, query, cb) -> cb.like(root.get("mobileNumber"), "%" + mobileNumber + "%"));
+        if (filter.getMobileNumber() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("mobileNumber"), "%" + filter.getMobileNumber() + "%"));
         }
+
+        if (filter.getContractType() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("contractType"), filter.getContractType().toUpperCase()));
+        }
+
+        if (filter.getIsActive() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"), filter.getIsActive()));
+        }
+
+        Pageable pageable = PageRequest.of(
+            filter.getPage(),
+            filter.getSize(),
+            filter.getSortDir().equalsIgnoreCase("asc") ? Sort.by(filter.getSortBy()).ascending() : Sort.by(filter.getSortBy()).descending());
+
 
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 
