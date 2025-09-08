@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/admin/roster/")
 public interface RosterController {
-    @PostMapping()
+    @PostMapping("create")
     ResponseEntity<ResponseBody<Object>> createRoster(@Valid @RequestBody CreateRosterDTO registerRequest);
 
     @GetMapping()
     ResponseEntity<ResponseBody<Object>> getRoster(@Valid @RequestBody GetRosterByWeekDTO registerRequest);
 
-    @DeleteMapping()
+    @DeleteMapping("delete")
     ResponseEntity<ResponseBody<Object>> deleteRoster(@Valid @RequestBody DeleteRosterDTO registerRequest);
 
     @PutMapping()

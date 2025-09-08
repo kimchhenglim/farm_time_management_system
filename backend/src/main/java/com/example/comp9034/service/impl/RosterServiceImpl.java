@@ -19,7 +19,6 @@ import com.example.comp9034.service.RosterService;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.hibernate.query.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,16 +29,15 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Optional;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
 import static com.example.comp9034.enums.RosterEnum.DRAFT;
+import static com.example.comp9034.enums.RosterEnum.UPDATED;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 import static com.example.comp9034.util.Common.convertStringToLong;
 import static com.example.comp9034.util.Common.getConfigValue;
-import static com.example.comp9034.util.DateTimeFormatter.formatLocalDate;
 import static java.time.temporal.TemporalAdjusters.previousOrSame;
 
 @Service
@@ -70,8 +68,8 @@ public class RosterServiceImpl implements RosterService {
                 log.error(msg);
                 throw new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
             }
-            LocalDateTime startTime = parseToLocalDateTime(createRosterDTO.getStartTime());
-            LocalDateTime endTime = parseToLocalDateTime(createRosterDTO.getEndTime());
+            LocalDateTime startTime = createRosterDTO.getStartTime();
+            LocalDateTime endTime = createRosterDTO.getEndTime();
 
             if (!endTime.isAfter(startTime)) {
                 String msg = "End time for the shift must be after start time";
@@ -109,7 +107,7 @@ public class RosterServiceImpl implements RosterService {
             }
 
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime,
-                    employeeId, DRAFT, SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
+                    employeeId, DRAFT, SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
@@ -222,55 +220,54 @@ public class RosterServiceImpl implements RosterService {
 
     @Override
     public CompleteResponse<Object> deleteRoster(DeleteRosterDTO request) {
+        String employeeId = request.getEmployeeId().trim();
         try {
-            Long shiftId = request.getShiftId();
-            String empId = request.getEmployeeId().trim();
+            LocalDateTime startTime = request.getStartTime();
+            LocalDateTime endTime = request.getEndTime();
             boolean hard = Boolean.TRUE.equals(request.getHardDelete());
 
-            // 1) Load & verify ownership
-            RosterEntity rosterEntity = rosterRepository.findByIdAndEmployeeId(shiftId, empId)
+            RosterEntity rosterEntity = rosterRepository.findByStartTimeAndEndTimeAndEmployeeId(startTime, endTime, employeeId)
                     .orElseThrow(() -> {
-                        String msg = "Shift " + shiftId + " for employee " + empId + " not found.";
-                        log.info(msg);
-                        return new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
+                        String msg = "Shift from " + startTime + " to " + endTime + " for employee " + employeeId + " not found.";
+                        log.error(msg);
+                        return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
                     });
 
-            //    - disallow deleting archived rosters
+            // Dont allow modify past roster
             if (rosterEntity.getStatus() == RosterEnum.ARCHIVED) {
                 String msg = "Archived roster cannot be modified.";
                 log.info(msg);
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
             }
-            //    - if already cancelled and soft delete requested
+            //
             if (!hard && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
-                String msg = "Shift " + shiftId + " is already cancelled.";
+                String msg = "Shift from " + startTime + " to " + endTime + " is already cancelled.";
                 log.info(msg);
                 throw new BusinessException(SHIFT_ALREADY_CANCELED, ROSTER.name(), msg);
             }
             DeleteRosterResponseDTO response;
+            long rosterId = rosterEntity.getId();
             if (hard) {
                 // 3a) HARD DELETE (use sparingly; history is lost)
                 rosterRepository.delete(rosterEntity);
-                log.info("Hard-deleted shift {} for employee {}", shiftId, empId);
+                log.info("Hard-deleted shift {} for employee {}", rosterId, employeeId);
                 response = DeleteRosterResponseDTO.builder()
-                        .shiftId(shiftId)
-                        .employeeId(empId)
+                        .shiftId(rosterId)
+                        .employeeId(employeeId)
                         .action("DELETED")
                         .status(null)
                         .isCancelled(null)
                         .processedAt(LocalDateTime.now())
                         .build();
             } else {
-                // 3b) SOFT CANCEL (recommended)
                 rosterEntity.setIsCancelled(true);
-                // Keep status as-is or set to DRAFT; many teams leave it unchanged.
-                // entity.setStatus(RosterEnum.DRAFT);
+                rosterEntity.setStatus(UPDATED);
                 rosterRepository.save(rosterEntity);
-                log.info("Soft-cancelled shift {} for employee {}", shiftId, empId);
+                log.info("Cancell shift {} for employee {}", rosterId, employeeId);
 
                 response = DeleteRosterResponseDTO.builder()
-                        .shiftId(shiftId)
-                        .employeeId(empId)
+                        .shiftId(rosterId)
+                        .employeeId(employeeId)
                         .action("CANCELLED")
                         .status(rosterEntity.getStatus())
                         .isCancelled(true)
@@ -284,7 +281,7 @@ public class RosterServiceImpl implements RosterService {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "There has been an error deleting roster shift " + request.getShiftId() + " " + e;
+            String msg = "There has been an error deleting roster shift for user {}" + employeeId + " " + e;
             log.error(msg, e);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }

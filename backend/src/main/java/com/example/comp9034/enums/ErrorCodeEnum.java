@@ -61,6 +61,7 @@ public enum ErrorCodeEnum {
     WEEKLY_HOUR_LIMIT_EXCEEDED("E033", "Weekly hour exceeded", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     ROSTER_IMMUTABLE("E034", "Past rosters cannot be changed", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+    ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
     ;
 
 

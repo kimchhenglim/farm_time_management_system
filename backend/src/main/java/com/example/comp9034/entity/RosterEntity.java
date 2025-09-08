@@ -46,4 +46,7 @@ public class RosterEntity {
         this.status = status;
         this.createdBy = createdBy;
     }
+
+    public RosterEntity() {
+    }
 }

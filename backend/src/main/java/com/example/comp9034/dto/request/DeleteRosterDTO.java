@@ -11,14 +11,17 @@ import lombok.Setter;
 @Getter
 @Valid
 public class DeleteRosterDTO {
-    @NotNull(message = "shiftId is required")
-    private Long shiftId;
+    @NotNull(message = "Start time for shift cannot be null or empty")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    private java.time.LocalDateTime startTime;
 
-    /** Ensure we only delete the intended employee’s shift */
+    @NotNull(message = "End time for shift cannot be null or empty")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    private java.time.LocalDateTime endTime;
+
     @NotBlank(message = "employeeId is required")
     private String employeeId;
 
-    /** Soft cancel by default; set true to hard delete (if you choose to allow it) */
-    private Boolean hardDelete = false;
+    private Boolean hardDelete;
 }
 
