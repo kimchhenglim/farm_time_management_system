@@ -13,92 +13,11 @@ import {
 } from "date-fns";
 import CalendarModal from "../modals/CalendarModal";
 import CardRoster from "./CardRoster";
+import useRosterStore from "../stores/useRosterStore";
 
 function WeekNavigator() {
   // dummy Data
-  const roster = [
-    {
-      date: "2025-09-01",
-      day: "Monday",
-      data: [
-        { staffName: "Alice", location: "Shed 1", time: "08:00 - 12:00" },
-        { staffName: "Bob", location: "Shed 2", time: "09:00 - 13:00" },
-        { staffName: "Charlie", location: "Shed 3", time: "10:00 - 14:00" },
-        { staffName: "Diana", location: "Shed 1", time: "12:00 - 16:00" },
-        { staffName: "Ethan", location: "Shed 2", time: "14:00 - 18:00" },
-        { staffName: "Chingsien", location: "Shed 3", time: "14:00 - 18:00" },
-        { staffName: "Nancy", location: "Shed 1", time: "14:00 - 18:00" },
-        { staffName: "Mia", location: "Shed 2", time: "14:00 - 18:00" },
-        { staffName: "Riley", location: "Shed 3", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-02",
-      day: "Tuesday",
-      data: [
-        { staffName: "Fiona", location: "Shed 2", time: "08:00 - 12:00" },
-        { staffName: "George", location: "Shed 3", time: "09:00 - 13:00" },
-        { staffName: "Hannah", location: "Shed 1", time: "10:00 - 14:00" },
-        { staffName: "Ian", location: "Shed 2", time: "12:00 - 16:00" },
-        { staffName: "Judy", location: "Shed 3", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-03",
-      day: "Wednesday",
-      data: [
-        { staffName: "Kevin", location: "Shed 1", time: "08:00 - 12:00" },
-        { staffName: "Laura", location: "Shed 2", time: "09:00 - 13:00" },
-        { staffName: "Mike", location: "Shed 3", time: "10:00 - 14:00" },
-        { staffName: "Nina", location: "Shed 1", time: "12:00 - 16:00" },
-        { staffName: "Oscar", location: "Shed 2", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-04",
-      day: "Thursday",
-      data: [
-        { staffName: "Paul", location: "Shed 3", time: "08:00 - 12:00" },
-        { staffName: "Quinn", location: "Shed 1", time: "09:00 - 13:00" },
-        { staffName: "Rachel", location: "Shed 2", time: "10:00 - 14:00" },
-        { staffName: "Sam", location: "Shed 3", time: "12:00 - 16:00" },
-        { staffName: "Tina", location: "Shed 1", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-05",
-      day: "Friday",
-      data: [
-        { staffName: "Uma", location: "Shed 2", time: "08:00 - 12:00" },
-        { staffName: "Victor", location: "Shed 3", time: "09:00 - 13:00" },
-        { staffName: "Wendy", location: "Shed 1", time: "10:00 - 14:00" },
-        { staffName: "Xavier", location: "Shed 2", time: "12:00 - 16:00" },
-        { staffName: "Yvonne", location: "Shed 3", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-06",
-      day: "Saturday",
-      data: [
-        { staffName: "Zack", location: "Shed 1", time: "08:00 - 12:00" },
-        { staffName: "Amy", location: "Shed 2", time: "09:00 - 13:00" },
-        { staffName: "Brian", location: "Shed 3", time: "10:00 - 14:00" },
-        { staffName: "Clara", location: "Shed 1", time: "12:00 - 16:00" },
-        { staffName: "David", location: "Shed 2", time: "14:00 - 18:00" },
-      ],
-    },
-    {
-      date: "2025-09-07",
-      day: "Sunday",
-      data: [
-        { staffName: "Ella", location: "Shed 3", time: "08:00 - 12:00" },
-        { staffName: "Frank", location: "Shed 1", time: "09:00 - 13:00" },
-        { staffName: "Grace", location: "Shed 2", time: "10:00 - 14:00" },
-        { staffName: "Henry", location: "Shed 3", time: "12:00 - 16:00" },
-        { staffName: "Isla", location: "Shed 1", time: "14:00 - 18:00" },
-      ],
-    },
-  ];
+  const { roster } = useRosterStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -193,7 +112,10 @@ function WeekNavigator() {
         <div className="w-full h-[80px] grid grid-cols-7">
           {week?.map((item, index) => {
             return (
-              <div className="flex items-center justify-center flex-col">
+              <div
+                className="flex items-center justify-center flex-col"
+                key={index}
+              >
                 <div
                   className={`w-[30%] h-full flex items-center justify-center flex-col p-2 ${
                     item.getFullYear() +
@@ -236,16 +158,20 @@ function WeekNavigator() {
             );
           })}
         </div>
-        <div className="w-full h-[calc(100%-80px)] grid grid-cols-7 p-5 overflow-y-auto">
+        <div className="w-full h-[calc(100%-80px)] grid grid-cols-7  overflow-y-auto">
           {week?.map((item, index) => {
             return (
-              <div className="border-[1px] flex items-center  flex-col p-2 gap-2.5">
-                {roster[index]?.data?.map((shift) => {
+              <div
+                className="border-[1px] border-[#EDEDED] flex items-center  flex-col p-2 gap-2.5"
+                key={index}
+              >
+                {roster[index]?.data?.map((shift, index) => {
                   return (
                     <CardRoster
                       staffName={shift.staffName}
                       location={shift.location}
                       time={shift.time}
+                      key={index}
                     />
                   );
                 })}
