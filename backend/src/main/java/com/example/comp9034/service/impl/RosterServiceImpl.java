@@ -60,8 +60,6 @@ public class RosterServiceImpl implements RosterService {
     public CompleteResponse<Object> createRoster(CreateRosterDTO createRosterDTO) {
         try {
             String employeeId = createRosterDTO.getEmployeeId().trim();
-
-            // 1) Check employee exists & active
             Optional<UserEntity> userOptional = userRepository.findByEmployeeIdAndActive(employeeId, true);
             if (userOptional.isEmpty()) {
                 String msg = "Employee " + employeeId + " does not exist or is inactive.";
@@ -70,6 +68,12 @@ public class RosterServiceImpl implements RosterService {
             }
             LocalDateTime startTime = createRosterDTO.getStartTime();
             LocalDateTime endTime = createRosterDTO.getEndTime();
+
+            if (startTime.isBefore(LocalDateTime.now()) || endTime.isBefore(LocalDateTime.now())) {
+                String msg = "Start time or End time can not be set in the past!";
+                log.error("{} for user {}", msg, employeeId);
+                throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
+            }
 
             if (!endTime.isAfter(startTime)) {
                 String msg = "End time for the shift must be after start time";
@@ -94,20 +98,21 @@ public class RosterServiceImpl implements RosterService {
                     ? createRosterDTO.getBreakMinutes()
                     : (shiftDurationMin > 240 ? 30 : 0);
 
-            // 5) Weekly cap (US-3.2)
+            // Weekly cap
             long currentWeekMin = rosterRepository.sumWeekMinutes(employeeId, weekStart);
             long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
             long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
-            if (currentWeekMin > limitMinutes) {
+            if (shiftDurationMin > remainingMinutes) {
                 String msg = "Exceed the weekly hours limit" +
                         "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " +
+                        "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) +
                         "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
                 log.info(msg);
                 throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
             }
 
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime,
-                    employeeId, DRAFT, SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+                    employeeId, DRAFT, SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
@@ -125,7 +130,6 @@ public class RosterServiceImpl implements RosterService {
                     .remainingMinutes(remainingMinutes)
                     .build();
             return getCompleteResponse(errorCodeRepository, CREATE_ROSTER_SUCCESS, ROSTER.name(), response);
-
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -135,17 +139,6 @@ public class RosterServiceImpl implements RosterService {
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
-
-    private LocalDateTime parseToLocalDateTime(String value) {
-        try {
-            // e.g. "2025-09-10T09:00:00+09:30"
-            return java.time.OffsetDateTime.parse(value).toLocalDateTime();
-        } catch (java.time.format.DateTimeParseException ignore) {
-            // e.g. "2025-09-10T09:00:00"
-            return java.time.LocalDateTime.parse(value);
-        }
-    }
-
 
     @Override
     public CompleteResponse<Object> getRoster(GetRosterByWeekDTO request) {
@@ -226,6 +219,12 @@ public class RosterServiceImpl implements RosterService {
             LocalDateTime endTime = request.getEndTime();
             boolean hard = Boolean.TRUE.equals(request.getHardDelete());
 
+            if (!endTime.isAfter(startTime)) {
+                String msg = "End time for the shift must be after start time";
+                log.info(msg);
+                throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
+            }
+
             RosterEntity rosterEntity = rosterRepository.findByStartTimeAndEndTimeAndEmployeeId(startTime, endTime, employeeId)
                     .orElseThrow(() -> {
                         String msg = "Shift from " + startTime + " to " + endTime + " for employee " + employeeId + " not found.";
@@ -234,12 +233,13 @@ public class RosterServiceImpl implements RosterService {
                     });
 
             // Dont allow modify past roster
-            if (rosterEntity.getStatus() == RosterEnum.ARCHIVED) {
-                String msg = "Archived roster cannot be modified.";
-                log.info(msg);
+            if (rosterEntity.getStatus() == RosterEnum.ARCHIVED || endTime.isBefore(LocalDateTime.now())) {
+                String msg = "Archived roster with cannot be modified.";
+                rosterEntity.setStatus(RosterEnum.ARCHIVED);
+                rosterRepository.save(rosterEntity);
+                log.error(msg);
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
             }
-            //
             if (!hard && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
                 String msg = "Shift from " + startTime + " to " + endTime + " is already cancelled.";
                 log.info(msg);
@@ -248,7 +248,7 @@ public class RosterServiceImpl implements RosterService {
             DeleteRosterResponseDTO response;
             long rosterId = rosterEntity.getId();
             if (hard) {
-                // 3a) HARD DELETE (use sparingly; history is lost)
+                // Hard delete
                 rosterRepository.delete(rosterEntity);
                 log.info("Hard-deleted shift {} for employee {}", rosterId, employeeId);
                 response = DeleteRosterResponseDTO.builder()
@@ -263,7 +263,7 @@ public class RosterServiceImpl implements RosterService {
                 rosterEntity.setIsCancelled(true);
                 rosterEntity.setStatus(UPDATED);
                 rosterRepository.save(rosterEntity);
-                log.info("Cancell shift {} for employee {}", rosterId, employeeId);
+                log.info("Cancel shift {} for employee {}", rosterId, employeeId);
 
                 response = DeleteRosterResponseDTO.builder()
                         .shiftId(rosterId)
@@ -274,7 +274,6 @@ public class RosterServiceImpl implements RosterService {
                         .processedAt(LocalDateTime.now())
                         .build();
             }
-
             return getCompleteResponse(
                     errorCodeRepository, DELETE_ROSTER_SUCCESS, ROSTER.name(), response);
 

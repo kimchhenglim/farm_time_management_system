@@ -37,7 +37,7 @@ public class RosterEntity {
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, RosterEnum status, String createdBy) {
+    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, RosterEnum status, String createdBy, String location) {
         this.breakMinutes = breakMinutes;
         this.date = date;
         this.endTime = endTime;
@@ -45,6 +45,7 @@ public class RosterEntity {
         this.employeeId = employeeId;
         this.status = status;
         this.createdBy = createdBy;
+        this.location = location;
     }
 
     public RosterEntity() {
