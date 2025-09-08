@@ -1,5 +1,6 @@
 package com.example.comp9034.service.impl;
 
+import com.example.comp9034.dto.RosterDTO;
 import com.example.comp9034.dto.request.CreateRosterDTO;
 import com.example.comp9034.dto.request.DeleteRosterDTO;
 import com.example.comp9034.dto.request.GetRosterByWeekDTO;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import jakarta.persistence.criteria.Predicate;
 
 import static com.example.comp9034.enums.CommonEnum.*;
@@ -118,7 +121,7 @@ public class RosterServiceImpl implements RosterService {
             }
 
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime,
-                    employeeId, DRAFT, SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation());
+                    employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
@@ -129,7 +132,7 @@ public class RosterServiceImpl implements RosterService {
                     .breakMinutes(roster.getBreakMinutes())
                     .employeeId(roster.getEmployeeId())
                     .endTime(roster.getEndTime())
-                    .status(roster.getStatus())
+                    .status(RosterEnum.valueOf(roster.getStatus()))
                     .startTime(roster.getStartTime())
                     .location(roster.getLocation())
                     .remainingMinutes(remainingMinutes)
@@ -187,8 +190,7 @@ public class RosterServiceImpl implements RosterService {
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}",
                     result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
 
-            List<GetRosterByWeekResponseDTO> response = rosterMapper.toWeekDtos(result.getContent());
-
+            List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());
 
             // 5) Wrap a simple page payload
             GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder()
@@ -198,7 +200,7 @@ public class RosterServiceImpl implements RosterService {
                     .size(size)
                     .totalElements(result.getTotalElements())
                     .totalPages(result.getTotalPages())
-                    .items(response)
+                    .rosterList(rosterList)
                     .build();
 
             return getCompleteResponse(errorCodeRepository, GET_ROSTER_BY_WEEK_SUCCESS, ROSTER.name(), payload);
@@ -212,11 +214,9 @@ public class RosterServiceImpl implements RosterService {
         }
     }
 
-    // ---------- helpers ----------
-
     private Specification<RosterEntity> buildWeekSpec(
-            LocalDateTime startInclusive,
-            LocalDateTime endExclusive,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
             List<String> employeeIds,
             List<String> locations,
             boolean includeCancelled,
@@ -226,9 +226,10 @@ public class RosterServiceImpl implements RosterService {
             List<Predicate> ps = new ArrayList<>();
 
             // overlap: (start < weekEnd) AND (end > weekStart)
-            ps.add(cb.lessThan(root.get("startTime"), endExclusive));
-            ps.add(cb.greaterThan(root.get("endTime"), startInclusive));
+            ps.add(cb.lessThan(root.get("startTime"), endTime));
+            ps.add(cb.greaterThan(root.get("endTime"), startTime));
 
+            log.info("employeeIds: {}", employeeIds);
             if (employeeIds != null && !employeeIds.isEmpty()) {
                 ps.add(root.get("employeeId").in(employeeIds));
             }
@@ -241,15 +242,9 @@ public class RosterServiceImpl implements RosterService {
                 ps.add(cb.or(cb.isFalse(root.get("isCancelled")), cb.isNull(root.get("isCancelled"))));
             }
 
-            // If your RosterEnum has ARCHIVED and you want to exclude unless included
             if (!includeArchived) {
-                try {
-                    ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, "ARCHIVED")));
-                } catch (IllegalArgumentException ignored) {
-                    // Enum has no ARCHIVED; ignore silently
-                }
+                ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, "ARCHIVED").name()));
             }
-
             return cb.and(ps.toArray(new Predicate[0]));
         };
     }
@@ -281,9 +276,9 @@ public class RosterServiceImpl implements RosterService {
                     });
 
             // Dont allow modify past roster
-            if (rosterEntity.getStatus() == RosterEnum.ARCHIVED || endTime.isBefore(LocalDateTime.now())) {
+            if (rosterEntity.getStatus() == RosterEnum.ARCHIVED.name() || endTime.isBefore(LocalDateTime.now())) {
                 String msg = "Archived roster with cannot be modified.";
-                rosterEntity.setStatus(RosterEnum.ARCHIVED);
+                rosterEntity.setStatus(RosterEnum.ARCHIVED.name());
                 rosterRepository.save(rosterEntity);
                 log.error(msg);
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
@@ -309,14 +304,14 @@ public class RosterServiceImpl implements RosterService {
                         .build();
             } else {
                 rosterEntity.setIsCancelled(true);
-                rosterEntity.setStatus(UPDATED);
+                rosterEntity.setStatus(UPDATED.name());
                 rosterRepository.save(rosterEntity);
                 log.info("Cancel shift {} for employee {}", rosterId, employeeId);
                 response = DeleteRosterResponseDTO.builder()
                         .shiftId(rosterId)
                         .employeeId(employeeId)
                         .action("CANCELLED")
-                        .status(rosterEntity.getStatus())
+                        .status(RosterEnum.valueOf(rosterEntity.getStatus()))
                         .isCancelled(true)
                         .processedAt(LocalDateTime.now())
                         .build();

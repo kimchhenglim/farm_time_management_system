@@ -1,6 +1,6 @@
 package com.example.comp9034.mapper;
 
-import com.example.comp9034.dto.response.GetRosterByWeekResponseDTO;
+import com.example.comp9034.dto.RosterDTO;
 import com.example.comp9034.entity.RosterEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,7 +20,7 @@ public interface RosterMapper {
                     "java.time.Duration.between(e.getStartTime(), e.getEndTime()).toMinutes() - " +
                     "(e.getBreakMinutes() == null ? 0 : e.getBreakMinutes()) ) )"
     )
-    GetRosterByWeekResponseDTO toWeekDto(RosterEntity e);
+    RosterDTO toWeekDto(RosterEntity e);
 
-    List<GetRosterByWeekResponseDTO> toWeekDtos(List<RosterEntity> entities);
+    List<RosterDTO> toWeekDtos(List<RosterEntity> entities);
 }
