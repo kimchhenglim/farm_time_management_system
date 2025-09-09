@@ -3,7 +3,6 @@ package com.example.comp9034.service.impl;
 import com.example.comp9034.dto.RosterDTO;
 import com.example.comp9034.dto.request.CreateRosterDTO;
 import com.example.comp9034.dto.request.DeleteRosterDTO;
-import com.example.comp9034.dto.request.GetRosterByWeekDTO;
 import com.example.comp9034.dto.response.CreateRosterResponseDTO;
 import com.example.comp9034.dto.response.DeleteRosterResponseDTO;
 import com.example.comp9034.dto.response.GetRosterByWeekResponseDTO;
@@ -32,17 +31,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import jakarta.persistence.criteria.Predicate;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
-import static com.example.comp9034.enums.RosterEnum.DRAFT;
-import static com.example.comp9034.enums.RosterEnum.UPDATED;
+import static com.example.comp9034.enums.RosterEnum.*;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 import static com.example.comp9034.util.Common.convertStringToLong;
 import static com.example.comp9034.util.Common.getConfigValue;
@@ -153,7 +148,6 @@ public class RosterServiceImpl implements RosterService {
                                               boolean includeArchived, int page, int size) {
         try {
             // Validate & normalize inputs
-
             if (weekStart == null || weekStart.trim().isEmpty()) {
                 String msg = "weekStart cannot be null or empty";
                 log.error(msg);
@@ -161,7 +155,6 @@ public class RosterServiceImpl implements RosterService {
             }
 
             LocalDate weekAnyDate = LocalDate.parse(weekStart.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-
             LocalDate monday = weekAnyDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             LocalDate nextMonday = monday.plusWeeks(1);
             LocalDateTime startInclusive = monday.atStartOfDay();
@@ -184,15 +177,11 @@ public class RosterServiceImpl implements RosterService {
                     Boolean.TRUE.equals(includeCancelled),
                     Boolean.TRUE.equals(includeArchived)
             );
-
-            // 3) Query
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}",
                     result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
 
             List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());
-
-            // 5) Wrap a simple page payload
             GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder()
                     .weekStart(monday)
                     .weekEnd(nextMonday.minusDays(1))
@@ -202,9 +191,7 @@ public class RosterServiceImpl implements RosterService {
                     .totalPages(result.getTotalPages())
                     .rosterList(rosterList)
                     .build();
-
             return getCompleteResponse(errorCodeRepository, GET_ROSTER_BY_WEEK_SUCCESS, ROSTER.name(), payload);
-
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -243,7 +230,7 @@ public class RosterServiceImpl implements RosterService {
             }
 
             if (!includeArchived) {
-                ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, "ARCHIVED").name()));
+                ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, ARCHIVED.name()).name()));
             }
             return cb.and(ps.toArray(new Predicate[0]));
         };
@@ -252,7 +239,6 @@ public class RosterServiceImpl implements RosterService {
     private List<String> safeList(List<String> list) {
         return (list == null) ? Collections.emptyList() : list;
     }
-
 
     @Override
     public CompleteResponse<Object> deleteRoster(DeleteRosterDTO request) {
@@ -276,8 +262,8 @@ public class RosterServiceImpl implements RosterService {
                     });
 
             // Dont allow modify past roster
-            if (rosterEntity.getStatus() == RosterEnum.ARCHIVED.name() || endTime.isBefore(LocalDateTime.now())) {
-                String msg = "Archived roster with cannot be modified.";
+            if (Objects.equals(rosterEntity.getStatus(), RosterEnum.ARCHIVED.name()) || endTime.isBefore(LocalDateTime.now())) {
+                String msg = "Archived roster cannot be modified.";
                 rosterEntity.setStatus(RosterEnum.ARCHIVED.name());
                 rosterRepository.save(rosterEntity);
                 log.error(msg);
