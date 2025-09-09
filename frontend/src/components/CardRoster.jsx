@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Edit from "../assets/edit.svg";
 import ShiftModal from "../modals/ShiftModal";
+import ConfirmModal from "../modals/ConfirmationModal";
+import useRosterStore from "../stores/useRosterStore";
 function CardRoster({
-  staffID,
+  rosterID,
   staffName,
   location,
   time,
@@ -12,6 +14,7 @@ function CardRoster({
   payRate,
   type,
 }) {
+  const { deleteRoster } = useRosterStore();
   //pre-define color for shift
   const locationColors = {
     "Shed 1": "bg-[#D1EEEC] text-[#19A598]",
@@ -33,7 +36,7 @@ function CardRoster({
     location: location,
     startTime: startTime,
     endTime: endTime,
-    id: staffID,
+    id: rosterID,
     date: date,
     payRate: payRate,
     type: type,
@@ -44,7 +47,7 @@ function CardRoster({
     if (elem) {
       elem?.blur();
     }
-
+    deleteRoster(rosterID);
     // setIsOpen(true);
   };
 
@@ -97,7 +100,8 @@ function CardRoster({
             Edit this shift
           </a>
         </li>
-        <li onClick={() => onHandleClose()}>
+        <li onClick={() => onHandleDelete()}>
+          <ConfirmModal />
           <a className="flex gap-3 items-center">
             <svg
               width="15"

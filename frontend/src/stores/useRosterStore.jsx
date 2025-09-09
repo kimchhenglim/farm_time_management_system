@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import { axiosInstances } from "../libs/axios";
 const useRosterStore = create((set, get) => ({
   isAddingRoster: false,
+  isDeletingRoster: false,
   staffActiveList: [
     {
       id: 40,
@@ -443,7 +444,8 @@ const useRosterStore = create((set, get) => ({
     startTime,
     endTime,
     type,
-    payRate
+    payRate,
+    totalHour
   ) => {
     const { roster } = get();
     console.log(date, id, staffName, location, startTime, endTime);
@@ -465,12 +467,34 @@ const useRosterStore = create((set, get) => ({
             : day
         ),
       }));
-      toast.success("Successfully added shift!");
+      set((state) => ({
+        staffActiveList: state.staffActiveList.map((staff) =>
+          staff.id === id ? { ...staff, totalHour: totalHour } : staff
+        ),
+      })),
+        toast.success("Successfully added shift!");
       // happens in if(res)
     } catch (error) {
       console.error("Unexpected error in addRoster:", error.message);
     } finally {
       set({ isAddingRoster: false });
+    }
+  },
+  deleteRoster: async (id) => {
+    console.log(id);
+    try {
+      set({ isDeletingRoster: true });
+      set((currentState) => ({
+        //set roster
+        roster: currentState.roster.map((day) => ({
+          ...day,
+          data: day.data.filter((shift) => shift.id !== id),
+        })),
+      }));
+    } catch (error) {
+      console.error("Unexpected error in deleteRoster:", error.message);
+    } finally {
+      set({ isDeletingRoster: false });
     }
   },
 }));

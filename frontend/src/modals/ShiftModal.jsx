@@ -195,7 +195,10 @@ function ShiftModal({
       formData.startTime,
       formData.endTime,
       selectedUser.type,
-      selectedUser.payRate
+      selectedUser.payRate,
+      selectedUser.totalHour +
+        timeToFloat(formData.endTime) -
+        timeToFloat(formData.startTime)
     );
     // console.log(selectedUser);
     setIsOpenModal(false);

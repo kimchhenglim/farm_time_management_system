@@ -173,7 +173,7 @@ function WeekNavigator() {
                       time={shift.time}
                       index={indexShift}
                       columnIndex={index}
-                      staffID={shift.id}
+                      rosterID={shift.id}
                       date={roster[index]?.date}
                       payRate={shift.payRate}
                       type={shift.type}
