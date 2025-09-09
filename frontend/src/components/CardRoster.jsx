@@ -101,7 +101,7 @@ function CardRoster({
           </a>
         </li>
         <li onClick={() => onHandleDelete()}>
-          <ConfirmModal />
+          {/* <ConfirmModal /> */}
           <a className="flex gap-3 items-center">
             <svg
               width="15"
