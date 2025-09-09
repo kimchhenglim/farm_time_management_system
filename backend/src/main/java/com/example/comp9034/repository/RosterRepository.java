@@ -47,6 +47,8 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
                         @Param("weekStart") LocalDate weekStart);
 
     Optional<RosterEntity> findByStartTimeAndEndTimeAndEmployeeId(LocalDateTime startTime, LocalDateTime endTime, String employeeId);
+
+    Optional<RosterEntity> findById (Long rosterId);
 //
 //    Page<RosterEntity> findByDateBetweenAndIsCancelledFalse(LocalDate startInclusive,
 //                                                            LocalDate endInclusive,

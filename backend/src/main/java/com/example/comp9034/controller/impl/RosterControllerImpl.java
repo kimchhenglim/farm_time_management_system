@@ -34,8 +34,8 @@ public class RosterControllerImpl implements RosterController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> deleteRoster(DeleteRosterDTO registerRequest) {
-        CompleteResponse<Object> response = rosterService.deleteRoster(registerRequest);
+    public ResponseEntity<ResponseBody<Object>> deleteRoster(Long rosterId, Boolean hard) {
+        CompleteResponse<Object> response = rosterService.deleteRoster(rosterId, hard);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
 

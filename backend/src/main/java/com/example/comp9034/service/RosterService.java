@@ -12,7 +12,7 @@ public interface RosterService {
     CompleteResponse<Object> getRoster(String weekStart, List<String> employeeId, List<String> locations, boolean includeCancelled,
                                        boolean includeArchived, int page, int size);
 
-    CompleteResponse<Object> deleteRoster(DeleteRosterDTO registerRequest);
+    CompleteResponse<Object> deleteRoster(Long rosterId, Boolean hard);
 
     CompleteResponse<Object> updateRoster(CreateRosterDTO registerRequest);
 }

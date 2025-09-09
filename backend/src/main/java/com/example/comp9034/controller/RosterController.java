@@ -16,17 +16,18 @@ public interface RosterController {
 
     @GetMapping("get")
     ResponseEntity<ResponseBody<Object>> getRoster(@RequestParam String weekStart,
-                                                   @RequestParam(required=false) List<String> employeeId,
-                                                   @RequestParam(required=false) List<String> locations,
-                                                   @RequestParam(defaultValue="false") boolean includeCancelled,
-                                                   @RequestParam(defaultValue="false") boolean includeArchived,
-                                                   @RequestParam(defaultValue="0") int page,
-                                                   @RequestParam(defaultValue="100") int size);
+                                                   @RequestParam(required = false) List<String> employeeId,
+                                                   @RequestParam(required = false) List<String> locations,
+                                                   @RequestParam(defaultValue = "false") boolean includeCancelled,
+                                                   @RequestParam(defaultValue = "false") boolean includeArchived,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "100") int size);
 
     @DeleteMapping("delete")
-    ResponseEntity<ResponseBody<Object>> deleteRoster(@Valid @RequestBody DeleteRosterDTO registerRequest);
+    ResponseEntity<ResponseBody<Object>> deleteRoster(@RequestParam Long rosterId,
+                                                      @RequestParam(required = false) Boolean hardDelete);
 
-    @PutMapping()
+    @PutMapping("update")
     ResponseEntity<ResponseBody<Object>> updateRoster(@Valid @RequestBody CreateRosterDTO registerRequest);
 
 }

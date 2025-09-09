@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class RosterDTO {
+    private String rosterId;
     private String employeeId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;

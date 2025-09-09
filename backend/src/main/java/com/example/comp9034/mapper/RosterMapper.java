@@ -13,7 +13,7 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface RosterMapper {
-
+    @Mapping(target = "rosterId", expression = "java(String.valueOf(e.getId()))")
     @Mapping(
             target = "netMinutes",
             expression = "java( Math.max(0L, " +

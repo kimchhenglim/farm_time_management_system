@@ -241,28 +241,17 @@ public class RosterServiceImpl implements RosterService {
     }
 
     @Override
-    public CompleteResponse<Object> deleteRoster(DeleteRosterDTO request) {
-        String employeeId = request.getEmployeeId().trim();
+    public CompleteResponse<Object> deleteRoster(Long rosterId, Boolean hard) {
         try {
-            LocalDateTime startTime = request.getStartTime();
-            LocalDateTime endTime = request.getEndTime();
-            boolean hard = Boolean.TRUE.equals(request.getHardDelete());
-
-            if (!endTime.isAfter(startTime)) {
-                String msg = "End time for the shift must be after start time";
-                log.error(msg);
-                throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
-            }
-
-            RosterEntity rosterEntity = rosterRepository.findByStartTimeAndEndTimeAndEmployeeId(startTime, endTime, employeeId)
+            RosterEntity rosterEntity = rosterRepository.findById(rosterId)
                     .orElseThrow(() -> {
-                        String msg = "Shift from " + startTime + " to " + endTime + " for employee " + employeeId + " not found.";
+                        String msg = "Shift with ID: " + rosterId + " not found.";
                         log.error(msg);
                         return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
                     });
 
             // Dont allow modify past roster
-            if (Objects.equals(rosterEntity.getStatus(), RosterEnum.ARCHIVED.name()) || endTime.isBefore(LocalDateTime.now())) {
+            if (Objects.equals(rosterEntity.getStatus(), RosterEnum.ARCHIVED.name())) {
                 String msg = "Archived roster cannot be modified.";
                 rosterEntity.setStatus(RosterEnum.ARCHIVED.name());
                 rosterRepository.save(rosterEntity);
@@ -270,12 +259,12 @@ public class RosterServiceImpl implements RosterService {
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
             }
             if (!hard && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
-                String msg = "Shift from " + startTime + " to " + endTime + " is already cancelled.";
+                String msg = "Shift with ID: " + rosterId + " is already cancelled.";
                 log.error(msg);
                 throw new BusinessException(SHIFT_ALREADY_CANCELED, ROSTER.name(), msg);
             }
+            String employeeId = rosterEntity.getEmployeeId();
             DeleteRosterResponseDTO response;
-            long rosterId = rosterEntity.getId();
             if (hard) {
                 // Hard delete
                 rosterRepository.delete(rosterEntity);
@@ -307,8 +296,8 @@ public class RosterServiceImpl implements RosterService {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "There has been an error deleting roster shift for user {}";
-            log.error(msg, employeeId);
+            String msg = "There has been an error deleting roster shift with ID {}";
+            log.error(msg, rosterId);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
