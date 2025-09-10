@@ -41,6 +41,7 @@ import static com.example.comp9034.enums.RosterEnum.*;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 import static com.example.comp9034.util.Common.convertStringToLong;
 import static com.example.comp9034.util.Common.getConfigValue;
+import static com.example.comp9034.util.DateTimeFormatUtil.reformatDateTime;
 import static java.time.temporal.TemporalAdjusters.previousOrSame;
 
 @Service
@@ -91,7 +92,7 @@ public class RosterServiceImpl implements RosterService {
             // Overlap check for same employee, any intersecting shift
             boolean hasOverlap = rosterRepository.existsOverlap(employeeId, startTime, endTime);
             if (hasOverlap) {
-                String msg = "Employee " + employeeId + " already has a shift overlapping from " + startTime + " - " + endTime;
+                String msg = "Employee " + employeeId + " already has a shift overlapping from " + reformatDateTime(startTime) + " - " + reformatDateTime(endTime);
                 log.info(msg);
                 throw new BusinessException(INVALID_INPUT, ROSTER.name(), msg);
             }
@@ -111,7 +112,7 @@ public class RosterServiceImpl implements RosterService {
             if (shiftDurationMin > remainingMinutes) {
                 String msg = "Exceed the weekly hours limit" +
                         "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " +
-                        "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) +
+                        "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) + ". " +
                         "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
                 log.error(msg);
                 throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
@@ -127,17 +128,25 @@ public class RosterServiceImpl implements RosterService {
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
+            UserEntity user = userRepository.findByEmployeeId(employeeId)
+                    .orElseThrow(() -> {
+                        String msg = "Employee with ID: " + employeeId + " not found!";
+                        log.error(msg);
+                        return new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
+                    });
+
             CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder()
                     .createdBy(roster.getCreatedBy())
                     .date(roster.getDate())
                     .createdAt(roster.getCreatedAt())
                     .breakMinutes(roster.getBreakMinutes())
                     .employeeId(roster.getEmployeeId())
-                    .endTime(roster.getEndTime())
+                    .endTime(reformatDateTime(roster.getEndTime()))
                     .status(RosterEnum.valueOf(roster.getStatus()))
-                    .startTime(roster.getStartTime())
+                    .startTime(reformatDateTime(roster.getStartTime()))
                     .location(roster.getLocation())
                     .remainingMinutes(remainingMinutes)
+                    .employeeName(user.getFirstName() + " " + user.getLastName())
                     .build();
             return getCompleteResponse(errorCodeRepository, CREATE_ROSTER_SUCCESS, ROSTER.name(), response);
         } catch (BusinessException e) {

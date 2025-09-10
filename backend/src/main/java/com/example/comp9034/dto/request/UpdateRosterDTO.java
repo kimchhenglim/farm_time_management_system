@@ -1,5 +1,6 @@
 package com.example.comp9034.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -16,11 +17,11 @@ public class UpdateRosterDTO {
     private String employeeId;
 
     @NotNull(message = "Start time for shift cannot be null or empty")
-    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime startTime;
 
     @NotNull(message = "End time for shift cannot be null or empty")
-    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime endTime;
 
     private String location;

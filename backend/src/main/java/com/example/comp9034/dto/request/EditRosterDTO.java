@@ -1,5 +1,6 @@
 package com.example.comp9034.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,11 +13,11 @@ import lombok.Setter;
 @Valid
 public class EditRosterDTO {
     @NotNull(message = "Start time is required")
-    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime startTime;
 
     @NotNull(message = "End time is required")
-    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime endTime;
 
     @NotBlank(message = "Employee ID is required")

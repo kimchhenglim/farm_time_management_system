@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 public class CreateRosterResponseDTO {
     private long id;
     private String employeeId;
+    private String employeeName;
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private String startTime;
+    private String endTime;
     private LocalDate date;
     private String location;
     private int breakMinutes;
