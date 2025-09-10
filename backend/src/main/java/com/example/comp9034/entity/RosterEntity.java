@@ -20,8 +20,11 @@ public class RosterEntity {
     private String employeeId;
 
     @Column(name = "start_time", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime startTime;
+
     @Column(name = "end_time", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime endTime;
 
     @Column(nullable = false)
