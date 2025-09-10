@@ -10,18 +10,22 @@ import lombok.Setter;
 @Setter
 @Getter
 @Valid
-public class DeleteRosterDTO {
-    @NotNull(message = "Start time for shift cannot be null or empty")
+public class EditRosterDTO {
+    @NotNull(message = "Start time is required")
     @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
     private java.time.LocalDateTime startTime;
 
-    @NotNull(message = "End time for shift cannot be null or empty")
+    @NotNull(message = "End time is required")
     @com.fasterxml.jackson.annotation.JsonFormat(pattern = "uuuu-MM-dd HH:mm")
     private java.time.LocalDateTime endTime;
 
-    @NotBlank(message = "employeeId is required")
+    @NotBlank(message = "Employee ID is required")
     private String employeeId;
 
-    private Boolean hardDelete;
+    @NotNull(message = "Roster ID is required")
+    private Long rosterId;
+
+    @NotBlank(message = "Location is required")
+    private String location;
 }
 

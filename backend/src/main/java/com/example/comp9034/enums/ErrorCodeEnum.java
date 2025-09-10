@@ -26,6 +26,8 @@ public enum ErrorCodeEnum {
     CREATE_ROSTER_SUCCESS("E000", "Roster created successfully", ROSTER, HttpStatusCodeEnum.OK),
     DELETE_ROSTER_SUCCESS("E000", "Roster deleted successfully", ROSTER, HttpStatusCodeEnum.OK),
     GET_ROSTER_BY_WEEK_SUCCESS("E000", "Get Roster successfully", ROSTER, HttpStatusCodeEnum.OK),
+    UPDATE_ROSTER_SUCCESS("E000", "Roster updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
     USERNAME_TAKEN("E002", "Username taken", REGISTER, HttpStatusCodeEnum.CONFLICT),

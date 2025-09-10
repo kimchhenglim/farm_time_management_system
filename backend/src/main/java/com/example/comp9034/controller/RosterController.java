@@ -1,7 +1,7 @@
 package com.example.comp9034.controller;
 
 import com.example.comp9034.dto.request.CreateRosterDTO;
-import com.example.comp9034.dto.request.DeleteRosterDTO;
+import com.example.comp9034.dto.request.EditRosterDTO;
 import com.example.comp9034.response_template.ResponseBody;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,6 @@ public interface RosterController {
                                                    @RequestParam(required = false) List<String> employeeId,
                                                    @RequestParam(required = false) List<String> locations,
                                                    @RequestParam(defaultValue = "false") boolean includeCancelled,
-                                                   @RequestParam(defaultValue = "false") boolean includeArchived,
                                                    @RequestParam(defaultValue = "0") int page,
                                                    @RequestParam(defaultValue = "100") int size);
 
@@ -28,6 +27,6 @@ public interface RosterController {
                                                       @RequestParam(required = false) Boolean hardDelete);
 
     @PutMapping("update")
-    ResponseEntity<ResponseBody<Object>> updateRoster(@Valid @RequestBody CreateRosterDTO registerRequest);
+    ResponseEntity<ResponseBody<Object>> updateRoster(@Valid @RequestBody EditRosterDTO registerRequest);
 
 }

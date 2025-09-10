@@ -2,7 +2,7 @@ package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.RosterDTO;
 import com.example.comp9034.dto.request.CreateRosterDTO;
-import com.example.comp9034.dto.request.DeleteRosterDTO;
+import com.example.comp9034.dto.request.EditRosterDTO;
 import com.example.comp9034.dto.response.CreateRosterResponseDTO;
 import com.example.comp9034.dto.response.DeleteRosterResponseDTO;
 import com.example.comp9034.dto.response.GetRosterByWeekResponseDTO;
@@ -145,7 +145,7 @@ public class RosterServiceImpl implements RosterService {
 
     @Override
     public CompleteResponse<Object> getRoster(String weekStart, List<String> employeeIdList, List<String> locationList, boolean includeCancelled,
-                                              boolean includeArchived, int page, int size) {
+                                              int page, int size) {
         try {
             // Validate & normalize inputs
             if (weekStart == null || weekStart.trim().isEmpty()) {
@@ -174,8 +174,7 @@ public class RosterServiceImpl implements RosterService {
                     endExclusive,
                     employeeIdList,
                     safeList(locationList),
-                    Boolean.TRUE.equals(includeCancelled),
-                    Boolean.TRUE.equals(includeArchived)
+                    Boolean.TRUE.equals(includeCancelled)
             );
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}",
@@ -206,8 +205,7 @@ public class RosterServiceImpl implements RosterService {
             LocalDateTime endTime,
             List<String> employeeIds,
             List<String> locations,
-            boolean includeCancelled,
-            boolean includeArchived
+            boolean includeCancelled
     ) {
         return (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
@@ -227,10 +225,6 @@ public class RosterServiceImpl implements RosterService {
 
             if (!includeCancelled) {
                 ps.add(cb.or(cb.isFalse(root.get("isCancelled")), cb.isNull(root.get("isCancelled"))));
-            }
-
-            if (!includeArchived) {
-                ps.add(cb.notEqual(root.get("status"), Enum.valueOf(RosterEnum.class, ARCHIVED.name()).name()));
             }
             return cb.and(ps.toArray(new Predicate[0]));
         };
@@ -258,14 +252,14 @@ public class RosterServiceImpl implements RosterService {
                 log.error(msg);
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
             }
-            if (!hard && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
+            if (!Boolean.TRUE.equals(hard) && Boolean.TRUE.equals(rosterEntity.getIsCancelled())) {
                 String msg = "Shift with ID: " + rosterId + " is already cancelled.";
                 log.error(msg);
                 throw new BusinessException(SHIFT_ALREADY_CANCELED, ROSTER.name(), msg);
             }
             String employeeId = rosterEntity.getEmployeeId();
             DeleteRosterResponseDTO response;
-            if (hard) {
+            if (Boolean.TRUE.equals(hard)) {
                 // Hard delete
                 rosterRepository.delete(rosterEntity);
                 log.info("Hard-deleted shift {} for employee {}", rosterId, employeeId);
@@ -303,7 +297,29 @@ public class RosterServiceImpl implements RosterService {
     }
 
     @Override
-    public CompleteResponse<Object> updateRoster(CreateRosterDTO registerRequest) {
-        return null;
+    public CompleteResponse<Object> updateRoster(EditRosterDTO request) {
+        Long rosterId = request.getRosterId();
+        try {
+            RosterEntity rosterEntity = rosterRepository.findById(rosterId)
+                    .orElseThrow(() -> {
+                        String msg = "Roster with ID: " + rosterId + " not found.";
+                        log.error(msg);
+                        return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
+                    });
+
+            rosterEntity.setStartTime(request.getStartTime());
+            rosterEntity.setEndTime(request.getEndTime());
+            rosterEntity.setLocation(request.getLocation());
+            rosterRepository.save(rosterEntity);
+            log.info("Update Roster with ID {} succesfully", rosterId.toString());
+            return getCompleteResponse(
+                    errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), request);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            String msg = "There has been an error updating roster shift with ID {}";
+            log.error(msg, request);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
+        }
     }
 }

@@ -46,8 +46,6 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
     long sumWeekMinutes(@Param("empId") String empId,
                         @Param("weekStart") LocalDate weekStart);
 
-    Optional<RosterEntity> findByStartTimeAndEndTimeAndEmployeeId(LocalDateTime startTime, LocalDateTime endTime, String employeeId);
-
     Optional<RosterEntity> findById (Long rosterId);
 //
 //    Page<RosterEntity> findByDateBetweenAndIsCancelledFalse(LocalDate startInclusive,
