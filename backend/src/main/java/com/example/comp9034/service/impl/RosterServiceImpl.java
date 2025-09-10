@@ -105,6 +105,8 @@ public class RosterServiceImpl implements RosterService {
             // Weekly cap
             long currentWeekMin = rosterRepository.sumWeekMinutes(employeeId, weekStart);
             long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
+            long minShiftMinutes = convertStringToLong(getConfigValue(SHIFT_MIN_MINUTES.name(), configurationRepository, "120"));
+            long maxShiftMinutes = convertStringToLong(getConfigValue(SHIFT_MAX_MINUTES.name(), configurationRepository, "720"));
             long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
             if (shiftDurationMin > remainingMinutes) {
                 String msg = "Exceed the weekly hours limit" +
@@ -113,6 +115,11 @@ public class RosterServiceImpl implements RosterService {
                         "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
                 log.error(msg);
                 throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
+            }
+
+            if (shiftDurationMin < minShiftMinutes || shiftDurationMin > maxShiftMinutes) {
+                log.error("Shift duration does not meet requirement!: {}", shiftDurationMin);
+                throw new BusinessException(SHIFT_DURATION_INVALID, ROSTER.name(), null);
             }
 
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime,

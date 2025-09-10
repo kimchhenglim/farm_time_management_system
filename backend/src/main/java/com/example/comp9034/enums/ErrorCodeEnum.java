@@ -65,6 +65,8 @@ public enum ErrorCodeEnum {
     ROSTER_IMMUTABLE("E034", "Past rosters cannot be changed", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
+    SHIFT_DURATION_INVALID("E037", "Shift duration does not meet requirements", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+
     ;
 
 
