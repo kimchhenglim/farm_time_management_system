@@ -6,14 +6,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RosterRepository extends JpaRepository<RosterEntity, Integer> {
+public interface RosterRepository extends JpaRepository<RosterEntity, Long>, JpaSpecificationExecutor<RosterEntity> {
     
     @Query("""
         SELECT r.employeeId, MIN(r.startTime), MIN(r.endTime)
@@ -46,14 +46,5 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Integer> {
     long sumWeekMinutes(@Param("empId") String empId,
                         @Param("weekStart") LocalDate weekStart);
 
-    Optional<RosterEntity> findByStartTimeAndEndTimeAndEmployeeId(LocalDateTime startTime, LocalDateTime endTime, String employeeId);
-//
-//    Page<RosterEntity> findByDateBetweenAndIsCancelledFalse(LocalDate startInclusive,
-//                                                            LocalDate endInclusive,
-//                                                            Pageable pageable);
-//
-//    Page<RosterEntity> findByEmployeeIdAndDateBetweenAndIsCancelledFalse(String employeeId,
-//                                                                         LocalDate startInclusive,
-//                                                                         LocalDate endInclusive,
-//                                                                         Pageable pageable);
+    Optional<RosterEntity> findById (Long rosterId);
 }

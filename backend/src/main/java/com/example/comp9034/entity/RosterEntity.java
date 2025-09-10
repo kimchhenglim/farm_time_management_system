@@ -1,6 +1,5 @@
 package com.example.comp9034.entity;
 
-import com.example.comp9034.enums.RosterEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,12 +31,12 @@ public class RosterEntity {
     private Integer breakMinutes = 0;        // default 0; set to 30 if > 4h
     private Boolean isCancelled = false;
 
-    private RosterEnum status;
+    private String status;
 
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, RosterEnum status, String createdBy, String location) {
+    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String location) {
         this.breakMinutes = breakMinutes;
         this.date = date;
         this.endTime = endTime;

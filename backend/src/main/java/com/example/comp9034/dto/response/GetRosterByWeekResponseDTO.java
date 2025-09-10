@@ -1,5 +1,6 @@
 package com.example.comp9034.dto.response;
 
+import com.example.comp9034.dto.RosterDTO;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class GetRosterByWeekResponseDTO {
     private LocalDate weekStart;        // normalized Monday
-    private LocalDate weekEndInclusive; // Sunday
-    private List<CreateRosterResponseDTO> items;
+    private LocalDate weekEnd; // Sunday
+    private List<RosterDTO> rosterList;
     private int page;
     private int size;
     private long totalElements;
