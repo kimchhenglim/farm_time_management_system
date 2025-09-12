@@ -59,12 +59,14 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
         FROM RosterEntity r
         WHERE r.startTime < :endExclusive
           AND r.endTime > :startInclusive
+          AND r.isCancelled = false
           AND r.employeeId IN (
               SELECT DISTINCT r2.employeeId
               FROM RosterEntity r2
               WHERE r2.status IN ('DRAFT', 'UPDATED')
                 AND r2.startTime < :endExclusive
                 AND r2.endTime > :startInclusive
+                AND r2.isCancelled = false
           )
         ORDER BY r.employeeId, r.startTime
     """)
