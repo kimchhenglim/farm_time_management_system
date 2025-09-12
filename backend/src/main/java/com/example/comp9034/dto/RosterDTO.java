@@ -20,5 +20,7 @@ public class RosterDTO {
     private String location;
     private Integer breakMinutes;
     private String status;
+
+    private String employeeName;
     private long netMinutes;
 }

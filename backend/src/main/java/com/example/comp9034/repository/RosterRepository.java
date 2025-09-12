@@ -48,4 +48,8 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
                         @Param("weekStart") LocalDate weekStart);
 
     Optional<RosterEntity> findById(Long rosterId);
+
+    @Query("SELECT r FROM RosterEntity r " +
+            "WHERE :keyword IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<RosterEntity> findAllByLocation(@Param("keyword") String keyword);
 }

@@ -44,6 +44,12 @@ public class RosterControllerImpl implements RosterController {
         CompleteResponse<Object> response = rosterService.updateRoster(request);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> getRosterLocations(String keyword) {
+        CompleteResponse<Object> response = rosterService.getRosterLocations(keyword);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
 }
 
 
