@@ -126,8 +126,6 @@ public class RosterServiceImpl implements RosterService {
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime, employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation(), user.getFirstName() + " " + user.getLastName());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
-
-
             CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder().createdBy(roster.getCreatedBy()).date(roster.getDate()).createdAt(roster.getCreatedAt()).breakMinutes(roster.getBreakMinutes()).employeeId(roster.getEmployeeId()).endTime(reformatDateTime(roster.getEndTime())).status(RosterEnum.valueOf(roster.getStatus())).startTime(reformatDateTime(roster.getStartTime())).location(roster.getLocation()).remainingMinutes(remainingMinutes).employeeName(roster.getEmployeeName()).build();
             return getCompleteResponse(errorCodeRepository, CREATE_ROSTER_SUCCESS, ROSTER.name(), response);
         } catch (BusinessException e) {
@@ -163,7 +161,6 @@ public class RosterServiceImpl implements RosterService {
             Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, employeeIdList, safeList(locationList), Boolean.TRUE.equals(includeCancelled));
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}", result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
-
             List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());
             GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder().weekStart(monday).weekEnd(nextMonday.minusDays(1)).page(page).size(size).totalElements(result.getTotalElements()).totalPages(result.getTotalPages()).rosterList(rosterList).build();
             return getCompleteResponse(errorCodeRepository, GET_ROSTER_BY_WEEK_SUCCESS, ROSTER.name(), payload);
@@ -281,12 +278,7 @@ public class RosterServiceImpl implements RosterService {
             if (keyword != null && keyword.trim().isEmpty()) {
                 keyword = null;
             }
-
-            List<RosterEntity> rosterList = rosterRepository.findAllByLocation(keyword);
-            List<String> locationList = new ArrayList<>();
-            for (RosterEntity rosterEntity : rosterList) {
-                locationList.add(rosterEntity.getLocation());
-            }
+            List<String> locationList = rosterRepository.findDistinctLocations(keyword);
             return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), locationList);
         } catch (BusinessException e) {
             throw e;
