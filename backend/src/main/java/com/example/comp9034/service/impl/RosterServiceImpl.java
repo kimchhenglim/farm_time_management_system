@@ -276,6 +276,7 @@ public class RosterServiceImpl implements RosterService {
             rosterEntity.setStartTime(request.getStartTime());
             rosterEntity.setEndTime(request.getEndTime());
             rosterEntity.setLocation(request.getLocation());
+            rosterEntity.setStatus(UPDATE_ROSTER_SUCCESS.name());
             rosterRepository.save(rosterEntity);
             log.info("Update Roster ID {} succesfully", rosterId.toString());
             return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), request);
