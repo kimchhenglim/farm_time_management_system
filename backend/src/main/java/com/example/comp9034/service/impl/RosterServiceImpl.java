@@ -256,7 +256,23 @@ public class RosterServiceImpl implements RosterService {
                 log.error(msg);
                 return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
             });
-            rosterEntity.setEmployeeId(request.getEmployeeId());
+
+            if (Objects.equals(rosterEntity.getStatus(), ARCHIVED.name())) {
+                String msg = "Archived roster cannot be edited.";
+                log.error(msg);
+                throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
+            }
+
+            if (!request.getEmployeeId().isEmpty()) {
+                String employeeId = request.getEmployeeId();
+                UserEntity user = userRepository.findByEmployeeId(employeeId).orElseThrow(() -> {
+                    String msg = "Employee with ID: " + employeeId + " not found to update the roster!";
+                    log.error(msg);
+                    return new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
+                });
+                rosterEntity.setEmployeeId(request.getEmployeeId());
+                rosterEntity.setEmployeeName(user.getFirstName() + " " + user.getLastName());
+            }
             rosterEntity.setStartTime(request.getStartTime());
             rosterEntity.setEndTime(request.getEndTime());
             rosterEntity.setLocation(request.getLocation());
