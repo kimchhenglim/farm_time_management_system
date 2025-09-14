@@ -29,4 +29,6 @@ public interface RosterController {
     @PutMapping("update")
     ResponseEntity<ResponseBody<Object>> updateRoster(@Valid @RequestBody EditRosterDTO registerRequest);
 
+    @GetMapping("/get/locations")
+    ResponseEntity<ResponseBody<Object>> getRosterLocations(@RequestParam(required = false) String keyword);
 }

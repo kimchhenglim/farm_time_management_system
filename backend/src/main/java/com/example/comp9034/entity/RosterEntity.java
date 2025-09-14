@@ -19,6 +19,9 @@ public class RosterEntity {
     @Column(name = "employee_id", nullable = false)
     private String employeeId;
 
+    @Column(name = "employee_name", nullable = false)
+    private String employeeName;
+
     @Column(name = "start_time", nullable = false)
     @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime startTime;
@@ -39,7 +42,7 @@ public class RosterEntity {
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String location) {
+    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String location, String employeeName) {
         this.breakMinutes = breakMinutes;
         this.date = date;
         this.endTime = endTime;
@@ -48,6 +51,7 @@ public class RosterEntity {
         this.status = status;
         this.createdBy = createdBy;
         this.location = location;
+        this.employeeName = employeeName;
     }
 
     public RosterEntity() {

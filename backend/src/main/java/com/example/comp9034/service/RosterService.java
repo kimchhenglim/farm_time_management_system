@@ -14,4 +14,6 @@ public interface RosterService {
     CompleteResponse<Object> deleteRoster(Long rosterId, Boolean hard);
 
     CompleteResponse<Object> updateRoster(EditRosterDTO request);
+
+    CompleteResponse<Object> getRosterLocations(String keyword);
 }

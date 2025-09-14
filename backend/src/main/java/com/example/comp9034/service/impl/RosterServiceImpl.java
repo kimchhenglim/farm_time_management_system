@@ -27,10 +27,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import jakarta.persistence.criteria.Predicate;
@@ -87,7 +87,7 @@ public class RosterServiceImpl implements RosterService {
             }
 
             LocalDate shiftDate = startTime.toLocalDate();
-            LocalDate weekStart = shiftDate.with(previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate weekStart = shiftDate.with(previousOrSame(DayOfWeek.MONDAY));
 
             // Overlap check for same employee, any intersecting shift
             boolean hasOverlap = rosterRepository.existsOverlap(employeeId, startTime, endTime);
@@ -98,10 +98,8 @@ public class RosterServiceImpl implements RosterService {
             }
 
             // 30 min if > 4h
-            long shiftDurationMin = java.time.Duration.between(startTime, endTime).toMinutes();
-            int breakMin = (createRosterDTO.getBreakMinutes() > 0)
-                    ? createRosterDTO.getBreakMinutes()
-                    : (shiftDurationMin > 240 ? 30 : 0);
+            long shiftDurationMin = Duration.between(startTime, endTime).toMinutes();
+            int breakMin = (createRosterDTO.getBreakMinutes() > 0) ? createRosterDTO.getBreakMinutes() : (shiftDurationMin > 240 ? 30 : 0);
 
             // Weekly cap
             long currentWeekMin = rosterRepository.sumWeekMinutes(employeeId, weekStart);
@@ -110,10 +108,7 @@ public class RosterServiceImpl implements RosterService {
             long maxShiftMinutes = convertStringToLong(getConfigValue(SHIFT_MAX_MINUTES.name(), configurationRepository, "720"));
             long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
             if (shiftDurationMin > remainingMinutes) {
-                String msg = "Exceed the weekly hours limit" +
-                        "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " +
-                        "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) + ". " +
-                        "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
+                String msg = "Exceed the weekly hours limit" + "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " + "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) + ". " + "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
                 log.error(msg);
                 throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
             }
@@ -122,46 +117,28 @@ public class RosterServiceImpl implements RosterService {
                 log.error("Shift duration does not meet requirement!: {}", shiftDurationMin);
                 throw new BusinessException(SHIFT_DURATION_INVALID, ROSTER.name(), null);
             }
+            UserEntity user = userRepository.findByEmployeeId(employeeId).orElseThrow(() -> {
+                String msg = "Employee with ID: " + employeeId + " not found!";
+                log.error(msg);
+                return new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
+            });
 
-            RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime,
-                    employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation());
+            RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime, employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation(), user.getFirstName() + " " + user.getLastName());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
-
-            UserEntity user = userRepository.findByEmployeeId(employeeId)
-                    .orElseThrow(() -> {
-                        String msg = "Employee with ID: " + employeeId + " not found!";
-                        log.error(msg);
-                        return new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
-                    });
-
-            CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder()
-                    .createdBy(roster.getCreatedBy())
-                    .date(roster.getDate())
-                    .createdAt(roster.getCreatedAt())
-                    .breakMinutes(roster.getBreakMinutes())
-                    .employeeId(roster.getEmployeeId())
-                    .endTime(reformatDateTime(roster.getEndTime()))
-                    .status(RosterEnum.valueOf(roster.getStatus()))
-                    .startTime(reformatDateTime(roster.getStartTime()))
-                    .location(roster.getLocation())
-                    .remainingMinutes(remainingMinutes)
-                    .employeeName(user.getFirstName() + " " + user.getLastName())
-                    .build();
+            CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder().createdBy(roster.getCreatedBy()).date(roster.getDate()).createdAt(roster.getCreatedAt()).breakMinutes(roster.getBreakMinutes()).employeeId(roster.getEmployeeId()).endTime(reformatDateTime(roster.getEndTime())).status(RosterEnum.valueOf(roster.getStatus())).startTime(reformatDateTime(roster.getStartTime())).location(roster.getLocation()).remainingMinutes(remainingMinutes).employeeName(roster.getEmployeeName()).build();
             return getCompleteResponse(errorCodeRepository, CREATE_ROSTER_SUCCESS, ROSTER.name(), response);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "There has been an error creating roster for employee " +
-                    createRosterDTO.getEmployeeId() + " " + e;
+            String msg = "There has been an error creating roster for employee " + createRosterDTO.getEmployeeId() + " " + e;
             log.error(msg, e);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
 
     @Override
-    public CompleteResponse<Object> getRoster(String weekStart, List<String> employeeIdList, List<String> locationList, boolean includeCancelled,
-                                              int page, int size) {
+    public CompleteResponse<Object> getRoster(String weekStart, List<String> employeeIdList, List<String> locationList, boolean includeCancelled, int page, int size) {
         try {
             // Validate & normalize inputs
             if (weekStart == null || weekStart.trim().isEmpty()) {
@@ -171,41 +148,21 @@ public class RosterServiceImpl implements RosterService {
             }
 
             LocalDate weekAnyDate = LocalDate.parse(weekStart.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
-            LocalDate monday = weekAnyDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate monday = weekAnyDate.with(previousOrSame(DayOfWeek.MONDAY));
             LocalDate nextMonday = monday.plusWeeks(1);
             LocalDateTime startInclusive = monday.atStartOfDay();
             LocalDateTime endExclusive = nextMonday.atStartOfDay();
 
             size = Math.min(size, 500);
 
-            Pageable pageable = PageRequest.of(
-                    page,
-                    size,
-                    Sort.by(Sort.Direction.ASC, "startTime").and(Sort.by("employeeId"))
-            );
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startTime").and(Sort.by("employeeId")));
 
             // 2) Build Specification
-            Specification<RosterEntity> spec = buildWeekSpec(
-                    startInclusive,
-                    endExclusive,
-                    employeeIdList,
-                    safeList(locationList),
-                    Boolean.TRUE.equals(includeCancelled)
-            );
+            Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, employeeIdList, safeList(locationList), Boolean.TRUE.equals(includeCancelled));
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
-            log.info("Fetched {} rosters (page {}/{}) for week {} to {}",
-                    result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
-
+            log.info("Fetched {} rosters (page {}/{}) for week {} to {}", result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
             List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());
-            GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder()
-                    .weekStart(monday)
-                    .weekEnd(nextMonday.minusDays(1))
-                    .page(page)
-                    .size(size)
-                    .totalElements(result.getTotalElements())
-                    .totalPages(result.getTotalPages())
-                    .rosterList(rosterList)
-                    .build();
+            GetRosterByWeekResponseDTO payload = GetRosterByWeekResponseDTO.builder().weekStart(monday).weekEnd(nextMonday.minusDays(1)).page(page).size(size).totalElements(result.getTotalElements()).totalPages(result.getTotalPages()).rosterList(rosterList).build();
             return getCompleteResponse(errorCodeRepository, GET_ROSTER_BY_WEEK_SUCCESS, ROSTER.name(), payload);
         } catch (BusinessException e) {
             throw e;
@@ -216,13 +173,7 @@ public class RosterServiceImpl implements RosterService {
         }
     }
 
-    private Specification<RosterEntity> buildWeekSpec(
-            LocalDateTime startTime,
-            LocalDateTime endTime,
-            List<String> employeeIds,
-            List<String> locations,
-            boolean includeCancelled
-    ) {
+    private Specification<RosterEntity> buildWeekSpec(LocalDateTime startTime, LocalDateTime endTime, List<String> employeeIds, List<String> locations, boolean includeCancelled) {
         return (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
 
@@ -253,17 +204,16 @@ public class RosterServiceImpl implements RosterService {
     @Override
     public CompleteResponse<Object> deleteRoster(Long rosterId, Boolean hard) {
         try {
-            RosterEntity rosterEntity = rosterRepository.findById(rosterId)
-                    .orElseThrow(() -> {
-                        String msg = "Shift with ID: " + rosterId + " not found.";
-                        log.error(msg);
-                        return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
-                    });
+            RosterEntity rosterEntity = rosterRepository.findById(rosterId).orElseThrow(() -> {
+                String msg = "Shift with ID: " + rosterId + " not found.";
+                log.error(msg);
+                return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
+            });
 
             // Dont allow modify past roster
-            if (Objects.equals(rosterEntity.getStatus(), RosterEnum.ARCHIVED.name())) {
+            if (Objects.equals(rosterEntity.getStatus(), ARCHIVED.name())) {
                 String msg = "Archived roster cannot be modified.";
-                rosterEntity.setStatus(RosterEnum.ARCHIVED.name());
+                rosterEntity.setStatus(ARCHIVED.name());
                 rosterRepository.save(rosterEntity);
                 log.error(msg);
                 throw new BusinessException(ROSTER_IMMUTABLE, ROSTER.name(), msg);
@@ -279,30 +229,15 @@ public class RosterServiceImpl implements RosterService {
                 // Hard delete
                 rosterRepository.delete(rosterEntity);
                 log.info("Hard-deleted shift {} for employee {}", rosterId, employeeId);
-                response = DeleteRosterResponseDTO.builder()
-                        .shiftId(rosterId)
-                        .employeeId(employeeId)
-                        .action("DELETED")
-                        .status(null)
-                        .isCancelled(null)
-                        .processedAt(LocalDateTime.now())
-                        .build();
+                response = DeleteRosterResponseDTO.builder().shiftId(rosterId).employeeId(employeeId).action("DELETED").status(null).isCancelled(null).processedAt(LocalDateTime.now()).build();
             } else {
                 rosterEntity.setIsCancelled(true);
                 rosterEntity.setStatus(UPDATED.name());
                 rosterRepository.save(rosterEntity);
                 log.info("Cancel shift {} for employee {}", rosterId, employeeId);
-                response = DeleteRosterResponseDTO.builder()
-                        .shiftId(rosterId)
-                        .employeeId(employeeId)
-                        .action("CANCELLED")
-                        .status(RosterEnum.valueOf(rosterEntity.getStatus()))
-                        .isCancelled(true)
-                        .processedAt(LocalDateTime.now())
-                        .build();
+                response = DeleteRosterResponseDTO.builder().shiftId(rosterId).employeeId(employeeId).action("CANCELLED").status(RosterEnum.valueOf(rosterEntity.getStatus())).isCancelled(true).processedAt(LocalDateTime.now()).build();
             }
-            return getCompleteResponse(
-                    errorCodeRepository, DELETE_ROSTER_SUCCESS, ROSTER.name(), response);
+            return getCompleteResponse(errorCodeRepository, DELETE_ROSTER_SUCCESS, ROSTER.name(), response);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -316,25 +251,40 @@ public class RosterServiceImpl implements RosterService {
     public CompleteResponse<Object> updateRoster(EditRosterDTO request) {
         Long rosterId = request.getRosterId();
         try {
-            RosterEntity rosterEntity = rosterRepository.findById(rosterId)
-                    .orElseThrow(() -> {
-                        String msg = "Roster with ID: " + rosterId + " not found.";
-                        log.error(msg);
-                        return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
-                    });
-
+            RosterEntity rosterEntity = rosterRepository.findById(rosterId).orElseThrow(() -> {
+                String msg = "Roster with ID: " + rosterId + " not found.";
+                log.error(msg);
+                return new BusinessException(ROSTER_NOT_FOUND, ROSTER.name(), msg);
+            });
+            rosterEntity.setEmployeeId(request.getEmployeeId());
             rosterEntity.setStartTime(request.getStartTime());
             rosterEntity.setEndTime(request.getEndTime());
             rosterEntity.setLocation(request.getLocation());
             rosterRepository.save(rosterEntity);
-            log.info("Update Roster with ID {} succesfully", rosterId.toString());
-            return getCompleteResponse(
-                    errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), request);
+            log.info("Update Roster ID {} succesfully", rosterId.toString());
+            return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), request);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             String msg = "There has been an error updating roster shift with ID {}";
             log.error(msg, request);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
+        }
+    }
+
+    @Override
+    public CompleteResponse<Object> getRosterLocations(String keyword) {
+        try {
+            if (keyword != null && keyword.trim().isEmpty()) {
+                keyword = null;
+            }
+            List<String> locationList = rosterRepository.findDistinctLocations(keyword);
+            return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), locationList);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            String msg = "There has been an error getting roster locations with keyword {}";
+            log.error(msg, keyword);
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
