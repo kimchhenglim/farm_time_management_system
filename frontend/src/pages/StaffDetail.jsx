@@ -126,7 +126,9 @@ function StaffDetail() {
               <div>
                 Overtime rate:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {currentStaff?.contractType === "CASUAL" ? "2.5" : "1.5"}
+                  {currentStaff?.contractType === "CASUAL"
+                    ? 2.5 * currentStaff?.payRate
+                    : 1.5 * currentStaff?.payRate}
                 </span>
               </div>
               <div>

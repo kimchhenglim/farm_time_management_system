@@ -284,7 +284,11 @@ function EditStaffModal({
                 name="overtimeRate"
                 id="overtimeRate"
                 disabled
-                value={formData?.contractType === "CASUAL" ? "2.5" : "1.5"}
+                value={
+                  formData?.contractType === "CASUAL"
+                    ? 2.5 * formData?.payRate
+                    : 1.5 * formData?.payRate
+                }
                 className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
               />
             </div>
