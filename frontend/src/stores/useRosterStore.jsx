@@ -1,498 +1,304 @@
 import { create } from "zustand";
 import { toast } from "react-hot-toast";
 import { axiosInstances } from "../libs/axios";
+import useAuthStore from "./useAuthStore";
+
 const useRosterStore = create((set, get) => ({
   isAddingRoster: false,
+  isEditingRoster: false,
   isDeletingRoster: false,
-  staffActiveList: [
-    {
-      id: 40,
-      staffName: "Chingsien Ly",
-      type: "Full-time",
-      payRate: "32",
-      totalHour: 34,
-    },
-    {
-      id: 41,
-      staffName: "Masanori Isono",
-      type: "Part-time",
-      payRate: "32",
-      totalHour: 19,
-    },
-    {
-      id: 42,
-      staffName: "Eri Higuchi",
-      type: "Casual",
-      payRate: "32",
-      totalHour: 21,
-    },
-    {
-      id: 43,
-      staffName: "Yudou Han",
-      type: "Casual",
-      payRate: "32",
-      totalHour: 22,
-    },
-    {
-      id: 44,
-      staffName: "Kimchheng Lim",
-      type: "Casual",
-      payRate: "32",
-      totalHour: 24,
-    },
-  ],
-  roster: [
-    {
-      date: "08-09-2025",
-      day: "Monday",
-      data: [
-        {
-          id: 1,
-          staffName: "Alice",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
-          payRate: 25,
-          type: "Full-time",
-          totalHour: 22,
+  staffActiveList: [],
+  roster: [],
+
+  fetchRoster: async (weekStart, locations = []) => {
+    const authUser = useAuthStore.getState().authUser;
+    try {
+      const token = authUser?.body?.loginToken;
+      const params = { weekStart };
+      if (locations.length) params.locations = locations.join(",");
+      const res = await axiosInstances.get("/admin/roster/get", {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          id: 2,
-          staffName: "Bob",
-          location: "Shed 2",
-          time: "09:00 - 13:00",
-          payRate: 28,
-          type: "Part-time",
-          totalHour: 22,
-        },
-        {
-          id: 3,
-          staffName: "Charlie",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-          payRate: 27,
-          type: "Casual",
-          totalHour: 22,
-        },
-        {
-          id: 4,
-          staffName: "Diana",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-          payRate: 26,
-          type: "Full-time",
-          totalHour: 28,
-        },
-        {
-          id: 5,
-          staffName: "Ethan",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-          payRate: 30,
-          type: "Part-time",
-          totalHour: 28,
-        },
-        {
-          id: 6,
-          staffName: "Chingsien",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-          payRate: 32,
-          type: "Full-time",
-          totalHour: 28,
-        },
-        {
-          id: 7,
-          staffName: "Nancy",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-          payRate: 29,
-          type: "Casual",
-          totalHour: 28,
-        },
-        {
-          id: 8,
-          staffName: "Mia",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-          payRate: 24,
-          type: "Part-time",
-          totalHour: 33,
-        },
-        {
-          id: 9,
-          staffName: "Riley",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-          payRate: 31,
-          type: "Full-time",
-          totalHour: 23,
-        },
-      ],
-    },
-    {
-      date: "09-09-2025",
-      day: "Tuesday",
-      data: [
-        {
-          id: 10,
-          staffName: "Fiona",
-          location: "Shed 2",
-          time: "08:00 - 12:00",
-          payRate: 27,
-          type: "Casual",
-          totalHour: 28,
-        },
-        {
-          id: 11,
-          staffName: "George",
-          location: "Shed 3",
-          time: "09:00 - 13:00",
-          payRate: 26,
-          type: "Full-time",
-          totalHour: 28,
-        },
-        {
-          id: 12,
-          staffName: "Hannah",
-          location: "Shed 1",
-          time: "10:00 - 14:00",
-          payRate: 25,
-          type: "Part-time",
-          totalHour: 28,
-        },
-        {
-          id: 13,
-          staffName: "Ian",
-          location: "Shed 2",
-          time: "12:00 - 16:00",
-          payRate: 28,
-          type: "Full-time",
-          totalHour: 28,
-        },
-        {
-          id: 14,
-          staffName: "Judy",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-          payRate: 30,
-          type: "Casual",
-          totalHour: 28,
-        },
-      ],
-    },
-    {
-      date: "10-09-2025",
-      day: "Wednesday",
-      data: [
-        {
-          id: 15,
-          staffName: "Kevin",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
-          payRate: 25,
-          type: "Full-time",
-          totalHour: 26,
-        },
-        {
-          id: 16,
-          staffName: "Laura",
-          location: "Shed 2",
-          time: "09:00 - 13:00",
-          payRate: 26,
-          type: "Casual",
-          totalHour: 26,
-        },
-        {
-          id: 17,
-          staffName: "Mike",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-          payRate: 27,
-          type: "Full-time",
-          totalHour: 26,
-        },
-        {
-          id: 18,
-          staffName: "Nina",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-          payRate: 24,
-          type: "Part-time",
-          totalHour: 26,
-        },
-        {
-          id: 19,
-          staffName: "Oscar",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-          payRate: 29,
-          type: "Casual",
-          totalHour: 26,
-        },
-      ],
-    },
-    {
-      date: "11-09-2025",
-      day: "Thursday",
-      data: [
-        {
-          id: 20,
-          staffName: "Paul",
-          location: "Shed 3",
-          time: "08:00 - 12:00",
-          payRate: 28,
-          type: "Part-time",
-          totalHour: 26,
-        },
-        {
-          id: 21,
-          staffName: "Quinn",
-          location: "Shed 1",
-          time: "09:00 - 13:00",
-          payRate: 27,
-          type: "Full-time",
-          totalHour: 26,
-        },
-        {
-          id: 22,
-          staffName: "Rachel",
-          location: "Shed 2",
-          time: "10:00 - 14:00",
-          payRate: 25,
-          type: "Casual",
-          totalHour: 26,
-        },
-        {
-          id: 23,
-          staffName: "Sam",
-          location: "Shed 3",
-          time: "12:00 - 16:00",
-          payRate: 30,
-          type: "Full-time",
-          totalHour: 0,
-        },
-        {
-          id: 24,
-          staffName: "Tina",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-          payRate: 26,
-          type: "Casual",
-          totalHour: 26,
-        },
-      ],
-    },
-    {
-      date: "12-09-2025",
-      day: "Friday",
-      data: [
-        {
-          id: 25,
-          staffName: "Uma",
-          location: "Shed 2",
-          time: "08:00 - 12:00",
-          payRate: 27,
-          type: "Full-time",
-          totalHour: 26,
-        },
-        {
-          id: 26,
-          staffName: "Victor",
-          location: "Shed 3",
-          time: "09:00 - 13:00",
-          payRate: 28,
-          type: "Casual",
-          totalHour: 26,
-        },
-        {
-          id: 27,
-          staffName: "Wendy",
-          location: "Shed 1",
-          time: "10:00 - 14:00",
-          payRate: 25,
-          type: "Part-time",
-          totalHour: 26,
-        },
-        {
-          id: 28,
-          staffName: "Xavier",
-          location: "Shed 2",
-          time: "12:00 - 16:00",
-          payRate: 29,
-          type: "Full-time",
-          totalHour: 26,
-        },
-        {
-          id: 29,
-          staffName: "Yvonne",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-          payRate: 30,
-          type: "Casual",
-          totalHour: 26,
-        },
-      ],
-    },
-    {
-      date: "13-09-2025",
-      day: "Saturday",
-      data: [
-        {
-          id: 30,
-          staffName: "Zack",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
-          payRate: 26,
-          type: "Casual",
-          totalHour: 21,
-        },
-        {
-          id: 31,
-          staffName: "Amy",
-          location: "Shed 2",
-          time: "09:00 - 13:00",
-          payRate: 25,
-          type: "Full-time",
-          totalHour: 21,
-        },
-        {
-          id: 32,
-          staffName: "Brian",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-          payRate: 27,
-          type: "Part-time",
-          totalHour: 21,
-        },
-        {
-          id: 33,
-          staffName: "Clara",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-          payRate: 24,
-          type: "Full-time",
-          totalHour: 21,
-        },
-        {
-          id: 34,
-          staffName: "David",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-          payRate: 28,
-          type: "Casual",
-          totalHour: 21,
-        },
-      ],
-    },
-    {
-      date: "14-09-2025",
-      day: "Sunday",
-      data: [
-        {
-          id: 35,
-          staffName: "Ella",
-          location: "Shed 3",
-          time: "08:00 - 12:00",
-          payRate: 30,
-          type: "Part-time",
-          totalHour: 21,
-        },
-        {
-          id: 36,
-          staffName: "Frank",
-          location: "Shed 1",
-          time: "09:00 - 13:00",
-          payRate: 25,
-          type: "Full-time",
-          totalHour: 21,
-        },
-        {
-          id: 37,
-          staffName: "Grace",
-          location: "Shed 2",
-          time: "10:00 - 14:00",
-          payRate: 26,
-          type: "Casual",
-          totalHour: 21,
-        },
-        {
-          id: 38,
-          staffName: "Henry",
-          location: "Shed 3",
-          time: "12:00 - 16:00",
-          payRate: 29,
-          type: "Part-time",
-          totalHour: 21,
-        },
-        {
-          id: 39,
-          staffName: "Isla",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-          payRate: 27,
-          type: "Full-time",
-          totalHour: 21,
-        },
-      ],
-    },
-  ],
-  addRoster: async (
+      });
+
+      const rosterList = res.data?.body?.rosterList || [];
+
+      const grouped = rosterList.reduce((acc, item) => {
+        const [datePart] = item.startTime.split(" "); // "11-09-2025"
+        const [day, month, year] = datePart.split("-").map(Number);
+        const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`; // "2025-09-11"
+
+        if (!acc[isoDate]) {
+          acc[isoDate] = { date: isoDate, data: [] };
+        }
+
+        const parseDateTime = (str) => {
+          if (!str) return null;
+          const [datePart, timePart] = str.split(" ");
+          const [day, month, year] = datePart.split("-").map(Number);
+          const [hour, minute] = timePart.split(":").map(Number);
+          return new Date(year, month - 1, day, hour, minute);
+        };
+
+        const startDate = parseDateTime(item.startTime);
+        const endDate = parseDateTime(item.endTime);
+
+        const formatTo12Hour = (d) => {
+          if (!d) return "Invalid Time";
+          let hour = d.getHours();
+          const minute = d.getMinutes();
+          const ampm = hour >= 12 ? "PM" : "AM";
+          hour = hour % 12 || 12;
+          return `${hour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+        };
+
+        acc[isoDate].data.push({
+          id: item.rosterId,
+          employeeName: item.employeeName || item.staffName,
+          employeeId: item.employeeId,
+          location: item.location,
+          time: `${formatTo12Hour(startDate)} - ${formatTo12Hour(endDate)}`,
+          type: item.type,
+          payRate: item.payRate,
+          totalHour: item.totalHour,
+        });
+
+        return acc;
+      }, {});
+
+      const newRoster = Object.values(grouped);
+      set({ roster: newRoster });
+    } catch (err) {
+      console.error("Error fetching roster:", err);
+    }
+  },
+
+  addRoster: async ({
     date,
-    id,
+    staffId,
     staffName,
     location,
     startTime,
     endTime,
     type,
     payRate,
-    totalHour
-  ) => {
-    const { roster } = get();
-    console.log(date, id, staffName, location, startTime, endTime);
+    totalHour,
+    breakMinutes = null,
+  }) => {
     try {
       set({ isAddingRoster: true });
-      const newStaff = {
-        id: id,
-        staffName: staffName,
-        location: location,
-        time: startTime + " - " + endTime,
-        type: type,
-        payRate: payRate,
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+
+      const { data } = await axiosInstances.post(
+        "/admin/roster/create",
+        {
+          employeeId: staffId,
+          employeeName: staffName,
+          location,
+          startTime,
+          endTime,
+          breakMinutes,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formatTo12Hour = (dateTimeStr) => {
+        if (!dateTimeStr) return "?";
+
+        // Handle format like "22-09-2025 15:29"
+        let dateObj;
+        if (dateTimeStr.includes("-")) {
+          // "dd-MM-yyyy HH:mm"
+          const [datePart, timePart] = dateTimeStr.split(" ");
+          if (!timePart) return "?";
+          const [day, month, year] = datePart.split("-").map(Number);
+          const [hour, minute] = timePart.split(":").map(Number);
+          dateObj = new Date(year, month - 1, day, hour, minute);
+        } else {
+          dateObj = new Date(dateTimeStr);
+        }
+
+        if (isNaN(dateObj)) return "?";
+
+        let hours = dateObj.getHours();
+        const minutes = dateObj.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+        return `${hour12}:${minutes.toString().padStart(2, "0")}${ampm}`;
       };
-      console.log(newStaff);
-      set((state) => ({
-        roster: state.roster.map((day) =>
-          day.date === date
-            ? { ...day, data: [...day.data, newStaff] } // append new staff
-            : day
-        ),
-      }));
-      set((state) => ({
-        staffActiveList: state.staffActiveList.map((staff) =>
-          staff.id === id ? { ...staff, totalHour: totalHour } : staff
-        ),
-      })),
-        toast.success("Successfully added shift!");
-      // happens in if(res)
-    } catch (error) {
-      console.error("Unexpected error in addRoster:", error.message);
+
+      // Update local store
+      const newShift = {
+        id: data?.id || Date.now(),
+        employeeName: staffName,
+        location,
+        time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
+        type,
+        payRate,
+      };
+
+      set((state) => {
+        const rosterExists = state.roster.some((day) => day.date === date);
+
+        const updatedRoster = rosterExists
+          ? state.roster.map((day) =>
+              day.date === date
+                ? { ...day, data: [...day.data, newShift] }
+                : day
+            )
+          : [...state.roster, { date, data: [newShift] }];
+
+        return { roster: updatedRoster };
+      });
+
+      toast.success("Shift created successfully!");
+      return data;
+    } catch (err) {
+      console.error("Failed to add shift:", err);
+      toast.error(
+        err.response?.data?.body ||
+          err.response?.data?.message ||
+          "Failed to create shift"
+      );
+      throw err;
     } finally {
       set({ isAddingRoster: false });
     }
   },
-  deleteRoster: async (id) => {
-    console.log(id);
+  editRoster: async ({
+    rosterId,
+    date,
+    employeeId,
+    staffName,
+    location,
+    startTime,
+    endTime,
+    type,
+    payRate,
+    totalHour,
+  }) => {
+    try {
+      set({ isEditingRoster: true });
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+
+      const { data } = await axiosInstances.put(
+        "/admin/roster/update",
+        {
+          rosterId,
+          employeeId,
+          location,
+          startTime,
+          endTime,
+          employeeName: staffName,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formatTo12Hour = (dateTimeStr) => {
+        if (!dateTimeStr) return "?";
+        const [datePart, timePart] = dateTimeStr.split(" ");
+        const [day, month, year] = datePart.split("-").map(Number);
+        const [hour, minute] = timePart.split(":").map(Number);
+        const dateObj = new Date(year, month - 1, day, hour, minute);
+        if (isNaN(dateObj)) return "?";
+        const h = dateObj.getHours();
+        const m = dateObj.getMinutes();
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hour12 = h % 12 === 0 ? 12 : h % 12;
+        return `${hour12}:${m.toString().padStart(2, "0")}${ampm}`;
+      };
+
+      const [startDatePart] = startTime.split(" "); // "dd-MM-yyyy"
+      const [day, month, year] = startDatePart.split("-").map(Number);
+      const newDate = `${year}-${String(month).padStart(2, "0")}-${String(
+        day
+      ).padStart(2, "0")}`;
+
+      const updatedShift = {
+        id: rosterId,
+        employeeName: staffName,
+        location,
+        time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
+        type,
+        payRate,
+        totalHour,
+      };
+
+      set((state) => {
+        const filteredRoster = state.roster
+          .map((day) => ({
+            ...day,
+            data: day.data.filter((shift) => shift.id !== rosterId),
+          }))
+          .filter((day) => day.data.length > 0);
+
+        const rosterExists = filteredRoster.some((day) => day.date === newDate);
+        const updatedRoster = rosterExists
+          ? filteredRoster.map((day) =>
+              day.date === newDate
+                ? { ...day, data: [...day.data, updatedShift] }
+                : day
+            )
+          : [...filteredRoster, { date: newDate, data: [updatedShift] }];
+
+        return { roster: updatedRoster };
+      });
+
+      toast.success("Shift updated successfully!");
+      return data;
+    } catch (err) {
+      console.error("Failed to edit shift:", err);
+      toast.error(err.response?.data?.body || "Failed to update shift");
+      throw err;
+    } finally {
+      set({ isEditingRoster: false });
+    }
+  },
+  deleteRoster: async (rosterId) => {
     try {
       set({ isDeletingRoster: true });
+
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+
+      await axiosInstances.delete("/admin/roster/delete", {
+        params: {
+          hard: "false",
+          rosterId: rosterId.toString(),
+        },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove from local store
       set((currentState) => ({
-        //set roster
         roster: currentState.roster.map((day) => ({
           ...day,
-          data: day.data.filter((shift) => shift.id !== id),
+          data: day.data.filter((shift) => shift.id !== rosterId),
         })),
       }));
+      toast.success("Shift deleted successfully!");
     } catch (error) {
-      console.error("Unexpected error in deleteRoster:", error.message);
+      console.error("Error deleting roster:", error.message);
     } finally {
       set({ isDeletingRoster: false });
     }

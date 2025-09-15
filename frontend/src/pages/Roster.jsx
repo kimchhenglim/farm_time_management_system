@@ -10,6 +10,7 @@ function Dashboard() {
   //create trigger for Modal
   const [isOpen, setIsOpen] = useState(false);
   const { addRoster } = useRosterStore();
+
   return (
     <div className=" w-full h-full px-4 bg-[#FFFFFF]">
       {/* header */}
