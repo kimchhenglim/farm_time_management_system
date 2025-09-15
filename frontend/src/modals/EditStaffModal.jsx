@@ -27,7 +27,6 @@ function EditStaffModal({
     role: currentStaff?.role || "",
     contractType: currentStaff?.contractType || "",
     payRate: currentStaff?.payRate,
-    location: currentStaff?.location,
     avatar: null,
   });
 
@@ -135,7 +134,6 @@ function EditStaffModal({
                 <input
                   name="biometricId"
                   value={formData.biometricId}
-                  disabled
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
                 />
@@ -273,20 +271,22 @@ function EditStaffModal({
               />
             </div>
 
-            {/* Task */}
+            {/* overtimeRate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Location</label>
-              <select
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
+              <label
+                className="text-sm font-medium mb-1"
+                htmlFor="overtimeRate"
               >
-                <option value="">Select Location</option>
-                <option value="Shed 1">Shed 1</option>
-                <option value="Shed 2">Shed 2</option>
-                <option value="Shed 3">Shed 3</option>
-              </select>
+                Overtime Rate
+              </label>
+              <input
+                type="text"
+                name="overtimeRate"
+                id="overtimeRate"
+                disabled
+                value={formData?.contractType === "CASUAL" ? "2.5" : "1.5"}
+                className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
+              />
             </div>
           </div>
           {/* Buttons */}

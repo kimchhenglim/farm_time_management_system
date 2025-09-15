@@ -124,9 +124,9 @@ function StaffDetail() {
                 </span>
               </div>
               <div>
-                Location:{" "}
+                Overtime rate:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {currentStaff?.location}
+                  {currentStaff?.contractType === "CASUAL" ? "2.5" : "1.5"}
                 </span>
               </div>
               <div>
