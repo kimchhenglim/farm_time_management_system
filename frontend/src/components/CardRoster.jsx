@@ -5,7 +5,7 @@ import ConfirmModal from "../modals/ConfirmationModal";
 import useRosterStore from "../stores/useRosterStore";
 function CardRoster({
   rosterID,
-  staffName,
+  employeeName,
   location,
   time,
   index,
@@ -13,8 +13,10 @@ function CardRoster({
   date,
   payRate,
   type,
+  totalHour,
+  employeeId,
 }) {
-  const { deleteRoster } = useRosterStore();
+  const { deleteRoster, editRoster } = useRosterStore();
   //pre-define color for shift
   const locationColors = {
     "Shed 1": "bg-[#D1EEEC] text-[#19A598]",
@@ -22,26 +24,62 @@ function CardRoster({
     "Shed 3": "bg-[#C8EDFD] text-[#1773E0]",
   };
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedShift, setSelectedShift] = useState(null);
   const onHandleEdit = () => {
     const elem = document.activeElement;
-    if (elem) {
-      elem?.blur();
-    }
+    if (elem) elem.blur();
+    const nameParts = (employeeName || "").split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
+    const convertTo24Hour = (time12h) => {
+      if (!time12h) return "";
+      const [time, modifier] = time12h.split(" ");
+      if (!time || !modifier) return time12h;
+      let [hours, minutes] = time.split(":").map(Number);
+      if (modifier === "PM" && hours < 12) hours += 12;
+      if (modifier === "AM" && hours === 12) hours = 0;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+        2,
+        "0"
+      )}`;
+    };
+
+    const [startTime, endTime] = time.split(" - ").map(convertTo24Hour);
+
+    const shiftData = {
+      rosterId: rosterID,
+      firstName,
+      lastName,
+      contractType: type,
+      payRate,
+      location,
+      startTime,
+      endTime,
+      id: employeeId,
+      date,
+      totalHour,
+      employeeId,
+    };
+    setSelectedShift(shiftData);
     setIsOpen(true);
   };
-  const [startTime, endTime] = time.split(" - ");
-  const data = {
-    staffName: staffName,
-    location: location,
-    startTime: startTime,
-    endTime: endTime,
-    id: rosterID,
-    date: date,
-    payRate: payRate,
-    type: type,
-  };
 
+  const handleEditSubmit = async (formValues) => {
+    await editRoster({
+      rosterId: rosterID,
+      employeeId: formValues.staffId,
+      location: formValues.location,
+      startTime: formValues.startTime,
+      endTime: formValues.endTime,
+      date,
+      staffName: formValues.staffName,
+      type,
+      payRate,
+      totalHour,
+    });
+    setIsOpen(false);
+  };
   const onHandleDelete = () => {
     const elem = document.activeElement;
     if (elem) {
@@ -66,7 +104,7 @@ function CardRoster({
         popoverTarget="popover-1"
         className={` w-full h-[70px] p-2 flex flex-col gap-2 justify-center ${locationColors[location]}  rounded-[5px] cursor-pointer`}
       >
-        <span className=" font-semibold text-[14px]">{staffName}</span>
+        <span className=" font-semibold text-[14px]">{employeeName}</span>
         <div className="flex gap-2 items-center">
           <span className=" font-medium 2xl:text-[10px] xl:text-[10px]">
             {time}
@@ -125,8 +163,8 @@ function CardRoster({
         title="Edit new shift"
         submitLabel="Edit"
         onClose={() => setIsOpen(false)}
-        data={data}
-        onSubmitFunction={() => alert("To be implemented!")}
+        data={selectedShift}
+        onSubmitFunction={handleEditSubmit}
       />
     </div>
   );
