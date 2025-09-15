@@ -63,7 +63,9 @@ function EditStaffModal({
 
     const regex = /^[A-Za-z]+$/; // only letters
     const phoneNumberRegex = /^\+61[0-9]{9}$/;
+    const standardRate = /^\d*$/;
     const emailRegex = /\S+@\S+\.\S+/;
+    const num = parseFloat(formData.payRate.trim());
     if (!regex.test(formData.firstName) || !regex.test(formData.lastName)) {
       toast.error("Only letters allowed for firstName or lastName!");
       return;
@@ -72,6 +74,12 @@ function EditStaffModal({
       return;
     } else if (!emailRegex.test(formData.email)) {
       toast.error("Enter a valid email address!");
+      return;
+    } else if (!/^\d+(\.\d{1,2})?$/.test(num)) {
+      toast.error("Rate must be a number with up to 2 decimals");
+      return;
+    } else if (num < 0.01 || num > 100.0) {
+      toast.error("Rate must be between 0.01 and 100.00");
       return;
     }
     const payload = {
@@ -260,13 +268,14 @@ function EditStaffModal({
 
             {/* Pay Rate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Pay Rate</label>
+              <label className="text-sm font-medium mb-1">Standard Rate</label>
               <input
                 name="payRate"
+                type="text"
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
-                maxLength={3}
+                maxLength={6}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
             </div>
@@ -286,8 +295,8 @@ function EditStaffModal({
                 disabled
                 value={
                   formData?.contractType === "CASUAL"
-                    ? 2.5 * formData?.payRate
-                    : 1.5 * formData?.payRate
+                    ? 2.5 * formData?.payRate + " (Standard pay * 2.5)"
+                    : 1.5 * formData?.payRate + " (Standard pay * 1.5)"
                 }
                 className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
               />
