@@ -50,6 +50,12 @@ public class RosterControllerImpl implements RosterController {
         CompleteResponse<Object> response = rosterService.getRosterLocations(keyword);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> publishRoster(String weekStart) {
+        CompleteResponse<Object> response = rosterService.publishRoster(weekStart);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
 }
 
 
