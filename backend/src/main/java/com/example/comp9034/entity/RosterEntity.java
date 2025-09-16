@@ -1,6 +1,5 @@
 package com.example.comp9034.entity;
 
-import com.example.comp9034.enums.RosterEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +19,15 @@ public class RosterEntity {
     @Column(name = "employee_id", nullable = false)
     private String employeeId;
 
+    @Column(name = "employee_name", nullable = false)
+    private String employeeName;
+
     @Column(name = "start_time", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime startTime;
+
     @Column(name = "end_time", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime endTime;
 
     @Column(nullable = false)
@@ -32,12 +37,12 @@ public class RosterEntity {
     private Integer breakMinutes = 0;        // default 0; set to 30 if > 4h
     private Boolean isCancelled = false;
 
-    private RosterEnum status;
+    private String status;
 
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, RosterEnum status, String createdBy, String location) {
+    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String location, String employeeName) {
         this.breakMinutes = breakMinutes;
         this.date = date;
         this.endTime = endTime;
@@ -46,6 +51,7 @@ public class RosterEntity {
         this.status = status;
         this.createdBy = createdBy;
         this.location = location;
+        this.employeeName = employeeName;
     }
 
     public RosterEntity() {

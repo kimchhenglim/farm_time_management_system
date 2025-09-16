@@ -106,5 +106,81 @@ const useStaffStore = create((set, get) => ({
       set({ isEditingStaff: false });
     }
   },
+
+  activeStaffList: [],
+  activeStaffPage: 0,
+  activeStaffLastPage: false,
+  isFetchingActiveStaff: false,
+
+  fetchActiveStaffPaginated: async (pageSize = 10, page = null) => {
+    let { activeStaffPage, activeStaffList } = get();
+    if (page !== null) activeStaffPage = page;
+
+    if (activeStaffPage >= get().totalPages) return;
+
+    set({ isFetchingActiveStaff: true });
+
+    try {
+      const res = await axiosInstances.get("/users", {
+        params: {
+          page: activeStaffPage,
+          size: pageSize,
+          sortDir: "Desc",
+          isActive: true,
+        },
+      });
+
+      const body = res.data?.body;
+      const newStaff = body?.content || [];
+
+      set({
+        activeStaffList:
+          page === 0 ? newStaff : [...activeStaffList, ...newStaff],
+        activeStaffPage: body?.number + 1,
+        totalPages: body?.totalPages,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      set({ isFetchingActiveStaff: false });
+    }
+  },
+
+  searchActiveStaff: async (query, pageSize = 10) => {
+    if (!query) {
+      get().fetchActiveStaffPaginated(pageSize, 0);
+      return;
+    }
+
+    set({ isFetchingActiveStaff: true });
+
+    try {
+      const isIdSearch = /^\d+$/.test(query);
+      const params = {
+        page: 0,
+        size: pageSize,
+        sortDir: "Desc",
+        isActive: true,
+      };
+
+      if (isIdSearch) params.id = query;
+      else params.name = query;
+
+      const res = await axiosInstances.get("/users", { params });
+      const body = res.data?.body;
+      const newStaff = body?.content || [];
+
+      set({
+        activeStaffList: newStaff,
+        activeStaffPage: 1,
+        totalPages: body?.totalPages,
+      });
+    } catch (err) {
+      console.error("Error searching staff:", err);
+      set({ activeStaffList: [] });
+    } finally {
+      set({ isFetchingActiveStaff: false });
+    }
+  },
 }));
 export default useStaffStore;

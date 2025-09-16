@@ -14,7 +14,6 @@ function EditStaffModal({
   const modalRef = useRef(null);
   const fileInputRef = useRef(null);
   const { editStaffDetail } = useStaffStore();
-  // console.log(staffInfo);
   const [formData, setFormData] = useState({
     employeeId: currentStaff?.employeeId,
     biometricId: currentStaff?.employeeId,

@@ -25,6 +25,9 @@ public enum ErrorCodeEnum {
     UPDATE_USER_SUCCESS("E000", "User updated successfully", COMMON, HttpStatusCodeEnum.OK),
     CREATE_ROSTER_SUCCESS("E000", "Roster created successfully", ROSTER, HttpStatusCodeEnum.OK),
     DELETE_ROSTER_SUCCESS("E000", "Roster deleted successfully", ROSTER, HttpStatusCodeEnum.OK),
+    GET_ROSTER_BY_WEEK_SUCCESS("E000", "Get Roster successfully", ROSTER, HttpStatusCodeEnum.OK),
+    UPDATE_ROSTER_SUCCESS("E000", "Roster updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
     USERNAME_TAKEN("E002", "Username taken", REGISTER, HttpStatusCodeEnum.CONFLICT),
@@ -62,6 +65,8 @@ public enum ErrorCodeEnum {
     ROSTER_IMMUTABLE("E034", "Past rosters cannot be changed", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
+    SHIFT_DURATION_INVALID("E037", "Shift duration does not meet requirements", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
+
     ;
 
 

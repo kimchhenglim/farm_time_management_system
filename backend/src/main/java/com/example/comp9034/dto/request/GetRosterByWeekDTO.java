@@ -5,20 +5,31 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Setter
 @Getter
 @Valid
 public class GetRosterByWeekDTO {
-    /** Any date inside the target week (ISO: yyyy-MM-dd) normalize to Monday. */
+    /**
+     * Any date inside the target week (ISO: yyyy-MM-dd) normalize to Monday.
+     */
     @NotBlank(message = "weekStart cannot be null or empty")
     private String weekStart;
 
-    private String employeeId;
+    /**
+     * Optional filters
+     */
+    private List<String> employeeIds;     // one or many employee IDs
+    private List<String> locationIds;    // one or many location IDs (added)
 
     private Boolean includeCancelled = false;
+    private Boolean includeArchived = false;
 
-    /** Optional paging (defaults) */
+    /**
+     * Optional paging (defaults)
+     */
     private Integer page = 0;
     private Integer size = 100;
 }

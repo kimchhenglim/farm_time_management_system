@@ -11,25 +11,22 @@ import lombok.Setter;
 @Setter
 @Getter
 @Valid
-public class CreateRosterDTO {
-    @NotBlank(message = "Employee cannot be null or empty")
-    private String employeeId;
-
-    @NotNull(message = "Start time for shift cannot be null or empty")
+public class EditRosterDTO {
+    @NotNull(message = "Start time is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime startTime;
 
-    @NotNull(message = "End time for shift cannot be null or empty")
+    @NotNull(message = "End time is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime endTime;
 
-    private String location;
-    private int breakMinutes;
+    @NotBlank(message = "Employee ID is required")
+    private String employeeId;
 
-    public CreateRosterDTO(String employeeId, java.time.LocalDateTime startTime, java.time.LocalDateTime endTime) {
-        this.employeeId = employeeId;
-        this.startTime = startTime;
-        this.endTime = endTime;
-    }
+    @NotNull(message = "Roster ID is required")
+    private Long rosterId;
+
+    @NotBlank(message = "Location is required")
+    private String location;
 }
 
