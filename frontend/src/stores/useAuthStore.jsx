@@ -46,7 +46,7 @@ const useAuthStore = create((set, get) => ({
     // console.log(email, token);
     try {
       const res = await axiosInstances.post(
-        "/logout",
+        "/admin/logout",
         { email }, // request body
         {
           headers: {
