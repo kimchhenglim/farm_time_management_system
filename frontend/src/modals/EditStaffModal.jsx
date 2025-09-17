@@ -239,8 +239,9 @@ function EditStaffModal({
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
-                <option value="">Select Role</option>
-                <option value="STAFF">Staff</option>
+                <option value="STAFF" defaultChecked>
+                  Staff
+                </option>
               </select>
             </div>
 
