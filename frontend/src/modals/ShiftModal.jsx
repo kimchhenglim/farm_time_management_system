@@ -21,7 +21,7 @@ function ShiftModal({
   submitLabel,
 }) {
   const inputRef = useRef(null);
-
+  // console.log(submitLabel);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const [today, setToday] = useState(
@@ -447,10 +447,16 @@ function ShiftModal({
             </button>
 
             <ConfirmModal
-              propID="createShift"
-              confirmLabel="Confirm"
+              propID={`${
+                submitLabel === "Create" ? "createShift" : "editShift"
+              }"`}
+              confirmLabel={`${submitLabel === "Create" ? "Create" : "Edit"}`}
               cancelLabel="Cancel"
-              title="Confirm create shift"
+              title={`${
+                submitLabel === "Create"
+                  ? "Create this Shift?"
+                  : "Edit this Shift?"
+              }`}
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
               submitLabel={submitLabel}
