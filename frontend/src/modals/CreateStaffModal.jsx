@@ -99,6 +99,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
 
     // Prepare payload
     const payload = {
+      cardId: formData.cardId || null,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
