@@ -3,9 +3,9 @@ import Logo from "../assets/FarmLogo.svg";
 import useAuthStore from "../stores/useAuthStore";
 import { toast } from "react-hot-toast";
 function Login() {
-  const [hidden, setHidden] = useState(true);
   // call useAuthStore
   const { login, isLoggingIn } = useAuthStore();
+  const [isShow, setIsShow] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -75,12 +75,12 @@ function Login() {
               </label>
               <div className="w-full border-[2px] rounded-md flex border-[#ADADAD]">
                 <input
-                  type={`${hidden ? "text" : "text"}`}
+                  type={`${isShow ? "text" : "password"}`}
                   name=""
                   placeholder="Type your password"
                   id="password"
                   className="w-[90%]  border-[#ADADAD] p-4 rounded-md outline-0"
-                  alue={formData.password}
+                  value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
@@ -91,10 +91,12 @@ function Login() {
               <div className="flex items-center justify-center gap-2 text-[#ADADAD]">
                 <input
                   type="checkbox"
-                  defaultChecked
+                  id="passwordCheck"
+                  checked={isShow}
+                  onChange={() => setIsShow((prev) => !prev)}
                   className="checkbox rounded-xs size-[18px] border-[#ADADAD]  checked:bg-[#16A34A] checked:text-white"
                 />
-                <label htmlFor="">Show password</label>
+                <label htmlFor="passwordCheck">Show password</label>
               </div>
               <div className="text-blue-500 underline">
                 <span className="font-medium">Forgot password?</span>
