@@ -118,8 +118,10 @@ function ShiftModal({
 
   // Load first page of active staff on mount
   useEffect(() => {
-    fetchActiveStaffPaginated();
-  }, []);
+    if (activeStaffList.length === 0) {
+      fetchActiveStaffPaginated(10, 0);
+    }
+  }, [activeStaffList.length, fetchActiveStaffPaginated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -439,7 +441,11 @@ function ShiftModal({
               type="button"
               className="px-4 py-2 bg-gray-300 rounded text-[#565656] cursor-pointer"
               onClick={() => {
-                setSelectedUser(null);
+                setSearchQuery("");
+                if (typeof searchActiveStaff.reset === "function") {
+                  searchActiveStaff.reset();
+                }
+                fetchActiveStaffPaginated(10, 0);
                 onClose();
               }}
             >
