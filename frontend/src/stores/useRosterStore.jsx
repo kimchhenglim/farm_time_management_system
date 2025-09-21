@@ -25,6 +25,7 @@ const useRosterStore = create((set, get) => ({
       });
 
       const rosterList = res.data?.body?.rosterList || [];
+      // console.log("Fetched roster:", rosterList);
 
       const grouped = rosterList.reduce((acc, item) => {
         const [datePart] = item.startTime.split(" "); // "11-09-2025"
@@ -140,7 +141,7 @@ const useRosterStore = create((set, get) => ({
 
       // Update local store
       const newShift = {
-        id: data?.id || Date.now(),
+        id: data?.id,
         employeeName: staffName,
         location,
         time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
@@ -163,6 +164,8 @@ const useRosterStore = create((set, get) => ({
       });
 
       toast.success("Shift created successfully!");
+
+      // const weekStart
       return data;
     } catch (err) {
       console.error("Failed to add shift:", err);
@@ -271,6 +274,7 @@ const useRosterStore = create((set, get) => ({
       set({ isEditingRoster: false });
     }
   },
+
   deleteRoster: async (rosterId) => {
     try {
       set({ isDeletingRoster: true });
@@ -281,7 +285,7 @@ const useRosterStore = create((set, get) => ({
       await axiosInstances.delete("/admin/roster/delete", {
         params: {
           hard: "false",
-          rosterId: rosterId.toString(),
+          rosterId: rosterId,
         },
         headers: {
           "Content-Type": "application/json",
