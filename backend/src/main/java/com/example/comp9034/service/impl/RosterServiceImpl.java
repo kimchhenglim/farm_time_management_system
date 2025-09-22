@@ -16,6 +16,7 @@ import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.RosterRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
+import com.example.comp9034.service.EmailService;
 import com.example.comp9034.service.RosterService;
 import org.springframework.data.jpa.domain.Specification;
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +32,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -52,13 +55,15 @@ public class RosterServiceImpl implements RosterService {
     private final ErrorCodeRepository errorCodeRepository;
     private final ConfigurationRepository configurationRepository;
     private final RosterMapper rosterMapper;
+    private final EmailService emailService;
 
-    public RosterServiceImpl(RosterRepository rosterRepository, UserRepository userRepository, ErrorCodeRepository errorCodeRepository, ConfigurationRepository configurationRepository, RosterMapper rosterMapper) {
+    public RosterServiceImpl(RosterRepository rosterRepository, UserRepository userRepository, ErrorCodeRepository errorCodeRepository, ConfigurationRepository configurationRepository, RosterMapper rosterMapper, EmailService emailService) {
         this.rosterRepository = rosterRepository;
         this.userRepository = userRepository;
         this.errorCodeRepository = errorCodeRepository;
         this.configurationRepository = configurationRepository;
         this.rosterMapper = rosterMapper;
+        this.emailService = emailService;
     }
 
     @Override
@@ -321,4 +326,78 @@ public class RosterServiceImpl implements RosterService {
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
+
+    @Override
+    public CompleteResponse<Object> publishRoster(String weekStart) {
+        LocalDate weekAnyDate = LocalDate.parse(weekStart.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate monday = weekAnyDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate nextMonday = monday.plusWeeks(1);
+        LocalDateTime startInclusive = monday.atStartOfDay();
+        LocalDateTime endExclusive = nextMonday.atStartOfDay();
+
+        try {
+            var rosters = rosterRepository.findRosterByRange(startInclusive, endExclusive);
+
+            if (rosters.isEmpty()) {
+                log.info("Trying to publish empty roster");
+                return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), "No new roster to publish for week " + monday.format(DateTimeFormatter.ISO_DATE));
+            }
+    
+            Map<String, List<RosterEntity>> rosterByEmployeeId = rosters.stream()
+                                    .collect(Collectors.groupingBy(RosterEntity::getEmployeeId));
+    
+            rosterByEmployeeId.forEach((employeeId, employeeRosters) -> {
+                userRepository.findByEmployeeId(employeeId).ifPresent(employee -> {
+                    emailService.sendRosterEmail(employee.getEmail(), monday, buildRosterEmailBodyHtml(employee.getFirstName(), monday, employeeRosters));
+                });
+            });
+
+            //change these roster status to PUBLISHED
+            rosters.forEach(r -> r.setStatus("PUBLISHED"));
+            rosterRepository.saveAll(rosters);
+
+            String message = "Successfully published roster for week " + monday.format(DateTimeFormatter.ISO_DATE);
+            log.info(message);
+            return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), message);
+        } catch (Exception e) {
+            String msg = "Error publishing roster";
+            log.error(msg);
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
+        }
+    }
+
+    private String formatRosterHtml(RosterEntity roster) {
+        DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("EEE, MMM d yyyy HH:mm");
+        DateTimeFormatter endFormatter   = DateTimeFormatter.ofPattern("HH:mm");
+
+        return String.format(
+            "<li><strong>%s - %s</strong><br/>Location: %s</li>",
+            roster.getStartTime().format(startFormatter),
+            roster.getEndTime().format(endFormatter),
+            roster.getLocation() != null ? roster.getLocation() : "N/A"
+        );
+    }
+
+
+    private String buildRosterEmailBodyHtml(String employeeName, LocalDate weekStart, List<RosterEntity> listRoster) {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("<!DOCTYPE html>")
+           .append("<html>")
+           .append("<body style=\"font-family:Arial,sans-serif; line-height:1.5;\">")
+           .append("<p>Hi ").append(employeeName).append(",</p>")
+           .append("<p>This is your roster for week ").append(weekStart).append(":</p>")
+           .append("<ul>");
+
+    listRoster.sort(Comparator.comparing(RosterEntity::getStartTime));
+    listRoster.forEach(r -> builder.append(formatRosterHtml(r)));
+
+    builder.append("</ul>")
+           .append("<p>Please contact your manager if you have any questions.</p>")
+           .append("<p>Best regards,<br/>Farm Management Team</p>")
+           .append("</body>")
+           .append("</html>");
+
+    return builder.toString();
+}
 }

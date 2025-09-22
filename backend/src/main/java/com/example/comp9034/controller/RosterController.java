@@ -31,4 +31,7 @@ public interface RosterController {
 
     @GetMapping("/get/locations")
     ResponseEntity<ResponseBody<Object>> getRosterLocations(@RequestParam(required = false) String keyword);
+    
+    @PostMapping("publish")
+    ResponseEntity<ResponseBody<Object>> publishRoster(@RequestParam String weekStart);
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-
 import toast from "react-hot-toast";
 import ConfirmModal from "./ConfirmationModal";
 import Filter from "../assets/filter.svg";
@@ -7,35 +6,131 @@ import DropDown from "../assets/dropdown.svg";
 import Avatar from "../assets/avatar.svg";
 import Search from "../assets/search.svg";
 import useRosterStore from "../stores/useRosterStore";
-function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
-  const modalRef = useRef(null);
-  //create selectedUser to help with assign user
+import Calendar from "../assets/calendar.svg";
+import { axiosInstances } from "../libs/axios";
+import useStaffStore from "../stores/useStaffStore";
+import { mergeConfig } from "axios";
+
+function ShiftModal({
+  isOpenModal,
+  setIsOpenModal,
+  onClose,
+  title,
+  data,
+  onSubmitFunction,
+  submitLabel,
+}) {
+  const inputRef = useRef(null);
+  // console.log(submitLabel);
   const [selectedUser, setSelectedUser] = useState(null);
-  const { staffActiveList } = useRosterStore();
-  const [today, setToday] = useState(new Date().toISOString().split("T")[0]);
-  //use useEffect to check every minute to refresh the date
+
+  const [today, setToday] = useState(
+    new Date()
+      .toLocaleDateString("en-AU")
+      .split("/")
+      .map((part) => part.padStart(2, "0"))
+      .join("-")
+  );
+
+  const [time, setTime] = useState(
+    new Date().toLocaleTimeString("en-AU", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+  );
+
+  const [formData, setFormData] = useState({
+    date: data?.date || "",
+    location: data?.location || "",
+    startTime: data?.startTime || "",
+    endTime: data?.endTime || "",
+    staffName: data?.staffName || "",
+    id: data?.id || "",
+    totalHour: data?.totalHour || "",
+  });
+
+  const {
+    activeStaffList,
+    fetchActiveStaffPaginated,
+    searchActiveStaff,
+    isFetchingActiveStaff,
+  } = useStaffStore();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTimeout = useRef(null);
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    searchTimeout.current = setTimeout(() => {
+      searchActiveStaff(value, 50);
+    }, 250);
+  };
+
+  // Refresh date/time every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setToday(new Date().toISOString().split("T")[0]);
-    }, 60 * 1000); // check every 1 min
+      setToday(
+        new Date()
+          .toLocaleDateString("en-AU")
+          .split("/")
+          .map((part) => part.padStart(2, "0"))
+          .join("-")
+      );
+      setTime(
+        new Date().toLocaleTimeString("en-AU", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
+    }, 60 * 1000);
 
-    return () => clearInterval(interval); // cleanup
-  }, []); // empty deps → runs once on mount
+    return () => clearInterval(interval);
+  }, []);
 
-  console.log(today);
-  const [formData, setFormData] = useState({
-    date: "",
-    location: "",
-    startTime: "",
-    endTime: "",
-    StaffName: "",
-    staffID: "",
-  });
-  if (!isOpenModal) return null;
+  useEffect(() => {
+    if (!isOpenModal) return;
+
+    if (data && activeStaffList.length) {
+      const staff = activeStaffList.find(
+        (s) => s.employeeId === data.employeeId
+      );
+
+      if (staff) {
+        setSelectedUser(staff);
+        setFormData({
+          date: data.date || "",
+          location: data.location || "",
+          startTime: data.startTime || "",
+          endTime: data.endTime || "",
+          staffName: staff.firstName + " " + staff.lastName,
+          id: staff.employeeId,
+          totalHour: data.totalHour || 0,
+        });
+      }
+    }
+  }, [isOpenModal]);
+
+  // Load first page of active staff on mount
+  useEffect(() => {
+    if (activeStaffList.length === 0) {
+      fetchActiveStaffPaginated(10, 0);
+    }
+  }, [activeStaffList.length, fetchActiveStaffPaginated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "date") {
+      // store ISO format for input value
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleCloseModal = (e) => {
@@ -46,48 +141,85 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
         location: "",
         startTime: "",
         endTime: "",
+        staffName: "",
+        id: "",
       });
       onClose();
-      console.log(e.target.className);
+    }
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      if (!isFetchingActiveStaff) fetchActiveStaffPaginated();
+    }
+  };
+
+  const toAUFormat = (date, time) => {
+    const [year, month, day] = date.split("-");
+    return `${day}-${month}-${year} ${time}`;
+  };
+
+  const timeToFloat = (time) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours + minutes / 60;
+  };
+
+  const openCalendar = () => {
+    if (inputRef.current) {
+      if (inputRef.current.showPicker) inputRef.current.showPicker();
+      else inputRef.current.focus();
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedUser) {
-      toast.error("Please select staff!");
-      return;
-    } else if (formData.date === "") {
-      toast.error("Please enter date");
-      return;
-    } else if (formData.date < today) {
-      toast.error("You cannot assign shift in the past!");
-      return;
-    } else if (formData.location === "") {
-      toast.error("Please enter location!");
-      return;
-    } else if (formData.startTime === "" || formData.endTime === "") {
-      toast.error("Please enter shift time!");
-      return;
-    } else if (formData.startTime < "09:00") {
-      //when can start time
-      toast.error("Shift must start at 09:00!");
-      return;
-    } else if (formData.endTime > "17:00") {
-      toast.error("Shift must end before 17:00!");
-      return;
-    } else if (formData.endTime < formData.startTime) {
-      //when can end time
-      toast.error("Start time must not be bigger than End time!");
-      return;
-    }
-    setFormData({
-      ...formData,
-      staffID: selectedUser.id,
-      staffName: selectedUser.staffName,
-    });
-    console.log(formData, selectedUser.id, selectedUser.staffName);
+    // validations...
+    if (!selectedUser) return toast.error("Please select staff!");
+    if (!formData.date) return toast.error("Please enter date");
+    if (toAUFormat(formData.date) < today)
+      return toast.error("You cannot assign or edit shift in the past!");
+    if (!formData.location) return toast.error("Please enter location!");
+    if (!formData.startTime || !formData.endTime)
+      return toast.error("Please enter shift time!");
+    if (formData.endTime <= formData.startTime)
+      return toast.error("Start time must not be bigger than End time!");
+
+    const shiftHours =
+      timeToFloat(formData.endTime) - timeToFloat(formData.startTime);
+
+    if (
+      (selectedUser.type === "Full-time" || selectedUser.type === "Casual") &&
+      shiftHours + selectedUser.totalHour > 38
+    )
+      return toast.error(
+        `Cannot save shift. Weekly limit 38h exceeded. Current: ${selectedUser.totalHour}h`
+      );
+
+    if (
+      selectedUser.type === "Part-time" &&
+      shiftHours + selectedUser.totalHour > 20
+    )
+      return toast.error(
+        `Cannot save shift. Weekly limit 20h exceeded. Current: ${selectedUser.totalHour}h`
+      );
+
+    const payload = {
+      rosterId: selectedUser.id,
+      date: formData.date,
+      staffId: selectedUser.employeeId,
+      staffName: `${selectedUser.firstName} ${selectedUser.lastName}`,
+      location: formData.location,
+      startTime: toAUFormat(formData.date, formData.startTime),
+      endTime: toAUFormat(formData.date, formData.endTime),
+      type: selectedUser.type,
+      payRate: selectedUser.payRate,
+      totalHour: selectedUser.totalHour,
+    };
+
+    onSubmitFunction && onSubmitFunction(payload);
+
     setIsOpenModal(false);
     setSelectedUser(null);
     setFormData({
@@ -95,14 +227,17 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
       location: "",
       startTime: "",
       endTime: "",
-      StaffName: "",
-      staffID: "",
+      staffName: "",
+      id: "",
+      totalHour: "",
     });
   };
-  console.log(selectedUser);
+
+  if (!isOpenModal) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-60"
+      className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-999"
       onMouseDown={handleCloseModal}
     >
       {/* open register staff modal */}
@@ -117,10 +252,10 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                 {selectedUser ? (
                   <div className="flex flex-col gap-[6px]">
                     <span className="text-[24px] font-semibold text-[#566074]">
-                      {selectedUser?.staffName}
+                      {selectedUser.firstName} {selectedUser.lastName}
                     </span>
                     <span className="text-[#ADADAD]">
-                      {selectedUser.type +
+                      {selectedUser.contractType +
                         " " +
                         "Pay rate: " +
                         "$" +
@@ -140,14 +275,37 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                   <label htmlFor="date" className="text-[#565656] font-medium">
                     Date
                   </label>
-                  <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    placeholder="Type here"
-                    onChange={handleChange}
-                    className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
-                  />
+                  <div className="relative border-[1px] border-[#ADADAD] rounded-[5px] flex items-center">
+                    {/* Styled text field to show AU format */}
+                    <input
+                      type="text"
+                      id="date"
+                      placeholder="dd/mm/yyyy"
+                      value={
+                        formData.date
+                          ? formData.date.split("-").reverse().join("-")
+                          : ""
+                      }
+                      readOnly
+                      className="input bg-white focus:outline-hidden placeholder:text-[#ADADAD] w-full border-none"
+                    />
+                    {/* image */}
+                    <img
+                      src={Calendar}
+                      alt="calendar"
+                      className="size-[15px] mr-[3px]"
+                    />
+                    {/* Transparent date input overlay */}
+                    <input
+                      ref={inputRef}
+                      type="date"
+                      name="date"
+                      onChange={handleChange}
+                      value={formData.date}
+                      lang="en-AU"
+                      className="absolute top-0 left-0 w-full h-full opacity-0  cursor-pointer z-10"
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col gap-[10px]">
                   <label
@@ -181,6 +339,7 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       type="time"
                       className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
                       id="startTime"
+                      value={formData.startTime}
                       name="startTime"
                       onChange={handleChange}
                     />
@@ -198,21 +357,22 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                       id="endTime"
                       name="endTime"
                       onChange={handleChange}
+                      value={formData.endTime}
                     />
                   </div>
                 </div>
               </div>
             </div>
-            {/* active Staff */}
+            {/* Active Staff */}
             <div className="p-4 flex flex-col gap-[16px] border-l-[1px] border-[#ADADAD]">
               <div className="flex items-center justify-between">
                 <span className="text-[20px] font-semibold text-[#566074]">
                   Active Staff
                 </span>
-                <div className="flex gap-[8px] p-2 bg-[#F5F5F5] rounded-[5px] cursor-pointer">
+                {/* <div className="flex gap-[8px] p-2 bg-[#F5F5F5] rounded-[5px] cursor-pointer">
                   <img src={Filter} alt="Filter" className="size-[20px]" />
                   <img src={DropDown} alt="dropdown" className="size-[20px]" />
-                </div>
+                </div> */}
               </div>
               <label className="w-full h-[50px] border-[#E8E8E8] border p-2 rounded-[5px] flex items-center">
                 {/* search */}
@@ -224,49 +384,54 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
                     name="search"
                     id="search"
                     placeholder="Search..."
+                    value={searchQuery}
+                    onChange={handleSearch}
                   />
                 </div>
               </label>
-              <div className="w-full h-[300px] overflow-y-auto flex flex-col ">
-                {/* list of user */}
-                {staffActiveList?.map((staff, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className={`p-2 flex gap-[14px] items-center cursor-pointer ${
-                        selectedUser?.id === staff.id ? "bg-[#F0FDF4]" : ""
-                      }`}
-                      onClick={() => setSelectedUser(staff)}
-                    >
-                      <img src={Avatar} alt="avatar" className="size-[60px]" />
-                      <div className="flex flex-col">
-                        <span
-                          className={`Masanori Isono text-[14px] font-semibold ${
-                            selectedUser?.id === staff.id
-                              ? "text-[#16A34A]"
-                              : "text-[#ADADAD]"
-                          }`}
-                        >
-                          {staff.staffName}
-                        </span>
-                        <span
-                          className={`text-[12px] ${
-                            selectedUser?.id === staff.id
-                              ? "text-[#16A34A]"
-                              : "text-[#ADADAD]"
-                          }`}
-                        >
-                          {staff.type +
-                            " " +
-                            "Pay rate: " +
-                            "$" +
-                            staff.payRate +
-                            "/hr"}
-                        </span>
-                      </div>
+
+              {/* Active Staff list with scroll */}
+              <div
+                className="w-full h-[300px] overflow-y-auto flex flex-col"
+                onScroll={handleScroll}
+              >
+                {activeStaffList?.map((staff, index) => (
+                  <div
+                    key={index}
+                    className={`p-2 flex gap-[14px] items-center cursor-pointer ${
+                      selectedUser?.id === staff.id ? "bg-[#F0FDF4]" : ""
+                    }`}
+                    onClick={() => setSelectedUser(staff)}
+                  >
+                    <img src={Avatar} alt="avatar" className="size-[60px]" />
+                    <div className="flex flex-col">
+                      <span
+                        className={` text-[14px] font-semibold ${
+                          selectedUser?.id === staff.id
+                            ? "text-[#16A34A]"
+                            : "text-[#ADADAD]"
+                        }`}
+                      >
+                        {staff.firstName} {staff.lastName}
+                      </span>
+                      <span
+                        className={`text-[12px] ${
+                          selectedUser?.employeeId === staff.employeeId
+                            ? "text-[#16A34A]"
+                            : "text-[#ADADAD]"
+                        }`}
+                      >
+                        {staff.contractType +
+                          " Pay rate: $" +
+                          staff.payRate +
+                          "/hr"}
+                      </span>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
+                {isFetchingActiveStaff && (
+                  <div className="text-center py-2">Loading...</div>
+                )}
               </div>
             </div>
           </div>
@@ -276,7 +441,11 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
               type="button"
               className="px-4 py-2 bg-gray-300 rounded text-[#565656] cursor-pointer"
               onClick={() => {
-                setSelectedUser(null);
+                setSearchQuery("");
+                if (typeof searchActiveStaff.reset === "function") {
+                  searchActiveStaff.reset();
+                }
+                fetchActiveStaffPaginated(10, 0);
                 onClose();
               }}
             >
@@ -284,13 +453,19 @@ function ShiftModal({ isOpenModal, setIsOpenModal, onClose, title }) {
             </button>
 
             <ConfirmModal
-              propID="createShift"
-              confirmLabel="Confirm"
+              propID={`${
+                submitLabel === "Create" ? "createShift" : "editShift"
+              }"`}
+              confirmLabel={`${submitLabel === "Create" ? "Create" : "Edit"}`}
               cancelLabel="Cancel"
-              title="Confirm create shift"
+              title={`${
+                submitLabel === "Create"
+                  ? "Create this Shift?"
+                  : "Edit this Shift?"
+              }`}
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
-              submitLabel="Create"
+              submitLabel={submitLabel}
             />
           </div>
         </div>

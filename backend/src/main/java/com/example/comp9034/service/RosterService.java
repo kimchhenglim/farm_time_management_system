@@ -16,4 +16,6 @@ public interface RosterService {
     CompleteResponse<Object> updateRoster(EditRosterDTO request);
 
     CompleteResponse<Object> getRosterLocations(String keyword);
+
+    CompleteResponse<Object> publishRoster(String weekStart);
 }

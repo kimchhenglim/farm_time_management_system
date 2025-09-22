@@ -5,9 +5,13 @@ import Plus from "../assets/plus.svg";
 
 import WeekNavigator from "../components/WeekNavigator";
 import ShiftModal from "../modals/ShiftModal";
+import useRosterStore from "../stores/useRosterStore";
+import ConfirmModal from "../modals/ConfirmationModal";
 function Dashboard() {
   //create trigger for Modal
   const [isOpen, setIsOpen] = useState(false);
+  const { addRoster } = useRosterStore();
+
   return (
     <div className=" w-full h-full px-4 bg-[#FFFFFF]">
       {/* header */}
@@ -22,10 +26,12 @@ function Dashboard() {
             message="Are you sure you want to publish this shift?"
             confirmLabel="Confirm"
             cancelLabel="Cancel"
-            submitLabel=<div className="flex gap-2.5 ">
-              <img src={Globe} alt="blobe" />
-              <span className="text-[14px] text-[#566074]">Publish</span>
-            </div>
+            submitLabel={
+              <div className="flex gap-2.5 ">
+                <img src={Globe} alt="blobe" />
+                <span className="text-[14px] text-[#566074]">Publish</span>
+              </div>
+            }
             style="bg-[#F5F5F5] w-[124px] px-[24px] py-[16px] cursor-pointer rounded-[5px] text-white"
             handleSubmit={() => {
               setIsActive((prev) => !prev);
@@ -50,6 +56,20 @@ function Dashboard() {
         setIsOpenModal={setIsOpen}
         title="Create new shift"
         onClose={() => setIsOpen(false)}
+        onSubmitFunction={addRoster}
+        submitLabel="Create"
+      />
+      <ConfirmModal
+        propID="deleteModal"
+        title="Delete this shift?"
+        message="Are you sure you want to publish this shift?"
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        submitLabel={"Delete"}
+        style="bg-[#F5F5F5] w-[124px] px-[24px] py-[16px] cursor-pointer rounded-[5px] text-white"
+        handleSubmit={() => {
+          // setIsActive((prev) => !prev);
+        }}
       />
     </div>
   );

@@ -63,4 +63,24 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
     @Query("SELECT DISTINCT r.location FROM RosterEntity r " +
             "WHERE :keyword IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<String> findDistinctLocations(@Param("keyword") String keyword);
+
+
+    @Query("""
+        SELECT r
+        FROM RosterEntity r
+        WHERE r.startTime < :endExclusive
+          AND r.endTime > :startInclusive
+          AND r.isCancelled = false
+          AND r.employeeId IN (
+              SELECT DISTINCT r2.employeeId
+              FROM RosterEntity r2
+              WHERE r2.status IN ('DRAFT', 'UPDATED')
+                AND r2.startTime < :endExclusive
+                AND r2.endTime > :startInclusive
+                AND r2.isCancelled = false
+          )
+        ORDER BY r.employeeId, r.startTime
+    """)
+      List<RosterEntity> findRosterByRange(@Param("startInclusive") LocalDateTime startInclusive,
+                                     @Param("endExclusive") LocalDateTime endExclusive);
 }

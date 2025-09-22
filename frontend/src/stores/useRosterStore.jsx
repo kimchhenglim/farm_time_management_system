@@ -1,292 +1,316 @@
 import { create } from "zustand";
 import { toast } from "react-hot-toast";
 import { axiosInstances } from "../libs/axios";
+import useAuthStore from "./useAuthStore";
+import { startOfWeek, format } from "date-fns";
+
 const useRosterStore = create((set, get) => ({
-  staffActiveList: [
-    {
-      id: 1,
-      staffName: "Chingsien Ly",
-      type: "Full-time",
-      payRate: "32",
-      selected: true,
-    },
-    {
-      id: 2,
-      staffName: "Masanori Isono",
-      type: "Part-time",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 3,
-      staffName: "Eri Higuchi",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 4,
-      staffName: "Yudou Han",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-    {
-      id: 5,
-      staffName: "Kimchheng Lim",
-      type: "Casual",
-      payRate: "32",
-      selected: false,
-    },
-  ],
-  roster: [
-    {
-      date: "2025-09-01",
-      day: "Monday",
-      data: [
-        {
-          id: 1,
-          staffName: "Alice",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
+  isAddingRoster: false,
+  isEditingRoster: false,
+  isDeletingRoster: false,
+  staffActiveList: [],
+  roster: [],
+
+  fetchRoster: async (weekStart, locations = []) => {
+    const authUser = useAuthStore.getState().authUser;
+    try {
+      const token = authUser?.body?.loginToken;
+      const params = { weekStart };
+      if (locations.length) params.locations = locations.join(",");
+      const res = await axiosInstances.get("/admin/roster/get", {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        { id: 2, staffName: "Bob", location: "Shed 2", time: "09:00 - 13:00" },
+      });
+
+      const rosterList = res.data?.body?.rosterList || [];
+      // console.log("Fetched roster:", rosterList);
+
+      const grouped = rosterList.reduce((acc, item) => {
+        const [datePart] = item.startTime.split(" "); // "11-09-2025"
+        const [day, month, year] = datePart.split("-").map(Number);
+        const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`; // "2025-09-11"
+
+        if (!acc[isoDate]) {
+          acc[isoDate] = { date: isoDate, data: [] };
+        }
+
+        const parseDateTime = (str) => {
+          if (!str) return null;
+          const [datePart, timePart] = str.split(" ");
+          const [day, month, year] = datePart.split("-").map(Number);
+          const [hour, minute] = timePart.split(":").map(Number);
+          return new Date(year, month - 1, day, hour, minute);
+        };
+
+        const startDate = parseDateTime(item.startTime);
+        const endDate = parseDateTime(item.endTime);
+
+        const formatTo12Hour = (d) => {
+          if (!d) return "Invalid Time";
+          let hour = d.getHours();
+          const minute = d.getMinutes();
+          const ampm = hour >= 12 ? "PM" : "AM";
+          hour = hour % 12 || 12;
+          return `${hour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+        };
+
+        acc[isoDate].data.push({
+          id: item.rosterId,
+          employeeName: item.employeeName || item.staffName,
+          employeeId: item.employeeId,
+          location: item.location,
+          time: `${formatTo12Hour(startDate)} - ${formatTo12Hour(endDate)}`,
+          type: item.type,
+          payRate: item.payRate,
+          totalHour: item.totalHour,
+        });
+
+        return acc;
+      }, {});
+
+      const newRoster = Object.values(grouped);
+      set({ roster: newRoster });
+    } catch (err) {
+      console.error("Error fetching roster:", err);
+    }
+  },
+
+  addRoster: async ({
+    date,
+    staffId,
+    staffName,
+    location,
+    startTime,
+    endTime,
+    type,
+    payRate,
+    totalHour,
+    breakMinutes = null,
+  }) => {
+    try {
+      set({ isAddingRoster: true });
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+
+      const { data } = await axiosInstances.post(
+        "/admin/roster/create",
         {
-          id: 3,
-          staffName: "Charlie",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-        },
-        {
-          id: 4,
-          staffName: "Diana",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-        },
-        {
-          id: 5,
-          staffName: "Ethan",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-        },
-        {
-          id: 6,
-          staffName: "Chingsien",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-        },
-        {
-          id: 7,
-          staffName: "Nancy",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-        },
-        { id: 8, staffName: "Mia", location: "Shed 2", time: "14:00 - 18:00" },
-        {
-          id: 9,
-          staffName: "Riley",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-    {
-      date: "2025-09-02",
-      day: "Tuesday",
-      data: [
-        {
-          id: 10,
-          staffName: "Fiona",
-          location: "Shed 2",
-          time: "08:00 - 12:00",
-        },
-        {
-          id: 11,
-          staffName: "George",
-          location: "Shed 3",
-          time: "09:00 - 13:00",
+          employeeId: staffId,
+          employeeName: staffName,
+          location,
+          startTime,
+          endTime,
+          breakMinutes,
         },
         {
-          id: 12,
-          staffName: "Hannah",
-          location: "Shed 1",
-          time: "10:00 - 14:00",
-        },
-        { id: 13, staffName: "Ian", location: "Shed 2", time: "12:00 - 16:00" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formatTo12Hour = (dateTimeStr) => {
+        if (!dateTimeStr) return "?";
+
+        // Handle format like "22-09-2025 15:29"
+        let dateObj;
+        if (dateTimeStr.includes("-")) {
+          // "dd-MM-yyyy HH:mm"
+          const [datePart, timePart] = dateTimeStr.split(" ");
+          if (!timePart) return "?";
+          const [day, month, year] = datePart.split("-").map(Number);
+          const [hour, minute] = timePart.split(":").map(Number);
+          dateObj = new Date(year, month - 1, day, hour, minute);
+        } else {
+          dateObj = new Date(dateTimeStr);
+        }
+
+        if (isNaN(dateObj)) return "?";
+
+        let hours = dateObj.getHours();
+        const minutes = dateObj.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+        return `${hour12}:${minutes.toString().padStart(2, "0")}${ampm}`;
+      };
+
+      // Update local store
+      const newShift = {
+        id: data?.id,
+        employeeName: staffName,
+        location,
+        time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
+        type,
+        payRate,
+      };
+
+      // set((state) => {
+      //   const rosterExists = state.roster.some((day) => day.date === date);
+
+      //   const updatedRoster = rosterExists
+      //     ? state.roster.map((day) =>
+      //         day.date === date
+      //           ? { ...day, data: [...day.data, newShift] }
+      //           : day
+      //       )
+      //     : [...state.roster, { date, data: [newShift] }];
+
+      //   return { roster: updatedRoster };
+      // });
+      const start = format(
+        startOfWeek(new Date(date), { weekStartsOn: 1 }),
+        "yyyy-MM-dd"
+      );
+      await get().fetchRoster(start);
+      toast.success("Shift created successfully!");
+
+      // const weekStart
+      return data;
+    } catch (err) {
+      console.error("Failed to add shift:", err);
+      toast.error(
+        err.response?.data?.body ||
+          err.response?.data?.message ||
+          "Failed to create shift"
+      );
+      throw err;
+    } finally {
+      set({ isAddingRoster: false });
+    }
+  },
+  editRoster: async ({
+    rosterId,
+    date,
+    employeeId,
+    staffName,
+    location,
+    startTime,
+    endTime,
+    type,
+    payRate,
+    totalHour,
+  }) => {
+    try {
+      console.log("update employee id:", employeeId);
+      set({ isEditingRoster: true });
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+      const { data } = await axiosInstances.put(
+        "/admin/roster/update",
         {
-          id: 14,
-          staffName: "Judy",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-    {
-      date: "2025-09-03",
-      day: "Wednesday",
-      data: [
-        {
-          id: 15,
-          staffName: "Kevin",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
-        },
-        {
-          id: 16,
-          staffName: "Laura",
-          location: "Shed 2",
-          time: "09:00 - 13:00",
-        },
-        {
-          id: 17,
-          staffName: "Mike",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-        },
-        {
-          id: 18,
-          staffName: "Nina",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-        },
-        {
-          id: 19,
-          staffName: "Oscar",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-    {
-      date: "2025-09-04",
-      day: "Thursday",
-      data: [
-        {
-          id: 20,
-          staffName: "Paul",
-          location: "Shed 3",
-          time: "08:00 - 12:00",
-        },
-        {
-          id: 21,
-          staffName: "Quinn",
-          location: "Shed 1",
-          time: "09:00 - 13:00",
-        },
-        {
-          id: 22,
-          staffName: "Rachel",
-          location: "Shed 2",
-          time: "10:00 - 14:00",
-        },
-        { id: 23, staffName: "Sam", location: "Shed 3", time: "12:00 - 16:00" },
-        {
-          id: 24,
-          staffName: "Tina",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-    {
-      date: "2025-09-05",
-      day: "Friday",
-      data: [
-        { id: 25, staffName: "Uma", location: "Shed 2", time: "08:00 - 12:00" },
-        {
-          id: 26,
-          staffName: "Victor",
-          location: "Shed 3",
-          time: "09:00 - 13:00",
-        },
-        {
-          id: 27,
-          staffName: "Wendy",
-          location: "Shed 1",
-          time: "10:00 - 14:00",
-        },
-        {
-          id: 28,
-          staffName: "Xavier",
-          location: "Shed 2",
-          time: "12:00 - 16:00",
+          rosterId,
+          employeeId,
+          location,
+          startTime,
+          endTime,
         },
         {
-          id: 29,
-          staffName: "Yvonne",
-          location: "Shed 3",
-          time: "14:00 - 18:00",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formatTo12Hour = (dateTimeStr) => {
+        if (!dateTimeStr) return "?";
+        const [datePart, timePart] = dateTimeStr.split(" ");
+        const [day, month, year] = datePart.split("-").map(Number);
+        const [hour, minute] = timePart.split(":").map(Number);
+        const dateObj = new Date(year, month - 1, day, hour, minute);
+        if (isNaN(dateObj)) return "?";
+        const h = dateObj.getHours();
+        const m = dateObj.getMinutes();
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hour12 = h % 12 === 0 ? 12 : h % 12;
+        return `${hour12}:${m.toString().padStart(2, "0")}${ampm}`;
+      };
+
+      const [startDatePart] = startTime.split(" "); // "dd-MM-yyyy"
+      const [day, month, year] = startDatePart.split("-").map(Number);
+      const newDate = `${year}-${String(month).padStart(2, "0")}-${String(
+        day
+      ).padStart(2, "0")}`;
+
+      const updatedShift = {
+        id: rosterId,
+        employeeName: staffName,
+        location,
+        time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
+        type,
+        payRate,
+        totalHour,
+      };
+
+      set((state) => {
+        const filteredRoster = state.roster
+          .map((day) => ({
+            ...day,
+            data: day.data.filter((shift) => shift.id !== rosterId),
+          }))
+          .filter((day) => day.data.length > 0);
+
+        const rosterExists = filteredRoster.some((day) => day.date === newDate);
+        const updatedRoster = rosterExists
+          ? filteredRoster.map((day) =>
+              day.date === newDate
+                ? { ...day, data: [...day.data, updatedShift] }
+                : day
+            )
+          : [...filteredRoster, { date: newDate, data: [updatedShift] }];
+
+        return { roster: updatedRoster };
+      });
+
+      toast.success("Shift updated successfully!");
+      return data;
+    } catch (err) {
+      console.error("Failed to edit shift:", err);
+      toast.error(err.response?.data?.body || "Failed to update shift");
+      throw err;
+    } finally {
+      set({ isEditingRoster: false });
+    }
+  },
+
+  deleteRoster: async (rosterId) => {
+    try {
+      set({ isDeletingRoster: true });
+
+      const authUser = useAuthStore.getState().authUser;
+      const token = authUser?.body?.loginToken;
+
+      await axiosInstances.delete("/admin/roster/delete", {
+        params: {
+          hard: "false",
+          rosterId: rosterId,
         },
-      ],
-    },
-    {
-      date: "2025-09-06",
-      day: "Saturday",
-      data: [
-        {
-          id: 30,
-          staffName: "Zack",
-          location: "Shed 1",
-          time: "08:00 - 12:00",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        { id: 31, staffName: "Amy", location: "Shed 2", time: "09:00 - 13:00" },
-        {
-          id: 32,
-          staffName: "Brian",
-          location: "Shed 3",
-          time: "10:00 - 14:00",
-        },
-        {
-          id: 33,
-          staffName: "Clara",
-          location: "Shed 1",
-          time: "12:00 - 16:00",
-        },
-        {
-          id: 34,
-          staffName: "David",
-          location: "Shed 2",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-    {
-      date: "2025-09-07",
-      day: "Sunday",
-      data: [
-        {
-          id: 35,
-          staffName: "Ella",
-          location: "Shed 3",
-          time: "08:00 - 12:00",
-        },
-        {
-          id: 36,
-          staffName: "Frank",
-          location: "Shed 1",
-          time: "09:00 - 13:00",
-        },
-        {
-          id: 37,
-          staffName: "Grace",
-          location: "Shed 2",
-          time: "10:00 - 14:00",
-        },
-        {
-          id: 38,
-          staffName: "Henry",
-          location: "Shed 3",
-          time: "12:00 - 16:00",
-        },
-        {
-          id: 39,
-          staffName: "Isla",
-          location: "Shed 1",
-          time: "14:00 - 18:00",
-        },
-      ],
-    },
-  ],
+      });
+
+      // Remove from local store
+      set((currentState) => ({
+        roster: currentState.roster.map((day) => ({
+          ...day,
+          data: day.data.filter((shift) => shift.id !== rosterId),
+        })),
+      }));
+      toast.success("Shift deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting roster:", error.message);
+    } finally {
+      set({ isDeletingRoster: false });
+    }
+  },
 }));
 
 export default useRosterStore;
