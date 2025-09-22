@@ -64,6 +64,7 @@ public class RosterServiceImpl implements RosterService {
     @Override
     public CompleteResponse<Object> createRoster(CreateRosterDTO createRosterDTO) {
         try {
+            CreateRosterResponseDTO response;
             String employeeId = createRosterDTO.getEmployeeId().trim();
             Optional<UserEntity> userOptional = userRepository.findByEmployeeIdAndActive(employeeId, true);
             if (userOptional.isEmpty()) {
@@ -101,17 +102,8 @@ public class RosterServiceImpl implements RosterService {
             long shiftDurationMin = Duration.between(startTime, endTime).toMinutes();
             int breakMin = (createRosterDTO.getBreakMinutes() > 0) ? createRosterDTO.getBreakMinutes() : (shiftDurationMin > 240 ? 30 : 0);
 
-            // Weekly cap
-            long currentWeekMin = rosterRepository.sumWeekMinutes(employeeId, weekStart);
-            long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
             long minShiftMinutes = convertStringToLong(getConfigValue(SHIFT_MIN_MINUTES.name(), configurationRepository, "120"));
             long maxShiftMinutes = convertStringToLong(getConfigValue(SHIFT_MAX_MINUTES.name(), configurationRepository, "720"));
-            long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
-            if (shiftDurationMin > remainingMinutes) {
-                String msg = "Exceed the weekly hours limit" + "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " + "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) + ". " + "Maximum additional hours allowed: " + (remainingMinutes / 60.0) + ".";
-                log.error(msg);
-                throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
-            }
 
             if (shiftDurationMin < minShiftMinutes || shiftDurationMin > maxShiftMinutes) {
                 log.error("Shift duration does not meet requirement!: {}", shiftDurationMin);
@@ -126,7 +118,31 @@ public class RosterServiceImpl implements RosterService {
             RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime, employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation(), user.getFirstName() + " " + user.getLastName());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
-            CreateRosterResponseDTO response = new CreateRosterResponseDTO().toBuilder().createdBy(roster.getCreatedBy()).date(roster.getDate()).createdAt(roster.getCreatedAt()).breakMinutes(roster.getBreakMinutes()).employeeId(roster.getEmployeeId()).endTime(reformatDateTime(roster.getEndTime())).status(RosterEnum.valueOf(roster.getStatus())).startTime(reformatDateTime(roster.getStartTime())).location(roster.getLocation()).remainingMinutes(remainingMinutes).employeeName(roster.getEmployeeName()).build();
+
+            // Weekly cap
+            long currentWeekMin = rosterRepository.sumWeekMinutes(employeeId, weekStart);
+            long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
+            long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
+            response = new CreateRosterResponseDTO().toBuilder()
+                    .createdBy(roster.getCreatedBy())
+                    .date(roster.getDate())
+                    .createdAt(roster.getCreatedAt())
+                    .breakMinutes(roster.getBreakMinutes())
+                    .employeeId(roster.getEmployeeId())
+                    .endTime(reformatDateTime(roster.getEndTime()))
+                    .status(RosterEnum.valueOf(roster.getStatus()))
+                    .startTime(reformatDateTime(roster.getStartTime()))
+                    .location(roster.getLocation())
+                    .remainingMinutes(remainingMinutes)
+                    .employeeName(roster.getEmployeeName())
+                    .build();
+
+            if (shiftDurationMin > remainingMinutes) {
+                String msg = "Exceed the weekly hours limit! " + "Current scheduled hours: " + (currentWeekMin / 60.0) + ". " + "Current assigned hours for this current shift: " + (shiftDurationMin / 60.0) + ".";
+                log.error(msg);
+                response.setExceededHours(true);
+                //    throw new BusinessException(WEEKLY_HOUR_LIMIT_EXCEEDED, ROSTER.name(), msg);
+            }
             return getCompleteResponse(errorCodeRepository, CREATE_ROSTER_SUCCESS, ROSTER.name(), response);
         } catch (BusinessException e) {
             throw e;
@@ -278,7 +294,7 @@ public class RosterServiceImpl implements RosterService {
             rosterEntity.setLocation(request.getLocation());
             rosterEntity.setStatus(UPDATED.name());
             rosterRepository.save(rosterEntity);
-            log.info("Update Roster ID {} succesfully", rosterId.toString());
+            log.info("Update Roster with ID {} succesfully", rosterId.toString());
             return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), request);
         } catch (BusinessException e) {
             throw e;
