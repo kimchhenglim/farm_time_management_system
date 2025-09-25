@@ -55,10 +55,10 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
     UPDATE RosterEntity r
     SET r.employeeName = :newName
     WHERE r.employeeId = :empId
-      AND r.startTime >= :now
+      AND r.startTime >= CURRENT_TIMESTAMP
       AND (r.employeeName IS NULL OR r.employeeName <> :newName)
   """)
-    void propagateEmployeeName(@Param("empId") String empId, @Param("newName") String newName);
+    int propagateEmployeeName(@Param("empId") String empId, @Param("newName") String newName);
 
     @Query("SELECT DISTINCT r.location FROM RosterEntity r " +
             "WHERE :keyword IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")

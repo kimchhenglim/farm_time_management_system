@@ -230,8 +230,8 @@ public class UserServiceImpl implements UserService {
 
             String newName = normalizeName(updateUserDTO.getFirstName(), updateUserDTO.getLastName());
             if (newName != null && !newName.equals(oldName)) {
-                rosterRepository.propagateEmployeeName(employeeId, newName);
-                log.info("Updating name for employeeId {}", employeeId);
+                int updatedRowNum = rosterRepository.propagateEmployeeName(employeeId, newName);
+                log.info("Updating name for employeeId {} for {} records", employeeId, updatedRowNum);
             }
             return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
         } catch (Exception e) {
