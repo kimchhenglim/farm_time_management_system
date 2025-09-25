@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,6 +49,16 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
                         @Param("weekStart") LocalDate weekStart);
 
     Optional<RosterEntity> findById(Long rosterId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+    UPDATE RosterEntity r
+    SET r.employeeName = :newName
+    WHERE r.employeeId = :empId
+      AND r.startTime >= CURRENT_TIMESTAMP
+      AND (r.employeeName IS NULL OR r.employeeName <> :newName)
+  """)
+    int propagateEmployeeName(@Param("empId") String empId, @Param("newName") String newName);
 
     @Query("SELECT DISTINCT r.location FROM RosterEntity r " +
             "WHERE :keyword IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")
