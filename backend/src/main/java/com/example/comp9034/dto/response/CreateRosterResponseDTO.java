@@ -26,6 +26,7 @@ public class CreateRosterResponseDTO {
 
     private String createdBy;
     private LocalDateTime createdAt;
+    private boolean isExceededHours;
 
 
 

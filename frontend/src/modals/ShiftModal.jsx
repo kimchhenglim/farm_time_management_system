@@ -21,7 +21,7 @@ function ShiftModal({
   submitLabel,
 }) {
   const inputRef = useRef(null);
-
+  // console.log(submitLabel);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const [today, setToday] = useState(
@@ -118,8 +118,10 @@ function ShiftModal({
 
   // Load first page of active staff on mount
   useEffect(() => {
-    fetchActiveStaffPaginated();
-  }, []);
+    if (activeStaffList.length === 0) {
+      fetchActiveStaffPaginated(10, 0);
+    }
+  }, [activeStaffList.length, fetchActiveStaffPaginated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -439,7 +441,11 @@ function ShiftModal({
               type="button"
               className="px-4 py-2 bg-gray-300 rounded text-[#565656] cursor-pointer"
               onClick={() => {
-                setSelectedUser(null);
+                setSearchQuery("");
+                if (typeof searchActiveStaff.reset === "function") {
+                  searchActiveStaff.reset();
+                }
+                fetchActiveStaffPaginated(10, 0);
                 onClose();
               }}
             >
@@ -447,10 +453,16 @@ function ShiftModal({
             </button>
 
             <ConfirmModal
-              propID="createShift"
-              confirmLabel="Confirm"
+              propID={`${
+                submitLabel === "Create" ? "createShift" : "editShift"
+              }"`}
+              confirmLabel={`${submitLabel === "Create" ? "Create" : "Edit"}`}
               cancelLabel="Cancel"
-              title="Confirm create shift"
+              title={`${
+                submitLabel === "Create"
+                  ? "Create this Shift?"
+                  : "Edit this Shift?"
+              }`}
               message="Are you sure all information are correct?"
               handleSubmit={handleSubmit}
               submitLabel={submitLabel}
