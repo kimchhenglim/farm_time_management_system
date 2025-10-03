@@ -15,11 +15,11 @@ WORKDIR /app
 # Copy jar from build stage to serve stage
 COPY --from=build /app/target/*.jar app.jar
 # Set enviroment variables
-# ARG MODE=dev
+ARG MODE=dev
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75"
-# ENV SPRING_PROFILES_ACTIVE=$MODE
+ENV SPRING_PROFILES_ACTIVE=${MODE}
 
 EXPOSE 8088
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE}" ]
 
 
