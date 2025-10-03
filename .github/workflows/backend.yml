@@ -90,8 +90,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ steps.generatetag.outputs.tags }}
-          build-args: |
-            MODE=${{ steps.generateglobaltag.outputs.environment }}
+          # build-args: |
+          #   MODE=${{ steps.generateglobaltag.outputs.environment }}
   
   docker-deploy:
     name: Docker deploy
