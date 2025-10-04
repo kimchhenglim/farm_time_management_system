@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "Clocking")
@@ -19,9 +18,14 @@ public class ClockingEntity {
 
     private String employeeId;
 
+    @Column(name = "clock_in_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime clockInTime;
+
+    @Column(name = "clock_out_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime clockOutTime;
 
     private Boolean isAdminManual = false;
     private String manualReason;
+
+    private Integer breakMinutes;
 }

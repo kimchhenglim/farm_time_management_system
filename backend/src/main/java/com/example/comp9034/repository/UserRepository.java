@@ -13,6 +13,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer>, JpaS
 
     Optional<UserEntity> findByEmployeeId(String employeeId);
 
+    Optional<UserEntity> findByCardId(String cardId);
+
     @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.isActive = :isActive")
     Optional<UserEntity> findByEmailAndActive(String email, boolean isActive);
 
