@@ -45,6 +45,7 @@ jobs:
       id-token: write
     outputs:
       environment: ${{ steps.generateglobaltag.outputs.environment }}
+      environment_config: ${{ steps.generateglobaltag.outputs.environment_config }}
     steps:
       - name: Checkout Sourcecode
         uses: actions/checkout@v4
@@ -81,7 +82,16 @@ jobs:
           if [ "${{ github.ref_name }}" = "main" ]; then
             environment="prod"
           fi
+
+          environment_config="${{ github.ref_name }}"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            environment_config="prod"
+          fi
+          if [ "${{ github.ref_name }}" = "test" ]; then
+            environment_config="qa"
+          fi
           echo "environment=$environment" >> $GITHUB_OUTPUT
+          echo "environment_config=$environment_config" >> $GITHUB_OUTPUT
 
       - name: Build & Push
         uses: docker/build-push-action@v6
@@ -91,7 +101,7 @@ jobs:
           push: true
           tags: ${{ steps.generatetag.outputs.tags }}
           build-args: |
-            MODE=${{ steps.generateglobaltag.outputs.environment }}
+            MODE=${{ steps.generateglobaltag.outputs.environment_config }}
   
   docker-deploy:
     name: Docker deploy
