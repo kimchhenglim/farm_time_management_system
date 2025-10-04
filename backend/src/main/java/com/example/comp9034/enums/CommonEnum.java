@@ -18,6 +18,7 @@ public enum CommonEnum {
     ROSTER(Group.FLOW),
     CLOCKING(Group.FLOW),
     STATION(Group.FLOW),
+    CLOCKING(Group.FLOW),
 
     PASSWORD_PATTERN(Group.CONFIG),
     EMAIL_PATTERN(Group.CONFIG),
