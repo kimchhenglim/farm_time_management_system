@@ -1,363 +1,103 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ClockIn from "../assets/clockIn.svg";
-import ClockOut from "../assets/clockOut.svg";
-import Break from "../assets/break.svg";
-function Report({
-  staff = [
-    {
-      id: 1,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ly Chingsien",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 1,
-      total: 125.0,
-      status: "Pending",
-    },
-    {
-      id: 2,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 2,
-      total: 200.0,
-      status: "Pending",
-    },
-    {
-      id: 3,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 3,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 4,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 4,
-      total: 1200.0,
-      status: "Pending",
-    },
-    {
-      id: 5,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 5,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 6,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 6,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 7,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "23:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 7,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 8,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "12:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 8,
-      total: 120.0,
-      status: "Approved",
-    },
-    {
-      id: 9,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "11:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 9,
-      total: 120.0,
-      status: "Approved",
-    },
-    {
-      id: 10,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "23:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 10,
-      total: 300.0,
-      status: "Approved",
-    },
-  ],
-  totalElements = 0,
-  totalPages = 1,
-}) {
-  // Sorting state
-  const [sortKey, setSortKey] = useState(null);
-  const [direction, setDirection] = useState("asc");
+import Filter from "../assets/filter.svg";
+import StaffTable from "../components/StaffTable";
+import CalendarModal from "../modals/CalendarModal";
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  format,
+} from "date-fns";
+import AttendanceModal from "../modals/AttendanceModal";
+function Report() {
+  // for the modal to toggle close and open
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Pagination state
-  const [page, setPage] = useState(0);
-  const pageSize = 10;
+  // Week range
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekRange = `${format(weekStart, "d")} - ${format(
+    weekEnd,
+    "d MMMM, yyyy"
+  )}`;
 
-  // Checkbox state
-  const [selectedIds, setSelectedIds] = useState([]);
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  // 👇 Extend to full calendar weeks
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-  // Sort handlers
-  const handleSort = (key) => {
-    console.log(key);
-    console.log(sortKey);
-    if (sortKey === key) {
-      console.log("hi");
-      setDirection(direction === "asc" ? "desc" : "asc");
-    } else {
-      console.log("hello");
-      setSortKey(key);
-      setDirection("asc");
-    }
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  const handleDateClick = (day) => {
+    setCurrentDate(day);
+    setIsOpen(false);
   };
-
-  const renderSortIcon = (key) => {
-    if (sortKey !== key) return null;
-    return <span className="ml-1">{direction === "asc" ? "▲" : "▼"}</span>;
-  };
-
-  const sortedStaff = useMemo(() => {
-    if (!sortKey) return staff;
-    return [...staff].sort((a, b) => {
-      //it will go and compate objectA[staff] and objectB[staff]
-      if (a[sortKey] < b[sortKey]) return direction === "asc" ? -1 : 1;
-      if (a[sortKey] > b[sortKey]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [staff, sortKey, direction]);
-
-  // Pagination
-  const handlePrevPage = () => setPage((p) => Math.max(0, p - 1));
-  const handleNextPage = () => setPage((p) => (p + 1 < totalPages ? p + 1 : p));
-
-  // Checkbox handlers
-  const currentPageStaff = sortedStaff.slice(
-    page * pageSize,
-    page * pageSize + pageSize
-  );
-
-  const isAllSelected =
-    currentPageStaff.length > 0 &&
-    currentPageStaff.every((person) => selectedIds.includes(person.id));
-
-  const toggleSelectAll = () => {
-    if (isAllSelected) {
-      // Deselect all on current page
-      setSelectedIds((prev) =>
-        prev.filter((id) => !currentPageStaff.some((p) => p.id === id))
-      );
-    } else {
-      // Select all on current page
-      setSelectedIds((prev) => [
-        ...new Set([...prev, ...currentPageStaff.map((p) => p.id)]),
-      ]);
-    }
-  };
-
-  const toggleSelectRow = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
   return (
-    <div>
-      {/* Table */}
-      <div className="rounded-[20px] overflow-hidden border border-[#D6D6D6]">
-        <table className="table-auto w-full">
-          <thead className="text-center text-sm text-[#ADADAD] border-[#D6D6D6]">
-            <tr>
-              {/* Checkbox column */}
-              <th className="px-2 py-2 border-b border-[#D6D6D6]">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                  className="checkbox rounded-sm"
-                />
-              </th>
-
-              {/* Other columns */}
-              {[
-                { label: "Date", key: "date" },
-                { label: "Staff", key: "staff" },
-                { label: "Clock-in", key: "clockIn" },
-                { label: "Clock-out", key: "clockOut" },
-                { label: "Break", key: "Break" },
-                { label: "Pay rate", key: "payRate" },
-                { label: "Hours", key: "hours" },
-                { label: "Total", key: "total" },
-              ].map(({ label, key }) => (
-                <th
-                  key={key}
-                  className="px-4 py-6 border-b border-[#D6D6D6] font-normal cursor-pointer select-none hover:text-[#566074]"
-                  onClick={() => handleSort(key)}
-                >
-                  <div className="flex items-center justify-center">
-                    {label}
-                    {renderSortIcon(key)}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="text-sm text-center">
-            {currentPageStaff.length > 0 ? (
-              currentPageStaff.map((person) => {
-                const statusColor =
-                  person.status !== "Pending"
-                    ? "bg-[#F0FDF4] text-[#16A34A]"
-                    : "bg-[#F5F5F5] text-[#566074]";
-                return (
-                  <tr
-                    key={person.id}
-                    className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 cursor-pointer"
-                  >
-                    {/* Row checkbox */}
-                    <td className="px-2 py-2 border-b border-[#D6D6D6]">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(person.id)}
-                        onChange={() => toggleSelectRow(person.id)}
-                        className="checkbox rounded-sm"
-                      />
-                    </td>
-
-                    {/* Row data */}
-                    <td className="px-4 py-2 border-b border-[#D6D6D6] text-[#ADADAD]">
-                      {person.date}
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6] font-semibold">
-                      {person.staff}
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]  ">
-                      <div className="flex gap-2 items-center justify-center">
-                        <img src={ClockIn} alt="clock-in" />
-                        <span>{person.clockIn}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      <div className="flex gap-2 items-center justify-center">
-                        <img src={ClockOut} alt="clock-out" />
-                        <span>{person.clockOut}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      <div className="flex gap-2 items-center justify-center">
-                        <img src={Break} alt="break" />
-                        <span>{person.break}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      ${person.payRate}
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      {person.hours}
-                    </td>
-                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full font-semibold text-sm ${statusColor}`}
-                      >
-                        {person.status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td
-                  colSpan="9"
-                  className="px-4 py-6 text-center text-gray-500 font-medium"
-                >
-                  No records found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {sortedStaff.length > 0 && (
-        <div className="flex flex-col items-center mt-4">
-          <span className="text-sm text-gray-700">
-            Showing <span className="font-semibold">{page * pageSize + 1}</span>{" "}
-            to{" "}
-            <span className="font-semibold">
-              {Math.min(page * pageSize + pageSize, sortedStaff.length)}
-            </span>{" "}
-            of <span className="font-semibold">{totalElements}</span> Entries
-          </span>
-          <div className="inline-flex mt-2 xs:mt-0">
-            <button
-              onClick={handlePrevPage}
-              disabled={page === 0}
-              className={`px-3 h-8 text-sm font-medium rounded-s ${
-                page === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gray-800 text-white hover:bg-gray-900"
-              }`}
-            >
-              Prev
-            </button>
-            <button
-              onClick={handleNextPage}
-              disabled={page + 1 >= totalPages}
-              className={`px-3 h-8 text-sm font-medium rounded-e ${
-                page + 1 >= totalPages
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gray-800 text-white hover:bg-gray-900"
-              }`}
-            >
-              Next
-            </button>
-          </div>
+    <div className="flex flex-col px-9 py-5 gap-6">
+      {/* first top part of the report page */}
+      <div className="flex items-center gap-6">
+        <span className="font-semibold text-[32px] text-[#566074] ">
+          Attendance
+        </span>
+        <div
+          className="p-2 bg-[#F5F5F5] flex items-center gap-3 rounded-sm relative cursor-pointer font-semibold text-[#566074]"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          <img src={Filter} alt="filter" />
+          {weekRange}
+          {/* Calendar Modal */}
+          <CalendarModal
+            top="top-[40px] left-0"
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            currentDate={currentDate}
+            days={days}
+            weekStart={weekStart}
+            weekEnd={weekEnd}
+            handleDateClick={handleDateClick}
+          />
         </div>
-      )}
+      </div>
+      <div className="w-full flex justify-between items-center cursor-pointer">
+        <div className="font-thin text-[#8D8D8D] flex gap-[44px]">
+          <span>40 timesheet</span>
+          <span>$8,152.00</span>
+        </div>
+        <div
+          className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <svg
+            width="14"
+            height="15"
+            viewBox="0 0 14 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 1.5C8 0.946875 7.55312 0.5 7 0.5C6.44688 0.5 6 0.946875 6 1.5V6.5H1C0.446875 6.5 0 6.94688 0 7.5C0 8.05312 0.446875 8.5 1 8.5H6V13.5C6 14.0531 6.44688 14.5 7 14.5C7.55312 14.5 8 14.0531 8 13.5V8.5H13C13.5531 8.5 14 8.05312 14 7.5C14 6.94688 13.5531 6.5 13 6.5H8V1.5Z"
+              fill="#16A34A"
+            />
+          </svg>
+          New record
+        </div>
+      </div>
+      <StaffTable totalElements={0} totalPages={1} />
+      {/* modal for create attendance */}
+      <AttendanceModal
+        isOpenModal={isModalOpen}
+        setIsOpenModal={setIsModalOpen}
+        title="Create new Timesheet"
+        onClose={() => setIsModalOpen(false)}
+        onSubmitFunction=""
+        submitLabel="Save"
+      />
     </div>
   );
 }
