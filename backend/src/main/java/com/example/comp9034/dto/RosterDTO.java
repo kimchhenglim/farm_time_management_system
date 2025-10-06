@@ -17,7 +17,7 @@ public class RosterDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private LocalDateTime endTime;
     private LocalDate date;
-    private String location;
+    private String station;
     private Integer breakMinutes;
     private String status;
 
