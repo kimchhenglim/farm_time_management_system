@@ -305,7 +305,7 @@ public class RosterServiceImpl implements RosterService {
             throw e;
         } catch (Exception e) {
             String msg = "There has been an error updating roster shift with ID {}";
-            log.error(msg, request);
+            log.error(msg, request.getRosterId());
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }

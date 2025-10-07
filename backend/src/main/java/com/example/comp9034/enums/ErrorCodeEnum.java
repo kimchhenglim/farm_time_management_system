@@ -27,6 +27,10 @@ public enum ErrorCodeEnum {
     DELETE_ROSTER_SUCCESS("E000", "Roster deleted successfully", ROSTER, HttpStatusCodeEnum.OK),
     GET_ROSTER_BY_WEEK_SUCCESS("E000", "Get Roster successfully", ROSTER, HttpStatusCodeEnum.OK),
     UPDATE_ROSTER_SUCCESS("E000", "Roster updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+    CREATE_STATION_SUCCESS("E000", "Station created successfully", STATION, HttpStatusCodeEnum.OK),
+    DELETE_STATION_SUCCESS("E000", "Station deleted successfully", STATION, HttpStatusCodeEnum.OK),
+    GET_STATION_SUCCESS("E000", "Get Station successfully", STATION, HttpStatusCodeEnum.OK),
+    UPDATE_STATION_SUCCESS("E000", "Station updated successfully", ROSTER, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
@@ -66,7 +70,9 @@ public enum ErrorCodeEnum {
     SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
     SHIFT_DURATION_INVALID("E037", "Shift duration does not meet requirements", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
-
+    STATION_EXISTED("E041", "Station existed!", STATION, HttpStatusCodeEnum.BAD_REQUEST),
+    STATION_NOT_FOUND("E042", "Station not found!", STATION, HttpStatusCodeEnum.NOT_FOUND),
+    STATION_ALREADY_INACTIVE("E043", "Station already inactive", STATION, HttpStatusCodeEnum.BAD_REQUEST),
     ;
 
 
