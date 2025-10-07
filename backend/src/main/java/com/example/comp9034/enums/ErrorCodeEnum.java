@@ -34,6 +34,10 @@ public enum ErrorCodeEnum {
     CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
     BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
     END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CREATE_STATION_SUCCESS("E000", "Station created successfully", STATION, HttpStatusCodeEnum.OK),
+    DELETE_STATION_SUCCESS("E000", "Station deleted successfully", STATION, HttpStatusCodeEnum.OK),
+    GET_STATION_SUCCESS("E000", "Get Station successfully", STATION, HttpStatusCodeEnum.OK),
+    UPDATE_STATION_SUCCESS("E000", "Station updated successfully", ROSTER, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
@@ -77,6 +81,9 @@ public enum ErrorCodeEnum {
     NO_CLOCK_IN("E039", "This user has not clocked in yet to perform the action", CLOCKING, HttpStatusCodeEnum.CONFLICT),
     NO_EXISTING_BREAK("E040", "This user has no break", CLOCKING, HttpStatusCodeEnum.CONFLICT),
 
+    STATION_EXISTED("E041", "Station existed!", STATION, HttpStatusCodeEnum.BAD_REQUEST),
+    STATION_NOT_FOUND("E042", "Station not found!", STATION, HttpStatusCodeEnum.NOT_FOUND),
+    STATION_ALREADY_INACTIVE("E043", "Station already inactive", STATION, HttpStatusCodeEnum.BAD_REQUEST),
     ;
 
 
