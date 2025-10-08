@@ -87,11 +87,14 @@ public class StationServiceImpl implements StationService {
             size = Math.min(Math.max(size, 1), 500);
             page = Math.max(page, 0);
 
+            log.info("status: " + status);
+            log.info("stationIds: " + stationIds);
+
             Pageable pageable = PageRequest.of(
                     page,
                     size,
-                    Sort.by(Sort.Direction.ASC, "stationName")
-                            .and(Sort.by(Sort.Direction.ASC, "status")) // works because @Enumerated(STRING)
+                    Sort.by(Sort.Direction.ASC, "stationId")
+                            .and(Sort.by(Sort.Direction.ASC, "status"))
             );
 
             Specification<StationEntity> spec = buildStationSpec(parseStatus(status), safeList(stationIds));
@@ -101,7 +104,7 @@ public class StationServiceImpl implements StationService {
             log.info("Fetched {} stations (page {}/{}) filters: status={}, ids={}",
                     result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), status, stationIds);
 
-            List<StationDTO> stations = stationMapper.toStationDtos(result.getContent()); // <-- method name fix
+            List<StationDTO> stations = stationMapper.toStationDtos(result.getContent());
 
             GetStationResponseDTO response = GetStationResponseDTO.builder()
                     .page(page)
@@ -133,16 +136,15 @@ public class StationServiceImpl implements StationService {
             if (stationIds != null && !stationIds.isEmpty()) {
                 ps.add(root.get("stationId").in(stationIds)); // correct PK field
             }
-
-            // Optional: enforce case-insensitive DB-level sort by name
-            // query.orderBy(cb.asc(cb.lower(root.get("stationName"))));
-
             return cb.and(ps.toArray(new Predicate[0]));
         };
     }
 
     private StationEnum parseStatus(String status) {
-        if (status == null || status.isBlank()) return null;
+        if (status == null || status.isBlank()) {
+            log.info("Status is blank, returning all stations");
+            return null;
+        }
         try {
             return StationEnum.valueOf(status.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
