@@ -226,7 +226,7 @@ function StaffManagement() {
                 { label: "Role", key: "role" },
                 { label: "Contract", key: "contractType" },
                 { label: "Pay Rate", key: "payRate" },
-                { label: "Location", key: "location" },
+                { label: "Station", key: "station" },
                 { label: "Upcoming Shift", key: "upcomingShift" },
                 { label: "Status", key: "status" },
               ].map(({ label, key }) => (
@@ -273,7 +273,7 @@ function StaffManagement() {
                       {person.payRate ? `$${person.payRate}/hr` : ""}
                     </td>
                     <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                      {person.location}
+                      {person.station}
                     </td>
                     <td className="px-4 py-2 border-b border-[#D6D6D6]">
                       {person.upComingShift}

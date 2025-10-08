@@ -22,11 +22,9 @@ function WeekNavigator() {
   const [isOpen, setIsOpen] = useState(false);
   const [isStationModalOpen, setIsStationModalOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
-  const locationsList = ["Shed 1", "Shed 2", "Shed 3"];
-  const [selectedLocations, setSelectedLocations] = useState([
-    ...locationsList,
-  ]);
+  const [stationDropdownOpen, setStationDropdownOpen] = useState(false);
+  const StationsList = ["Shed 1", "Shed 2", "Shed 3"];
+  const [selectedStations, setSelectedStations] = useState([...StationsList]);
   const today = new Date();
   const dayOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -46,13 +44,13 @@ function WeekNavigator() {
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const week = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Function to fetch roster with current date and selected locations
+  // Function to fetch roster with current date and selected Stations
   const handleFetchRoster = (
     date = currentDate,
-    locations = selectedLocations
+    Stations = selectedStations
   ) => {
     const start = format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    fetchRoster(start, locations);
+    fetchRoster(start, Stations);
   };
 
   // Week navigation
@@ -75,10 +73,10 @@ function WeekNavigator() {
     handleFetchRoster(day);
   };
 
-  // Effect to fetch roster when date or selected locations change
+  // Effect to fetch roster when date or selected Stations change
   useEffect(() => {
     handleFetchRoster();
-  }, [currentDate, selectedLocations]);
+  }, [currentDate, selectedStations]);
 
   return (
     <div className="w-full h-full">
@@ -119,37 +117,37 @@ function WeekNavigator() {
         <div className="relative">
           <div
             className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer"
-            onClick={() => setLocationDropdownOpen((prev) => !prev)}
+            onClick={() => setStationDropdownOpen((prev) => !prev)}
           >
             <img src={Filter} alt="filter" />
             <span className="text-[#566074] font-semibold">
-              {selectedLocations.length === 0 ||
-              selectedLocations.length === locationsList.length
-                ? "All Location"
-                : selectedLocations.join(", ")}
+              {selectedStations.length === 0 ||
+              selectedStations.length === StationsList.length
+                ? "All Station"
+                : selectedStations.join(", ")}
             </span>
           </div>
 
-          {locationDropdownOpen && (
+          {stationDropdownOpen && (
             <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow w-48 max-h-60 overflow-y-auto">
               {/* All checkbox */}
               <label className="flex items-center p-2 hover:bg-gray-100 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={selectedLocations.length === locationsList.length}
+                  checked={selectedStations.length === StationsList.length}
                   onChange={() => {
                     const allSelected =
-                      selectedLocations.length === locationsList.length;
-                    const newSelected = allSelected ? [] : [...locationsList];
-                    setSelectedLocations(newSelected);
+                      selectedStations.length === StationsList.length;
+                    const newSelected = allSelected ? [] : [...StationsList];
+                    setSelectedStations(newSelected);
                   }}
                   className="mr-2 accent-green-600"
                 />
                 <span className="text-gray-700 font-semibold">All</span>
               </label>
 
-              {/* Individual locations */}
-              {locationsList.map((loc) => {
+              {/* Individual Stations */}
+              {StationsList.map((sta) => {
                 const colorMap = {
                   "Shed 1": "#19A598",
                   "Shed 2": "#C41651",
@@ -158,30 +156,31 @@ function WeekNavigator() {
 
                 return (
                   <label
-                    key={loc}
+                    key={sta}
                     className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedLocations.includes(loc)}
+                      checked={selectedStations.includes(sta)}
                       onChange={() => {
                         let newSelected;
-                        if (selectedLocations.includes(loc)) {
-                          newSelected = selectedLocations.filter(
-                            (l) => l !== loc
+                        if (selectedStations.includes(sta)) {
+                          newSelected = selectedStations.filter(
+                            (l) => l !== sta
                           );
                         } else {
-                          newSelected = [...selectedLocations, loc];
+                          newSelected = [...selectedStations, sta];
                         }
-                        setSelectedLocations(newSelected);
+                        setSelectedStations(newSelected);
+                        console.log("Selected stations:", newSelected);
                       }}
                       className="mr-2 accent-green-600"
                     />
                     <span
                       className="font-semibold"
-                      style={{ color: colorMap[loc] }}
+                      style={{ color: colorMap[sta] }}
                     >
-                      {loc}
+                      {sta}
                     </span>
                   </label>
                 );
@@ -253,18 +252,20 @@ function WeekNavigator() {
           {week.map((day) => {
             const dayStr = format(day, "yyyy-MM-dd");
             const rosterForDay = roster.find((r) => r.date === dayStr);
-            const shifts = rosterForDay?.data ?? [];
+            const filteredShifts = (rosterForDay?.data ?? []).filter((shift) =>
+              selectedStations.includes(shift.station)
+            );
 
             return (
               <div
                 className="border border-[#EDEDED] flex flex-col p-2 gap-2.5"
                 key={dayStr}
               >
-                {shifts.map((shift, i) => (
+                {filteredShifts.map((shift, i) => (
                   <CardRoster
                     key={shift.id ?? `${dayStr}-${i}`}
                     employeeName={shift.employeeName}
-                    location={shift.location}
+                    station={shift.station}
                     time={shift.time}
                     index={i}
                     columnIndex={dayStr}

@@ -11,12 +11,12 @@ const useRosterStore = create((set, get) => ({
   staffActiveList: [],
   roster: [],
 
-  fetchRoster: async (weekStart, locations = []) => {
+  fetchRoster: async (weekStart, stations = []) => {
     const authUser = useAuthStore.getState().authUser;
     try {
       const token = authUser?.body?.loginToken;
       const params = { weekStart };
-      if (locations.length) params.locations = locations.join(",");
+      if (stations.length) params.stations = stations.join(",");
       const res = await axiosInstances.get("/admin/roster/get", {
         params,
         headers: {
@@ -63,7 +63,7 @@ const useRosterStore = create((set, get) => ({
           id: item.rosterId,
           employeeName: item.employeeName || item.staffName,
           employeeId: item.employeeId,
-          location: item.location,
+          station: item.station,
           time: `${formatTo12Hour(startDate)} - ${formatTo12Hour(endDate)}`,
           type: item.type,
           payRate: item.payRate,
@@ -84,7 +84,7 @@ const useRosterStore = create((set, get) => ({
     date,
     staffId,
     staffName,
-    location,
+    station,
     startTime,
     endTime,
     type,
@@ -102,7 +102,7 @@ const useRosterStore = create((set, get) => ({
         {
           employeeId: staffId,
           employeeName: staffName,
-          location,
+          station,
           startTime,
           endTime,
           breakMinutes,
@@ -144,7 +144,7 @@ const useRosterStore = create((set, get) => ({
       const newShift = {
         id: data?.id,
         employeeName: staffName,
-        location,
+        station,
         time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
         type,
         payRate,
@@ -189,7 +189,7 @@ const useRosterStore = create((set, get) => ({
     date,
     employeeId,
     staffName,
-    location,
+    station,
     startTime,
     endTime,
     type,
@@ -206,7 +206,7 @@ const useRosterStore = create((set, get) => ({
         {
           rosterId,
           employeeId,
-          location,
+          station,
           startTime,
           endTime,
         },
@@ -241,7 +241,7 @@ const useRosterStore = create((set, get) => ({
       const updatedShift = {
         id: rosterId,
         employeeName: staffName,
-        location,
+        station,
         time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
         type,
         payRate,
