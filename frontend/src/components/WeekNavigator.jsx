@@ -14,11 +14,13 @@ import {
 import CalendarModal from "../modals/CalendarModal";
 import CardRoster from "./CardRoster";
 import useRosterStore from "../stores/useRosterStore";
+import StationModal from "../modals/stationModal";
 
 function WeekNavigator() {
   const { roster, fetchRoster } = useRosterStore();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isStationModalOpen, setIsStationModalOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
   const locationsList = ["Shed 1", "Shed 2", "Shed 3"];
@@ -78,25 +80,6 @@ function WeekNavigator() {
     handleFetchRoster();
   }, [currentDate, selectedLocations]);
 
-  // Filter logic for All and individual locations
-  const toggleAllLocations = () => {
-    if (selectedLocations.length === locationsList.length) {
-      setSelectedLocations([]); // uncheck all
-    } else {
-      setSelectedLocations([...locationsList]); // check all
-    }
-  };
-
-  const toggleLocation = (loc) => {
-    let newSelected;
-    if (selectedLocations.includes(loc)) {
-      newSelected = selectedLocations.filter((l) => l !== loc);
-    } else {
-      newSelected = [...selectedLocations, loc];
-    }
-    setSelectedLocations(newSelected);
-  };
-
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between w-full pb-5 px-[24px] h-[60px] relative">
@@ -126,13 +109,13 @@ function WeekNavigator() {
               <img
                 src={leftArrow}
                 className="w-[20px] h-[20px] rotate-180"
-                alt="left-arrow"
+                alt="right-arrow"
               />
             </button>
           </div>
         </div>
 
-        {/* filter */}
+        {/* Filter */}
         <div className="relative">
           <div
             className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer"
@@ -203,6 +186,16 @@ function WeekNavigator() {
                   </label>
                 );
               })}
+
+              {/* ➕ Add new button */}
+              <div className="border-t border-gray-200 py-[12px] px-[31px] flex items-center justify-center">
+                <button
+                  onClick={() => setIsStationModalOpen(true)}
+                  className="font-semibold cursor-pointer"
+                >
+                  Manage...
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -219,7 +212,7 @@ function WeekNavigator() {
         />
       </div>
 
-      {/* roster */}
+      {/* Roster */}
       <div className="w-full h-[calc(100%-60px)] px-2">
         {/* Header row with dates */}
         <div className="w-full h-[80px] grid grid-cols-7">
@@ -288,6 +281,11 @@ function WeekNavigator() {
           })}
         </div>
       </div>
+      {/* Modal for station management */}
+      <StationModal
+        isOpenModal={isStationModalOpen}
+        setIsOpenModal={setIsStationModalOpen}
+      />
     </div>
   );
 }

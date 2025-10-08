@@ -16,7 +16,7 @@ function EditStaffModal({
   const { editStaffDetail } = useStaffStore();
   const [formData, setFormData] = useState({
     employeeId: currentStaff?.employeeId,
-    biometricId: currentStaff?.employeeId,
+    cardId: currentStaff?.cardId,
     firstName: currentStaff?.firstName,
     lastName: currentStaff?.lastName,
     dob: currentStaff?.dob,
@@ -60,12 +60,13 @@ function EditStaffModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(formData);
     const regex = /^[A-Za-z]+$/; // only letters
     const phoneNumberRegex = /^\+61[0-9]{9}$/;
     const standardRate = /^\d*$/;
     const emailRegex = /\S+@\S+\.\S+/;
-    const num = parseFloat(formData.payRate.trim());
+    // console.log(formData.payRate);
+    const num = parseFloat(formData.payRate);
     if (!regex.test(formData.firstName) || !regex.test(formData.lastName)) {
       toast.error("Only letters allowed for firstName or lastName!");
       return;
@@ -86,9 +87,12 @@ function EditStaffModal({
       ...formData,
       dob: formData.dob.split("-").reverse().join("/"),
     };
+    //
+    console.log(payload);
     await editStaffDetail(payload);
 
     setIsOpenModal(false);
+    // alert("Hi");
   };
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -138,10 +142,10 @@ function EditStaffModal({
               </div>
               {/* Biometric ID */}
               <div className="flex flex-col justify-center">
-                <label className="text-sm font-medium mb-1">Biometric ID</label>
+                <label className="text-sm font-medium mb-1">Card ID</label>
                 <input
-                  name="biometricId"
-                  value={formData.biometricId}
+                  name="cardId"
+                  value={formData.cardId}
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
                 />
