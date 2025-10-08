@@ -73,7 +73,7 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
         <div className="w-full h-[1px] bg-[#ADADAD]" />
 
         {/* Body */}
-        <div className="py-[24px] w-full px-6 flex flex-col gap-4">
+        <div className="py-[24px] w-full px-6 flex flex-col gap-4 h-[400px] overflow-y-auto">
           {/* Existing stations */}
           {editableStations?.map((station) => {
             const isEditing = editId === station.stationId;
@@ -225,9 +225,9 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
               onChange={(e) =>
                 setNewStation({ ...newStation, name: e.target.value })
               }
-              className="w-[120px] border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+              className="w-[120px]  px-2 py-1 text-sm focus:outline-none "
             />
-            <select
+            {/* <select
               value={newStation.status}
               onChange={(e) =>
                 setNewStation({ ...newStation, status: e.target.value })
@@ -236,7 +236,7 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
-            </select>
+            </select> */}
             <div className="p-2 bg-[#F5F5F5] rounded-sm hover:bg-[#EAEAEA] transition flex items-center justify-center w-[26px] h-[26px]">
               {isAdding ? (
                 <svg
