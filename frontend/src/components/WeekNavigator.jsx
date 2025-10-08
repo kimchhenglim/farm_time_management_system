@@ -14,7 +14,7 @@ import {
 import CalendarModal from "../modals/CalendarModal";
 import CardRoster from "./CardRoster";
 import useRosterStore from "../stores/useRosterStore";
-import StationModal from "../modals/stationModal";
+import StationModal from "./StationModal";
 
 function WeekNavigator() {
   const { roster, fetchRoster } = useRosterStore();
