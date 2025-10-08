@@ -47,10 +47,10 @@ function WeekNavigator() {
   // Fetch roster for given date and selected locations
   const handleFetchRoster = (
     date = currentDate,
-    locations = selectedLocations
+    Stations = selectedStations
   ) => {
     const start = format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    fetchRoster(start, locations);
+    fetchRoster(start, Stations);
   };
 
   // Week navigation
@@ -80,7 +80,7 @@ function WeekNavigator() {
   // Fetch roster when date or location changes
   useEffect(() => {
     handleFetchRoster();
-  }, [currentDate, selectedLocations]);
+  }, [currentDate, selectedStations]);
 
   // Default select all when station list is fetched
   useEffect(() => {
@@ -276,18 +276,20 @@ function WeekNavigator() {
           {week.map((day) => {
             const dayStr = format(day, "yyyy-MM-dd");
             const rosterForDay = roster.find((r) => r.date === dayStr);
-            const shifts = rosterForDay?.data ?? [];
+            const filteredShifts = (rosterForDay?.data ?? []).filter((shift) =>
+              selectedStations.includes(shift.station)
+            );
 
             return (
               <div
                 className="border border-[#EDEDED] flex flex-col p-2 gap-2.5"
                 key={dayStr}
               >
-                {shifts.map((shift, i) => (
+                {filteredShifts.map((shift, i) => (
                   <CardRoster
                     key={shift.id ?? `${dayStr}-${i}`}
                     employeeName={shift.employeeName}
-                    location={shift.location}
+                    station={shift.station}
                     time={shift.time}
                     index={i}
                     columnIndex={dayStr}
