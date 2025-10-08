@@ -187,11 +187,11 @@ public class UserServiceImpl implements UserService {
             if (registerRequest.getRole().toUpperCase().equals(ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().toUpperCase().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, null);
             } else {
                 String message = "User role is not valid: " + registerRequest.getRole();
                 log.info(message);

@@ -26,7 +26,7 @@ public class EditRosterDTO {
     @NotNull(message = "Roster ID is required")
     private Long rosterId;
 
-    @NotBlank(message = "Location is required")
-    private String location;
+    @NotBlank(message = "Station is required")
+    private String station;
 }
 

@@ -22,7 +22,7 @@ public class GetRosterByWeekDTO {
      * Optional filters
      */
     private List<String> employeeIds;     // one or many employee IDs
-    private List<String> locationIds;    // one or many location IDs (added)
+    private List<String> stationIds;    // one or many location IDs (added)
 
     private Boolean includeCancelled = false;
     private Boolean includeArchived = false;
