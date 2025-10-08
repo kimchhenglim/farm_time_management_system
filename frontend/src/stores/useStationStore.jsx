@@ -44,9 +44,6 @@ const useStationStore = create((set, get) => ({
           },
         }
       );
-      // ✅ refresh or append station
-      const updated = res?.data?.body?.stationList || [];
-      set({ stationList: updated });
     } catch (error) {
       console.error("Error creating station:", error);
     } finally {
