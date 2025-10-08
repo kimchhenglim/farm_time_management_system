@@ -15,12 +15,12 @@ function ConfirmShiftModal({ isOpen, setIsOpen, rosterID }) {
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             {/* Title */}
             <h2 className="text-2xl font-semibold text-gray-700">
-              Create this Shift?
+              Delete this Shift?
             </h2>
 
             {/* Message */}
             <p className="text-gray-600 mt-4">
-              Are you sure all information are correct?
+              Are you sure you want to delete this shift?
             </p>
 
             {/* Actions */}

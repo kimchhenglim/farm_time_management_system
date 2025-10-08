@@ -59,7 +59,7 @@ function Dashboard() {
         onSubmitFunction={addRoster}
         submitLabel="Create"
       />
-      <ConfirmModal
+      {/* <ConfirmModal
         propID="deleteModal"
         title="Delete this shift?"
         message="Are you sure you want to publish this shift?"
@@ -70,7 +70,7 @@ function Dashboard() {
         handleSubmit={() => {
           // setIsActive((prev) => !prev);
         }}
-      />
+      /> */}
     </div>
   );
 }
