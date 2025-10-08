@@ -63,7 +63,7 @@ function AttendanceModal({
       setSelectedUser(data);
       setFormData({
         date: data.date || "",
-        location: data.location || "",
+        station: data.station || "",
         startTime: data.startTime || "",
         endTime: data.endTime || "",
         staffName: data.staffName || "",
@@ -75,7 +75,7 @@ function AttendanceModal({
 
   const [formData, setFormData] = useState({
     date: data?.date || "",
-    location: data?.location || "",
+    station: data?.station || "",
     startTime: data?.startTime || "",
     endTime: data?.endTime || "",
     staffName: data?.staffName || "",
@@ -93,7 +93,7 @@ function AttendanceModal({
       setSelectedUser(null);
       setFormData({
         date: "",
-        location: "",
+        station: "",
         startTime: "",
         endTime: "",
       });
@@ -128,8 +128,8 @@ function AttendanceModal({
     } else if (toAUFormat(formData.date) < today) {
       toast.error("You cannot assign or edit shift in the past!");
       return;
-    } else if (formData.location === "") {
-      toast.error("Please enter location!");
+    } else if (formData.station === "") {
+      toast.error("Please enter station!");
       return;
     } else if (formData.startTime === "" || formData.endTime === "") {
       toast.error("Please enter shift time!");
@@ -189,7 +189,7 @@ function AttendanceModal({
       toAUFormat(formData.date),
       selectedUser.id,
       selectedUser.staffName,
-      formData.location,
+      formData.station,
       formData.startTime,
       formData.endTime,
       selectedUser.type,
@@ -204,7 +204,7 @@ function AttendanceModal({
 
     setFormData({
       date: "",
-      location: "",
+      station: "",
       startTime: "",
       endTime: "",
       StaffName: "",
@@ -302,19 +302,19 @@ function AttendanceModal({
                 </div>
                 <div className="flex flex-col gap-[10px]">
                   <label
-                    htmlFor="location"
+                    htmlFor="station"
                     className="text-[#565656] font-medium"
                   >
-                    Location
+                    Station
                   </label>
                   <select
-                    name="location"
-                    id="location"
-                    value={formData.location}
+                    name="station"
+                    id="station"
+                    value={formData.station}
                     onChange={handleChange}
                     className="border border-[#ADADAD] px-3 py-2 rounded"
                   >
-                    <option value="">Select Location</option>
+                    <option value="">Select Station</option>
                     <option value="Shed 1">Shed 1</option>
                     <option value="Shed 2">Shed 2</option>
                     <option value="Shed 3">Shed 3</option>
