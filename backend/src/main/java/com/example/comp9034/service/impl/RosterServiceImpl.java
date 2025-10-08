@@ -180,7 +180,7 @@ public class RosterServiceImpl implements RosterService {
             Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startTime").and(Sort.by("employeeId")));
 
             // 2) Build Specification
-            Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, employeeIdList, safeList(locationList), Boolean.TRUE.equals(includeCancelled));
+            Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, safeList(employeeIdList), safeList(locationList), Boolean.TRUE.equals(includeCancelled));
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}", result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
             List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());

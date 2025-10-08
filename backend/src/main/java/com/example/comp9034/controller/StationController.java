@@ -15,7 +15,7 @@ public interface StationController {
     ResponseEntity<ResponseBody<Object>> createStation(@Valid @RequestBody CreateStationDTO registerRequest);
 
     @GetMapping("get")
-    ResponseEntity<ResponseBody<Object>> getStation(@RequestParam(defaultValue = "ACTIVE") String status, @RequestParam(required = false) List<Long> stationIds,
+    ResponseEntity<ResponseBody<Object>> getStation(@RequestParam(required = false) String status, @RequestParam(required = false) List<Long> stationIds,
                                                    @RequestParam(defaultValue = "0") int page,
                                                    @RequestParam(defaultValue = "100") int size);
 
