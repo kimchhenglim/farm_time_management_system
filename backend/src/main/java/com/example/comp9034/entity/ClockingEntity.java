@@ -24,8 +24,8 @@ public class ClockingEntity {
     @Column(name = "clock_out_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime clockOutTime;
 
-    private Boolean isAdminManual = false;
-    private String manualReason;
+    private boolean isAdminManual = false;
+    private String reasonCode;
 
     private Integer breakMinutes;
 }

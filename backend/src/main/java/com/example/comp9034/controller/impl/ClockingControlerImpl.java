@@ -1,5 +1,6 @@
 package com.example.comp9034.controller.impl;
 
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,6 +9,9 @@ import com.example.comp9034.controller.ClockingController;
 import com.example.comp9034.dto.request.BreakEndDTO;
 import com.example.comp9034.dto.request.BreakStartDTO;
 import com.example.comp9034.dto.request.ClockDTO;
+import com.example.comp9034.dto.request.ClockingFilterDTO;
+import com.example.comp9034.dto.request.CreateClockingDTO;
+import com.example.comp9034.dto.request.UpdateClockingDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.ClockingService;
@@ -44,6 +48,30 @@ public class ClockingControlerImpl implements ClockingController {
     @Override
     public ResponseEntity<ResponseBody<Object>> breakEnd(@Valid BreakEndDTO dto) {
         CompleteResponse<Object> response = clockingService.breakEnd(dto);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> getClockings(@Valid ClockingFilterDTO dto) {
+        CompleteResponse<Object> response = clockingService.getClockings(dto);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> createClocking(@Valid CreateClockingDTO dto) {
+        CompleteResponse<Object> response = clockingService.createClocking(dto);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> updateClocking(@Valid UpdateClockingDTO dto, int clockingId) {
+        CompleteResponse<Object> response = clockingService.updateClocking(dto, clockingId);
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
+    public ResponseEntity<ResponseBody<Object>> deleteClocking(int clockingId) {
+        CompleteResponse<Object> response = clockingService.deleteClocking(clockingId);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
     

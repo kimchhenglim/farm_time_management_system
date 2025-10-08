@@ -3,6 +3,7 @@ package com.example.comp9034.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,17 +20,17 @@ import com.example.comp9034.response_template.ResponseBody;
 import jakarta.validation.Valid;
 
 public interface ClockingController {
-    // @GetMapping("/admin/clockings")
-    // ResponseEntity<ResponseBody<Object>> getClockings(@Valid @ModelAttribute ClockingFilterDTO dto);
+    @GetMapping("/admin/clockings")
+    ResponseEntity<ResponseBody<Object>> getClockings(@Valid @ModelAttribute ClockingFilterDTO dto);
 
-    // @PostMapping("admin/clocking")
-    // ResponseEntity<ResponseBody<Object>> createClocking(@Valid @RequestBody CreateClockingDTO dto); 
+    @PostMapping("admin/clocking")
+    ResponseEntity<ResponseBody<Object>> createClocking(@Valid @RequestBody CreateClockingDTO dto); 
 
-    // @PutMapping("/admin/clocking/{clockingId}")
-    // ResponseEntity<ResponseBody<Object>> updateClocking(@Valid @RequestBody UpdateClockingDTO dto, @PathVariable("clockingId") String clockingId);
+    @PutMapping("/admin/clocking/{clockingId}")
+    ResponseEntity<ResponseBody<Object>> updateClocking(@Valid @RequestBody UpdateClockingDTO dto, @PathVariable("clockingId") int clockingId);
     
-    // @DeleteMapping("/admin/clocking/{clockingId}")
-    // ResponseEntity<ResponseBody<Object>> deleteClocking();
+    @DeleteMapping("/admin/clocking/{clockingId}")
+    ResponseEntity<ResponseBody<Object>> deleteClocking(@PathVariable("clockingId") int clockingId);
 
     @PostMapping("/clocking/in")
     ResponseEntity<ResponseBody<Object>> clockIn(@Valid @RequestBody ClockDTO dto);
