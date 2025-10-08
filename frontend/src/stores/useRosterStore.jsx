@@ -13,6 +13,7 @@ const useRosterStore = create((set, get) => ({
 
   fetchRoster: async (weekStart, stations = []) => {
     const authUser = useAuthStore.getState().authUser;
+    console.log(stations);
     try {
       const token = authUser?.body?.loginToken;
       const params = { weekStart };
