@@ -105,7 +105,11 @@ function CardRoster({
       <div
         tabIndex={0}
         role="button"
-        className={` w-full h-[70px] p-2 flex flex-col gap-2 justify-center ${stationColors[station]}  rounded-[5px] cursor-pointer`}
+        className={` w-full h-[70px] p-2 flex flex-col gap-2 justify-center ${
+          stationColors[station]
+            ? stationColors[station]
+            : "bg-[#F5F5F5] text-[#8D8D8D]"
+        }  rounded-[5px] cursor-pointer`}
       >
         <span className=" font-semibold text-[14px]">{employeeName}</span>
         <div className="flex gap-2 items-center">

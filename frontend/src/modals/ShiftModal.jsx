@@ -325,6 +325,7 @@ function ShiftModal({
                     <option value="Shed 1">Shed 1</option>
                     <option value="Shed 2">Shed 2</option>
                     <option value="Shed 3">Shed 3</option>
+                    <option value="Area 24">Area 24</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-[36px]">
