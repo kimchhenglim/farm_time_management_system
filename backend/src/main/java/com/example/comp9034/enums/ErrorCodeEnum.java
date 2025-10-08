@@ -30,14 +30,14 @@ public enum ErrorCodeEnum {
     GET_CLOCKING_SUCCESS("E000", "Fetch clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
     UPDATE_CLOCKING_SUCCESS("E000", "Update clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
     DELETE_CLOCKING_SUCCESS("E000", "Delete clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
-    CLOCKING_CREATED("E000", "Clocking created successfully", CLOCKING, HttpStatusCodeEnum.OK),
-    CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
-    BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
-    END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
     CREATE_STATION_SUCCESS("E000", "Station created successfully", STATION, HttpStatusCodeEnum.OK),
     DELETE_STATION_SUCCESS("E000", "Station deleted successfully", STATION, HttpStatusCodeEnum.OK),
     GET_STATION_SUCCESS("E000", "Get Station successfully", STATION, HttpStatusCodeEnum.OK),
     UPDATE_STATION_SUCCESS("E000", "Station updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+    CLOCKING_CREATED("E000", "Clocking created successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
