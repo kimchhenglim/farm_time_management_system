@@ -14,23 +14,22 @@ import {
 import CalendarModal from "../modals/CalendarModal";
 import CardRoster from "./CardRoster";
 import useRosterStore from "../stores/useRosterStore";
-import StationModal from "./StationModal";
+import StationModal from "../modals/StationModal";
+import useStationStore from "../stores/useStationStore";
 
 function WeekNavigator() {
   const { roster, fetchRoster } = useRosterStore();
+  const { fetchStationList, stationLoading, stationList } = useStationStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isStationModalOpen, setIsStationModalOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
-  const locationsList = ["Shed 1", "Shed 2", "Shed 3"];
-  const [selectedLocations, setSelectedLocations] = useState([
-    ...locationsList,
-  ]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
   const today = new Date();
   const dayOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  // Week range helpers
+  // Week helpers
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const weekRange = `${format(weekStart, "MMMM d")} - ${format(
@@ -42,11 +41,10 @@ function WeekNavigator() {
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const week = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Function to fetch roster with current date and selected locations
+  // Fetch roster for given date and selected locations
   const handleFetchRoster = (
     date = currentDate,
     locations = selectedLocations
@@ -68,17 +66,37 @@ function WeekNavigator() {
     handleFetchRoster(newDate);
   };
 
-  // Date click for calendar modal
   const handleDateClick = (day) => {
     setCurrentDate(day);
     setIsOpen(false);
     handleFetchRoster(day);
   };
 
-  // Effect to fetch roster when date or selected locations change
+  // Fetch station list on mount
+  useEffect(() => {
+    fetchStationList();
+  }, []);
+
+  // Fetch roster when date or location changes
   useEffect(() => {
     handleFetchRoster();
   }, [currentDate, selectedLocations]);
+
+  // Default select all when station list is fetched
+  useEffect(() => {
+    if (stationList?.length > 0) {
+      setSelectedLocations(stationList.map((s) => s.name || s.stationName));
+    }
+  }, [stationList]);
+
+  // Helper to show text inside filter button
+  const getFilterText = () => {
+    if (stationLoading) return "Loading...";
+    if (!stationList || stationList.length === 0) return "No Stations";
+    if (selectedLocations.length === 0) return "Select Location";
+    if (selectedLocations.length === stationList.length) return "All Locations";
+    return selectedLocations.join(", ");
+  };
 
   return (
     <div className="w-full h-full">
@@ -115,87 +133,94 @@ function WeekNavigator() {
           </div>
         </div>
 
-        {/* Filter */}
+        {/* Filter Dropdown */}
         <div className="relative">
           <div
-            className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer"
+            className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer min-w-[180px]"
             onClick={() => setLocationDropdownOpen((prev) => !prev)}
           >
             <img src={Filter} alt="filter" />
-            <span className="text-[#566074] font-semibold">
-              {selectedLocations.length === 0 ||
-              selectedLocations.length === locationsList.length
-                ? "All Location"
-                : selectedLocations.join(", ")}
+            <span
+              className={`text-sm font-semibold truncate ${
+                stationLoading ? "text-gray-400" : "text-[#566074]"
+              }`}
+            >
+              {getFilterText()}
             </span>
           </div>
 
           {locationDropdownOpen && (
-            <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow w-48 max-h-60 overflow-y-auto">
-              {/* All checkbox */}
-              <label className="flex items-center p-2 hover:bg-gray-100 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedLocations.length === locationsList.length}
-                  onChange={() => {
-                    const allSelected =
-                      selectedLocations.length === locationsList.length;
-                    const newSelected = allSelected ? [] : [...locationsList];
-                    setSelectedLocations(newSelected);
-                  }}
-                  className="mr-2 accent-green-600"
-                />
-                <span className="text-gray-700 font-semibold">All</span>
-              </label>
-
-              {/* Individual locations */}
-              {locationsList.map((loc) => {
-                const colorMap = {
-                  "Shed 1": "#19A598",
-                  "Shed 2": "#C41651",
-                  "Shed 3": "#1773E0",
-                };
-
-                return (
-                  <label
-                    key={loc}
-                    className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                  >
+            <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow w-52 max-h-60 overflow-y-auto">
+              {/* Loading spinner */}
+              {stationLoading ? (
+                <div className="flex items-center justify-center p-4 text-gray-500">
+                  <span className="loading loading-spinner loading-sm mr-2"></span>
+                  Loading...
+                </div>
+              ) : (
+                <>
+                  {/* Select All */}
+                  <label className="flex items-center p-2 hover:bg-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={selectedLocations.includes(loc)}
+                      checked={selectedLocations.length === stationList?.length}
                       onChange={() => {
-                        let newSelected;
-                        if (selectedLocations.includes(loc)) {
-                          newSelected = selectedLocations.filter(
-                            (l) => l !== loc
-                          );
-                        } else {
-                          newSelected = [...selectedLocations, loc];
-                        }
-                        setSelectedLocations(newSelected);
+                        const allSelected =
+                          selectedLocations.length === stationList?.length;
+                        setSelectedLocations(
+                          allSelected
+                            ? []
+                            : stationList.map((s) => s.name || s.stationName)
+                        );
                       }}
                       className="mr-2 accent-green-600"
                     />
-                    <span
-                      className="font-semibold"
-                      style={{ color: colorMap[loc] }}
-                    >
-                      {loc}
-                    </span>
+                    <span className="text-gray-700 font-semibold">All</span>
                   </label>
-                );
-              })}
 
-              {/* ➕ Add new button */}
-              <div className="border-t border-gray-200 py-[12px] px-[31px] flex items-center justify-center">
-                <button
-                  onClick={() => setIsStationModalOpen(true)}
-                  className="font-semibold cursor-pointer"
-                >
-                  Manage...
-                </button>
-              </div>
+                  {/* Each station */}
+                  {stationList?.map((station) => {
+                    const name = station.name || station.stationName;
+                    return (
+                      <label
+                        key={station.id || name}
+                        className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedLocations.includes(name)}
+                          onChange={() => {
+                            if (selectedLocations.includes(name)) {
+                              setSelectedLocations(
+                                selectedLocations.filter((s) => s !== name)
+                              );
+                            } else {
+                              setSelectedLocations([
+                                ...selectedLocations,
+                                name,
+                              ]);
+                            }
+                          }}
+                          className="mr-2 accent-green-600"
+                        />
+                        <span className="font-semibold text-gray-700">
+                          {name}
+                        </span>
+                      </label>
+                    );
+                  })}
+
+                  {/* Manage stations */}
+                  <div className="border-t border-gray-200 py-2 flex justify-center">
+                    <button
+                      onClick={() => setIsStationModalOpen(true)}
+                      className="text-green-600 font-semibold hover:underline"
+                    >
+                      Manage...
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -212,9 +237,8 @@ function WeekNavigator() {
         />
       </div>
 
-      {/* Roster */}
+      {/* Roster Section */}
       <div className="w-full h-[calc(100%-60px)] px-2">
-        {/* Header row with dates */}
         <div className="w-full h-[80px] grid grid-cols-7">
           {week.map((item, index) => {
             const dayStr = format(item, "yyyy-MM-dd");
@@ -248,7 +272,6 @@ function WeekNavigator() {
           })}
         </div>
 
-        {/* Roster cells */}
         <div className="w-full h-[calc(100%-80px)] grid grid-cols-7 overflow-y-auto">
           {week.map((day) => {
             const dayStr = format(day, "yyyy-MM-dd");
@@ -281,10 +304,12 @@ function WeekNavigator() {
           })}
         </div>
       </div>
-      {/* Modal for station management */}
+
+      {/* Station Management Modal */}
       <StationModal
         isOpenModal={isStationModalOpen}
         setIsOpenModal={setIsStationModalOpen}
+        stationList={stationList}
       />
     </div>
   );
