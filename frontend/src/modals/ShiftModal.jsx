@@ -42,7 +42,7 @@ function ShiftModal({
 
   const [formData, setFormData] = useState({
     date: data?.date || "",
-    location: data?.location || "",
+    station: data?.station || "",
     startTime: data?.startTime || "",
     endTime: data?.endTime || "",
     staffName: data?.staffName || "",
@@ -105,7 +105,7 @@ function ShiftModal({
         setSelectedUser(staff);
         setFormData({
           date: data.date || "",
-          location: data.location || "",
+          station: data.station || "",
           startTime: data.startTime || "",
           endTime: data.endTime || "",
           staffName: staff.firstName + " " + staff.lastName,
@@ -138,7 +138,7 @@ function ShiftModal({
       setSelectedUser(null);
       setFormData({
         date: "",
-        location: "",
+        station: "",
         startTime: "",
         endTime: "",
         staffName: "",
@@ -180,7 +180,7 @@ function ShiftModal({
     if (!formData.date) return toast.error("Please enter date");
     if (toAUFormat(formData.date) < today)
       return toast.error("You cannot assign or edit shift in the past!");
-    if (!formData.location) return toast.error("Please enter location!");
+    if (!formData.station) return toast.error("Please enter station!");
     if (!formData.startTime || !formData.endTime)
       return toast.error("Please enter shift time!");
     if (formData.endTime <= formData.startTime)
@@ -210,7 +210,7 @@ function ShiftModal({
       date: formData.date,
       staffId: selectedUser.employeeId,
       staffName: `${selectedUser.firstName} ${selectedUser.lastName}`,
-      location: formData.location,
+      station: formData.station,
       startTime: toAUFormat(formData.date, formData.startTime),
       endTime: toAUFormat(formData.date, formData.endTime),
       type: selectedUser.type,
@@ -224,7 +224,7 @@ function ShiftModal({
     setSelectedUser(null);
     setFormData({
       date: "",
-      location: "",
+      station: "",
       startTime: "",
       endTime: "",
       staffName: "",
@@ -309,19 +309,19 @@ function ShiftModal({
                 </div>
                 <div className="flex flex-col gap-[10px]">
                   <label
-                    htmlFor="location"
+                    htmlFor="station"
                     className="text-[#565656] font-medium"
                   >
-                    Location
+                    Station
                   </label>
                   <select
-                    name="location"
-                    id="location"
-                    value={formData.location}
+                    name="station"
+                    id="station"
+                    value={formData.station}
                     onChange={handleChange}
                     className="border border-[#ADADAD] px-3 py-2 rounded"
                   >
-                    <option value="">Select Location</option>
+                    <option value="">Select Station</option>
                     <option value="Shed 1">Shed 1</option>
                     <option value="Shed 2">Shed 2</option>
                     <option value="Shed 3">Shed 3</option>
