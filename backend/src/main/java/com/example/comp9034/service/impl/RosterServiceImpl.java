@@ -129,6 +129,7 @@ public class RosterServiceImpl implements RosterService {
             long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
             long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
             response = new CreateRosterResponseDTO().toBuilder()
+                    .id(roster.getId())
                     .createdBy(roster.getCreatedBy())
                     .date(roster.getDate())
                     .createdAt(roster.getCreatedAt())

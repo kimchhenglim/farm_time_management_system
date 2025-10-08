@@ -69,6 +69,7 @@ public class StationServiceImpl implements StationService {
                     .stationLocation(stationLocation)
                     .createdBy(newStation.getCreatedBy())
                     .status(newStation.getStatus())
+                    .createdAt(newStation.getCreatedAt())
                     .build();
             return getCompleteResponse(errorCodeRepository, CREATE_STATION_SUCCESS, STATION.name(), response);
         } catch (BusinessException e) {
