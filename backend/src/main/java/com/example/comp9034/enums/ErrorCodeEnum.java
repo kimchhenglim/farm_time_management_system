@@ -83,7 +83,6 @@ public enum ErrorCodeEnum {
     STATION_EXISTED("E041", "Station existed!", STATION, HttpStatusCodeEnum.BAD_REQUEST),
     STATION_NOT_FOUND("E042", "Station not found!", STATION, HttpStatusCodeEnum.NOT_FOUND),
     STATION_ALREADY_INACTIVE("E043", "Station already inactive", STATION, HttpStatusCodeEnum.BAD_REQUEST),
-
     ;
 
 
