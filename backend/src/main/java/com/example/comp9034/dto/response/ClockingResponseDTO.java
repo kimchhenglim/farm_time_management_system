@@ -15,6 +15,7 @@ public class ClockingResponseDTO {
     private int id;
 
     private String employeeId;
+    private Integer stationId;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime clockInTime;

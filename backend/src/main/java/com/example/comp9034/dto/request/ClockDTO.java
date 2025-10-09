@@ -12,6 +12,6 @@ public class ClockDTO {
     @NotBlank(message = "CardId cannot be null or empty")
     private String cardId;
 
-    // @NotBlank(message = "Station cannot be null or empty")
-    // private int stationId;
+    @NotBlank(message = "Station cannot be null or empty")
+    private int stationId;
 }

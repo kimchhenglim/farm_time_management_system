@@ -19,8 +19,8 @@ public class CreateClockingDTO {
     @NotBlank(message = "Employee cannot be null or empty")
     private String employeeId;
 
-    // @NotBlank(message = "Station cannot be null or empty")
-    // private int stationId;
+    @NotNull(message = "Station cannot be null or empty")
+    private Integer stationId;
 
     @NotNull(message = "Clock in time cannot be null or empty")
     @PastOrPresent(message = "Clock in time can only be in the past")

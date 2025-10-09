@@ -17,14 +17,9 @@ import static com.example.comp9034.enums.ErrorCodeEnum.UPDATE_CLOCKING_SUCCESS;
 import static com.example.comp9034.enums.ErrorCodeEnum.USER_NOT_FOUND;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,12 +34,9 @@ import com.example.comp9034.dto.request.ClockDTO;
 import com.example.comp9034.dto.request.ClockingFilterDTO;
 import com.example.comp9034.dto.request.CreateClockingDTO;
 import com.example.comp9034.dto.request.UpdateClockingDTO;
-import com.example.comp9034.dto.response.ClockingResponseDTO;
 import com.example.comp9034.entity.BreakEntity;
 import com.example.comp9034.entity.ClockingEntity;
-import com.example.comp9034.entity.RoleEntity;
 import com.example.comp9034.entity.UserEntity;
-import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.repository.BreakRepository;
 import com.example.comp9034.repository.ClockingRepository;
 import com.example.comp9034.repository.ErrorCodeRepository;
@@ -54,9 +46,6 @@ import com.example.comp9034.service.ClockingService;
 import com.example.comp9034.exception_handler.BusinessException;
 import com.example.comp9034.mapper.ClockingMapper;
 
-import static java.time.temporal.TemporalAdjusters.previousOrSame;
-
-import jakarta.persistence.criteria.Join;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 
@@ -95,6 +84,7 @@ public class ClockingServiceImpl implements ClockingService {
             ClockingEntity clocking = new ClockingEntity();
             clocking.setClockInTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
             clocking.setEmployeeId(existingUser.getEmployeeId());
+            clocking.setStationId(dto.getStationId());
             clockingRepository.save(clocking);
 
             log.info("Clock in successfully for cardId {}", dto.getCardId());

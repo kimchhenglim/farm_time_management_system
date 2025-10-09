@@ -18,6 +18,8 @@ public class ClockingEntity {
 
     private String employeeId;
 
+    private Integer stationId;
+
     @Column(name = "clock_in_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime clockInTime;
 

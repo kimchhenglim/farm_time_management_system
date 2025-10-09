@@ -39,7 +39,7 @@ public class ClockingFilterDTO {
     @Max(100)
     private Integer size = 10;
 
-    @Pattern(regexp = "(?i)id|name|email|mobileNumber|contractType|isActive", message = "Sort by must be one of id|name|email|mobileNumber|contractType|isActive")
+    @Pattern(regexp = "(?i)id|employeeId|stationId|clockInTime", message = "Sort by must be one of id|employeeId|stationId|clockInTime")
     private String sortBy = "id";
 
     @Pattern(regexp = "(?i)asc|desc", message = "Sort direction must be 'asc' or 'desc'")

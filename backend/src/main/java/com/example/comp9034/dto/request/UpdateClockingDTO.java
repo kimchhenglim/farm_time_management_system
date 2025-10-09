@@ -15,8 +15,8 @@ import lombok.Setter;
 @Getter
 @Valid
 public class UpdateClockingDTO {
-    @NotBlank(message = "Employee cannot be null or empty")
     private String employeeId;
+    private Integer stationId;
 
     @NotNull(message = "Clock in time cannot be null or empty")
     @PastOrPresent(message = "Clock in time can only be in the past")
