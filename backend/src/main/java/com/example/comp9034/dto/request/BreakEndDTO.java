@@ -1,0 +1,14 @@
+package com.example.comp9034.dto.request;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Valid
+public class BreakEndDTO {
+    @NotBlank(message = "CardId cannot be null or empty")
+    private String cardId;
+}
