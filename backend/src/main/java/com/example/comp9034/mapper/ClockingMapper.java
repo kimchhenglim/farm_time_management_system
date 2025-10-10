@@ -4,9 +4,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import com.example.comp9034.dto.ClockingDTO;
 import com.example.comp9034.dto.request.CreateClockingDTO;
 import com.example.comp9034.dto.request.UpdateClockingDTO;
-import com.example.comp9034.dto.response.ClockingResponseDTO;
 import com.example.comp9034.entity.ClockingEntity;
 
 @Mapper(
@@ -14,7 +14,7 @@ import com.example.comp9034.entity.ClockingEntity;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface ClockingMapper {
-    ClockingResponseDTO toClockingResponseDTO(ClockingEntity entity);
+    ClockingDTO toClockingDTO(ClockingEntity entity);
 
     ClockingEntity toClockingEntity(CreateClockingDTO dto);
 

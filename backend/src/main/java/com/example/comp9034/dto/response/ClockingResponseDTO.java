@@ -12,18 +12,46 @@ import lombok.Setter;
 @Setter
 @Valid
 public class ClockingResponseDTO {
+
     private int id;
-
     private String employeeId;
+    private String employeeName;
     private Integer stationId;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
-    private LocalDateTime clockInTime;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
-    private LocalDateTime clockOutTime;
-
-    private boolean isAdminManual = false;
+    private String date;             // formatted "Mon 01 Sep 2025"
+    private String clockInTime;      // HH:mm
+    private String clockOutTime;     // HH:mm
+    private boolean isAdminManual;
     private String reasonCode;
     private Integer breakMinutes;
+    private Double payRate;
+    private Double hours;            // fractional hours
+    private Double total;            // total pay
+
+    public ClockingResponseDTO(int id,
+                               String employeeId,
+                               String employeeName,
+                               Integer stationId,
+                               String date,
+                               String clockInTime,
+                               String clockOutTime,
+                               boolean isAdminManual,
+                               String reasonCode,
+                               Integer breakMinutes,
+                               Double payRate,
+                               Double hours,
+                               Double total) {
+        this.id = id;
+        this.employeeId = employeeId;
+        this.employeeName = employeeName;
+        this.stationId = stationId;
+        this.date = date;
+        this.clockInTime = clockInTime;
+        this.clockOutTime = clockOutTime;
+        this.isAdminManual = isAdminManual;
+        this.reasonCode = reasonCode;
+        this.breakMinutes = breakMinutes;
+        this.payRate = payRate;
+        this.hours = hours;
+        this.total = total;
+    }
 }

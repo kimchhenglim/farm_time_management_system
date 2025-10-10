@@ -17,11 +17,17 @@ import static com.example.comp9034.enums.ErrorCodeEnum.UPDATE_CLOCKING_SUCCESS;
 import static com.example.comp9034.enums.ErrorCodeEnum.USER_NOT_FOUND;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +40,7 @@ import com.example.comp9034.dto.request.ClockDTO;
 import com.example.comp9034.dto.request.ClockingFilterDTO;
 import com.example.comp9034.dto.request.CreateClockingDTO;
 import com.example.comp9034.dto.request.UpdateClockingDTO;
+import com.example.comp9034.dto.response.ClockingResponseDTO;
 import com.example.comp9034.entity.BreakEntity;
 import com.example.comp9034.entity.ClockingEntity;
 import com.example.comp9034.entity.UserEntity;
@@ -221,22 +228,42 @@ public class ClockingServiceImpl implements ClockingService {
             LocalDateTime end = dto.getEndDate().atTime(LocalTime.MAX);     // 23:59:59.999999999
 
     
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("clockInTime"), start));
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("clockInTime"), end));
+            // spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("clockInTime"), start));
+            // spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("clockInTime"), end));
     
-            if (dto.getEmployeeId() != null) {
-                spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), dto.getEmployeeId()));
-            }
+            // if (dto.getEmployeeId() != null) {
+            //     spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), dto.getEmployeeId()));
+            // }
     
             Pageable pageable = PageRequest.of(
                 dto.getPage(),
                 dto.getSize(),
                 dto.getSortDir().equalsIgnoreCase("asc") ? Sort.by(dto.getSortBy()).ascending() : Sort.by(dto.getSortBy()).descending());
     
-            Page<ClockingEntity> page = clockingRepository.findAll(spec, pageable);
+            // Page<ClockingEntity> page = clockingRepository.findAll(spec, pageable);
     
-            var dtoPage = page.map(clockingMapper::toClockingResponseDTO);
-            
+            // var dtoPage = page.map(clockingMapper::toClockingResponseDTO);
+
+            Page<Object[]> page = clockingRepository.findClockingsNative(dto.getEmployeeId(), start, end, pageable);
+            List<ClockingResponseDTO> dtos = page.getContent().stream().map(row -> {
+                return new ClockingResponseDTO(
+                    ((Number) row[0]).intValue(),
+                    (String) row[1],
+                    (String) row[2],
+                    row[3] != null ? ((Number) row[3]).intValue() : null,
+                    (String) row[4],
+                    (String) row[5],
+                    (String) row[6],
+                    row[7] != null && (Boolean) row[7],
+                    (String) row[8],
+                    row[9] != null ? ((Number) row[9]).intValue() : null,
+                    row[10] != null ? ((Number) row[10]).doubleValue() : 0.0,
+                    row[11] != null ? ((Number) row[11]).doubleValue() : 0.0,
+                    row[12] != null ? ((Number) row[12]).doubleValue() : 0.0
+                );
+            }).toList();
+
+            Page<ClockingResponseDTO> dtoPage = new PageImpl<>(dtos, pageable, page.getTotalElements());
             return getCompleteResponse(errorCodeRepository, GET_CLOCKING_SUCCESS, CLOCKING.name(), dtoPage);
         }
         catch (BusinessException e) {
@@ -268,7 +295,7 @@ public class ClockingServiceImpl implements ClockingService {
             entity = clockingMapper.toClockingEntity(dto);
             clockingRepository.save(entity);
 
-            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), clockingMapper.toClockingResponseDTO(entity));
+            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), clockingMapper.toClockingDTO(entity));
         }
         catch (BusinessException e) {
             throw e;
@@ -306,7 +333,7 @@ public class ClockingServiceImpl implements ClockingService {
             clockingMapper.updateEntityFromDto(dto, existingClocking);
             clockingRepository.save(existingClocking);
 
-            return getCompleteResponse(errorCodeRepository, UPDATE_CLOCKING_SUCCESS, CLOCKING.name(), clockingMapper.toClockingResponseDTO(existingClocking));
+            return getCompleteResponse(errorCodeRepository, UPDATE_CLOCKING_SUCCESS, CLOCKING.name(), clockingMapper.toClockingDTO(existingClocking));
         }
         catch (BusinessException e) {
             throw e;
