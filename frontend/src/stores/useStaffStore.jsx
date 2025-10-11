@@ -112,8 +112,19 @@ const useStaffStore = create((set, get) => ({
   activeStaffLastPage: false,
   isFetchingActiveStaff: false,
 
-  fetchActiveStaffPaginated: async (pageSize = 10, page = null) => {
+  fetchActiveStaffPaginated: async (
+    pageSize = 10,
+    page = null,
+    reset = false
+  ) => {
     let { activeStaffPage, activeStaffList } = get();
+
+    if (reset) {
+      activeStaffPage = 0; // reset to first page
+      activeStaffList = []; // clear old list
+      set({ totalPages: 1 }); // reset totalPages to ensure fetch runs
+    }
+
     if (page !== null) activeStaffPage = page;
 
     if (activeStaffPage >= get().totalPages) return;
@@ -135,7 +146,7 @@ const useStaffStore = create((set, get) => ({
 
       set({
         activeStaffList:
-          page === 0 ? newStaff : [...activeStaffList, ...newStaff],
+          activeStaffPage === 0 ? newStaff : [...activeStaffList, ...newStaff],
         activeStaffPage: body?.number + 1,
         totalPages: body?.totalPages,
       });
@@ -148,7 +159,8 @@ const useStaffStore = create((set, get) => ({
 
   searchActiveStaff: async (query, pageSize = 10) => {
     if (!query) {
-      get().fetchActiveStaffPaginated(pageSize, 0);
+      // Force reset when search is empty
+      get().fetchActiveStaffPaginated(pageSize, 0, true);
       return;
     }
 

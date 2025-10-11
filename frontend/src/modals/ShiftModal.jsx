@@ -6,7 +6,7 @@ import Search from "../assets/search.svg";
 import Calendar from "../assets/calendar.svg";
 import useRosterStore from "../stores/useRosterStore";
 import useStaffStore from "../stores/useStaffStore";
-import useStationStore from "../stores/useStationStore"; // ✅ added
+import useStationStore from "../stores/useStationStore";
 import { axiosInstances } from "../libs/axios";
 
 function ShiftModal({
@@ -287,7 +287,7 @@ function ShiftModal({
                 </div>
               </div>
 
-              {/* ✅ Station dropdown */}
+              {/* Station */}
               <div className="flex flex-col gap-[10px]">
                 <label htmlFor="station" className="text-[#565656] font-medium">
                   Station
