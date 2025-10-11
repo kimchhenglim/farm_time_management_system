@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Filter from "../assets/filter.svg";
 import StaffTable from "../components/StaffTable";
+import EditAttendanceModal from "../modals/EditAttendanceModal";
 
 import {
   startOfWeek,
@@ -16,6 +17,9 @@ import useAttendanceStore from "../stores/useAttendanceStore";
 
 function Report() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAttendance, setSelectedAttendance] = useState(null);
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
 
@@ -47,6 +51,11 @@ function Report() {
     if (isAfter(day, today)) return;
     setCurrentDate(day);
     setIsOpen(false);
+  };
+
+  const handleRowClick = (attendance) => {
+    setSelectedAttendance(attendance);
+    setIsEditModalOpen(true);
   };
 
   // taking staffTable from useAttendanceStore
@@ -83,14 +92,22 @@ function Report() {
           />
         </div>
       </div>
-
       {/* Table */}
       <StaffTable
         totalElements={0}
         totalPages={1}
         weekStart={weekStart}
         weekEnd={weekEnd}
+        onRowClick={handleRowClick}
       />
+
+      {isEditModalOpen && selectedAttendance && (
+        <EditAttendanceModal
+          isOpen={isEditModalOpen}
+          setIsOpen={setIsEditModalOpen}
+          data={selectedAttendance}
+        />
+      )}
     </div>
   );
 }

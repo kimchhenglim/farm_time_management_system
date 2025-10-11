@@ -4,7 +4,7 @@ import ClockOut from "../assets/clockOut.svg";
 import Break from "../assets/break.svg";
 import useAttendanceStore from "../stores/useAttendanceStore";
 import AttendanceModal from "../modals/AttendanceModal";
-function StaffTable({ weekStart, weekEnd }) {
+function StaffTable({ weekStart, weekEnd, onRowClick }) {
   // for modal create
   const [isModalOpen, setIsModalOpen] = useState(false);
   //using useAttendanceStore
@@ -151,7 +151,8 @@ function StaffTable({ weekStart, weekEnd }) {
                 return (
                   <tr
                     key={person.id}
-                    className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 p-10"
+                    onClick={() => onRowClick && onRowClick(person)}
+                    className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 p-10 cursor-pointer"
                   >
                     {/* Row data */}
                     <td className=" border-b border-[#D6D6D6] text-[#ADADAD]">

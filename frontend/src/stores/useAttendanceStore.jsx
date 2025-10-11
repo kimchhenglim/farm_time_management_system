@@ -55,6 +55,63 @@ const useAttendanceStore = create((set, get) => ({
       set({ isFetchingStaffTable: false });
     }
   },
+
+  createAttendance: async (attendanceData) => {
+    const authUser = useAuthStore.getState().authUser;
+    try {
+      const token = authUser?.body?.loginToken;
+      const res = await axiosInstances.post("admin/clocking", attendanceData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res;
+    } catch (error) {
+      console.error("Error creating attendance:", error);
+      return null;
+    }
+  },
+
+  updateAttendance: async (clockingId, attendanceData) => {
+    const authUser = useAuthStore.getState().authUser;
+    try {
+      const token = authUser?.body?.loginToken;
+      const res = await axiosInstances.put(
+        `/admin/clocking/${clockingId}`,
+        attendanceData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return res;
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      return null;
+    }
+  },
+
+  deleteAttendance: async (clockingId) => {
+    const authUser = useAuthStore.getState().authUser;
+    if (!clockingId) return null;
+
+    try {
+      const token = authUser?.body?.loginToken;
+      const res = await axiosInstances.delete(`/admin/clocking/${clockingId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res;
+    } catch (error) {
+      console.error("Error deleting attendance:", error);
+      return null;
+    }
+  },
 }));
 
 export default useAttendanceStore;

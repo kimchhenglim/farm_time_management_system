@@ -34,7 +34,7 @@ const useStationStore = create((set, get) => ({
         "admin/station/create",
         {
           name: name,
-          location: "This is address",
+          station: "This is address",
           status: status,
         },
         {
@@ -73,7 +73,7 @@ const useStationStore = create((set, get) => ({
         }
       );
       console.log(res.data.body);
-      // ✅ Update the local store immediately
+      // Update the local store immediately
       const updatedStation = res?.data?.body;
       console.log(updatedStation);
 
