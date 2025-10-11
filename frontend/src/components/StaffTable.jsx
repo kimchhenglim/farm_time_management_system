@@ -1,140 +1,26 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ClockIn from "../assets/clockIn.svg";
 import ClockOut from "../assets/clockOut.svg";
 import Break from "../assets/break.svg";
-function StaffTable({ totalElements, totalPages }) {
-  const staff = [
-    {
-      id: 1,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ly Chingsien",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 1,
-      total: 125.0,
-      status: "Pending",
-    },
-    {
-      id: 2,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 2,
-      total: 200.0,
-      status: "Pending",
-    },
-    {
-      id: 3,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 3,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 4,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 4,
-      total: 1200.0,
-      status: "Pending",
-    },
-    {
-      id: 5,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 5,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 6,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 6,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 7,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "08:59:59",
-      clockOut: "23:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 7,
-      total: 120.0,
-      status: "Pending",
-    },
-    {
-      id: 8,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "12:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 8,
-      total: 120.0,
-      status: "Approved",
-    },
-    {
-      id: 9,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "11:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 9,
-      total: 120.0,
-      status: "Approved",
-    },
-    {
-      id: 10,
-      date: "Mon, 1 Sep 2025",
-      staff: "Ngo Pham Thu Thao",
-      clockIn: "23:59:59",
-      clockOut: "14:59:59",
-      break: "30m",
-      payRate: "24.00",
-      hours: 10,
-      total: 300.0,
-      status: "Approved",
-    },
-  ];
+import useAttendanceStore from "../stores/useAttendanceStore";
+import AttendanceModal from "../modals/AttendanceModal";
+function StaffTable({ weekStart, weekEnd }) {
+  // for modal create
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  //using useAttendanceStore
+  const { fetchStaffTable, page, totalPages, totalElements, staffTable } =
+    useAttendanceStore();
+  //using useEffect to get the data for staffTable
+  useEffect(() => {
+    fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
+  }, [fetchStaffTable, weekEnd, weekStart]);
   // Sorting state
   const [sortKey, setSortKey] = useState(null);
   const [direction, setDirection] = useState("asc");
 
   // Pagination state
-  const [page, setPage] = useState(0);
+  // const [page, setPage] = useState(0);
   const pageSize = 10;
-
-  // Checkbox state
-  const [selectedIds, setSelectedIds] = useState([]);
 
   // Sort handlers
   const handleSort = (key) => {
@@ -155,15 +41,33 @@ function StaffTable({ totalElements, totalPages }) {
     return <span className="ml-1">{direction === "asc" ? "▲" : "▼"}</span>;
   };
 
+  // useMemo is used for “Only redo this calculation when it’s really necessary or when the dependencies changed"
   const sortedStaff = useMemo(() => {
-    if (!sortKey) return staff;
-    return [...staff].sort((a, b) => {
-      //it will go and compate objectA[staff] and objectB[staff]
-      if (a[sortKey] < b[sortKey]) return direction === "asc" ? -1 : 1;
-      if (a[sortKey] > b[sortKey]) return direction === "asc" ? 1 : -1;
+    if (!sortKey) return staffTable;
+
+    // this return will shallow copy the array of staffTable and modify with the sort() function
+    return [...staffTable].sort((a, b) => {
+      let aValue = a[sortKey];
+      let bValue = b[sortKey];
+
+      // 🧠 If sorting by date, convert to Date objects first
+      if (sortKey === "date") {
+        // handle strings like "Mon 06 Oct 2025"
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+
+      // 🧠 If sorting by numeric field, ensure they're numbers
+      if (["payRate", "hours", "total", "breakMinutes"].includes(sortKey)) {
+        aValue = parseFloat(aValue);
+        bValue = parseFloat(bValue);
+      }
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
     });
-  }, [staff, sortKey, direction]);
+  }, [staffTable, sortKey, direction]);
 
   // Pagination
   const handlePrevPage = () => setPage((p) => Math.max(0, p - 1));
@@ -174,32 +78,41 @@ function StaffTable({ totalElements, totalPages }) {
     page * pageSize,
     page * pageSize + pageSize
   );
-
-  const isAllSelected =
-    currentPageStaff.length > 0 &&
-    currentPageStaff.every((person) => selectedIds.includes(person.id));
-
-  const toggleSelectAll = () => {
-    if (isAllSelected) {
-      // Deselect all on current page
-      setSelectedIds((prev) =>
-        prev.filter((id) => !currentPageStaff.some((p) => p.id === id))
-      );
-    } else {
-      // Select all on current page
-      setSelectedIds((prev) => [
-        ...new Set([...prev, ...currentPageStaff.map((p) => p.id)]),
-      ]);
-    }
-  };
-
-  const toggleSelectRow = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  console.log(currentPageStaff);
+  const totalAmount = staffTable.reduce((sum, staff) => {
+    return sum + staff.total;
+  }, 0);
   return (
     <div>
+      {/* Summary + Button */}
+      <div className="w-full flex justify-between items-center cursor-pointer mb-[24px]">
+        <div className="font-thin text-[#8D8D8D] flex gap-[44px]">
+          <span>
+            {staffTable.length}{" "}
+            {staffTable.length > 1 ? "timesheets" : "timesheet"}
+          </span>
+          <span>${totalAmount}</span>
+        </div>
+        <div
+          className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <svg
+            width="14"
+            height="15"
+            viewBox="0 0 14 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 1.5C8 0.946875 7.55312 0.5 7 0.5C6.44688 0.5 6 0.946875 6 1.5V6.5H1C0.446875 6.5 0 6.94688 0 7.5C0 8.05312 0.446875 8.5 1 8.5H6V13.5C6 14.0531 6.44688 14.5 7 14.5C7.55312 14.5 8 14.0531 8 13.5V8.5H13C13.5531 8.5 14 8.05312 14 7.5C14 6.94688 13.5531 6.5 13 6.5H8V1.5Z"
+              fill="#16A34A"
+            />
+          </svg>
+          New record
+        </div>
+      </div>
+
       {/* Table */}
       <div className="rounded-[20px] overflow-hidden border border-[#D6D6D6]">
         <table className="table-auto w-full">
@@ -207,12 +120,13 @@ function StaffTable({ totalElements, totalPages }) {
             <tr>
               {[
                 { label: "Date", key: "date" },
-                { label: "Staff", key: "staff" },
-                { label: "Clock-in", key: "clockIn" },
-                { label: "Clock-out", key: "clockOut" },
-                { label: "Break", key: "Break" },
+                { label: "Staff", key: "employeeName" },
+                { label: "Clock-in", key: "clockInTime" },
+                { label: "Clock-out", key: "clockOutTime" },
+                { label: "Break", key: "breakMinutes" },
                 { label: "Pay rate", key: "payRate" },
                 { label: "Hours", key: "hours" },
+                { label: "Total", key: "total" },
               ].map(({ label, key }) => (
                 <th
                   key={key}
@@ -244,24 +158,26 @@ function StaffTable({ totalElements, totalPages }) {
                       {person.date}
                     </td>
                     <td className=" border-b border-[#D6D6D6] font-semibold">
-                      {person.staff}
+                      {person.employeeName}
                     </td>
                     <td className=" border-b border-[#D6D6D6]  ">
                       <div className="flex gap-2 items-center justify-center">
                         <img src={ClockIn} alt="clock-in" />
-                        <span>{person.clockIn}</span>
+                        <span>{person.clockInTime}</span>
                       </div>
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
                       <div className="flex gap-2 items-center justify-center">
                         <img src={ClockOut} alt="clock-out" />
-                        <span>{person.clockOut}</span>
+                        <span>{person.clockOutTime}</span>
                       </div>
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
                       <div className="flex gap-2 items-center justify-center">
                         <img src={Break} alt="break" />
-                        <span>{person.break}</span>
+                        <span>
+                          {person.breakMinutes ? person.breakMinutes : "—"}
+                        </span>
                       </div>
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
@@ -269,6 +185,9 @@ function StaffTable({ totalElements, totalPages }) {
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
                       {person.hours}
+                    </td>
+                    <td className=" border-b border-[#D6D6D6]">
+                      ${person.total}
                     </td>
                   </tr>
                 );
@@ -324,6 +243,15 @@ function StaffTable({ totalElements, totalPages }) {
           </div>
         </div>
       )}
+      {/* Modal */}
+      <AttendanceModal
+        isOpenModal={isModalOpen}
+        setIsOpenModal={setIsModalOpen}
+        title="Create new Timesheet"
+        onClose={() => setIsModalOpen(false)}
+        onSubmitFunction=""
+        submitLabel="Save"
+      />
     </div>
   );
 }
