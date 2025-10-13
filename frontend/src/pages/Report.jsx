@@ -13,7 +13,6 @@ import {
   isAfter,
 } from "date-fns";
 import CalendarModalReport from "../modals/CalendarModalReport";
-import useAttendanceStore from "../stores/useAttendanceStore";
 
 function Report() {
   const [isOpen, setIsOpen] = useState(false);
@@ -84,11 +83,12 @@ function Report() {
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             currentDate={currentDate}
+            setCurrentDate={setCurrentDate} // ✅ Add this line
             days={days}
             weekStart={weekStart}
             weekEnd={weekEnd}
             handleDateClick={handleDateClick}
-            today={today} // 👈 pass to modal
+            today={today}
           />
         </div>
       </div>
