@@ -120,6 +120,16 @@ function AttendanceModal({
     }
   }, [stationList.length, fetchStationList]);
 
+  const activeStations =
+    stationList?.filter((s) => (s.status || "").toUpperCase() === "ACTIVE") ||
+    [];
+
+  useEffect(() => {
+    if (isOpenModal) {
+      fetchStationList();
+    }
+  }, [isOpenModal, fetchStationList]);
+
   const [formData, setFormData] = useState({
     date: data?.date || "",
     stationId: data?.stationId || "",
@@ -346,7 +356,7 @@ function AttendanceModal({
                   {stationLoading ? (
                     <option disabled>Loading stations...</option>
                   ) : (
-                    stationList.map((station) => (
+                    activeStations.map((station) => (
                       <option key={station.stationId} value={station.stationId}>
                         {station.stationName}
                       </option>
