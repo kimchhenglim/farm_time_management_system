@@ -14,21 +14,23 @@ import {
 import CalendarModal from "../modals/CalendarModal";
 import CardRoster from "./CardRoster";
 import useRosterStore from "../stores/useRosterStore";
+import StationModal from "../modals/StationModal";
+import useStationStore from "../stores/useStationStore";
 
 function WeekNavigator() {
   const { roster, fetchRoster } = useRosterStore();
+  const { fetchStationList, stationLoading, stationList } = useStationStore();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isStationModalOpen, setIsStationModalOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
-  const locationsList = ["Shed 1", "Shed 2", "Shed 3"];
-  const [selectedLocations, setSelectedLocations] = useState([
-    ...locationsList,
-  ]);
+  const [selectedStations, setSelectedStations] = useState([]);
+
   const today = new Date();
   const dayOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  // Week range helpers
+  // Week helpers
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const weekRange = `${format(weekStart, "MMMM d")} - ${format(
@@ -40,20 +42,18 @@ function WeekNavigator() {
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const week = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Function to fetch roster with current date and selected locations
+  // Fetch roster
   const handleFetchRoster = (
     date = currentDate,
-    locations = selectedLocations
+    stations = selectedStations
   ) => {
     const start = format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    fetchRoster(start, locations);
+    fetchRoster(start, stations);
   };
 
-  // Week navigation
   const handlePrevWeek = () => {
     const newDate = subWeeks(currentDate, 1);
     setCurrentDate(newDate);
@@ -66,35 +66,42 @@ function WeekNavigator() {
     handleFetchRoster(newDate);
   };
 
-  // Date click for calendar modal
   const handleDateClick = (day) => {
     setCurrentDate(day);
     setIsOpen(false);
     handleFetchRoster(day);
   };
 
-  // Effect to fetch roster when date or selected locations change
+  // Fetch stations once
+  useEffect(() => {
+    fetchStationList();
+  }, []);
+
+  // Fetch roster whenever date or station changes
   useEffect(() => {
     handleFetchRoster();
-  }, [currentDate, selectedLocations]);
+  }, [currentDate, selectedStations]);
 
-  // Filter logic for All and individual locations
-  const toggleAllLocations = () => {
-    if (selectedLocations.length === locationsList.length) {
-      setSelectedLocations([]); // uncheck all
-    } else {
-      setSelectedLocations([...locationsList]); // check all
-    }
-  };
+  // ✅ Filter only ACTIVE stations and default-select all of them
+  const activeStations = stationList?.filter(
+    (s) => (s.status || "").toUpperCase() === "ACTIVE"
+  );
 
-  const toggleLocation = (loc) => {
-    let newSelected;
-    if (selectedLocations.includes(loc)) {
-      newSelected = selectedLocations.filter((l) => l !== loc);
-    } else {
-      newSelected = [...selectedLocations, loc];
+  useEffect(() => {
+    if (activeStations?.length > 0) {
+      setSelectedStations(activeStations.map((s) => s.name || s.stationName));
     }
-    setSelectedLocations(newSelected);
+  }, [stationList]);
+
+  // ✅ Helper for filter text
+  const getFilterText = () => {
+    if (stationLoading) return "Loading...";
+    if (!activeStations || activeStations.length === 0)
+      return "No Active Stations";
+    if (selectedStations.length === 0) return "Select Station";
+    if (selectedStations.length === activeStations.length)
+      return "All Stations";
+    return selectedStations.join(", ");
   };
 
   return (
@@ -126,83 +133,99 @@ function WeekNavigator() {
               <img
                 src={leftArrow}
                 className="w-[20px] h-[20px] rotate-180"
-                alt="left-arrow"
+                alt="right-arrow"
               />
             </button>
           </div>
         </div>
 
-        {/* filter */}
+        {/* Filter Dropdown */}
         <div className="relative">
           <div
-            className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer"
+            className="bg-[#F7F8FA] border border-[#E0E0E0] flex items-center p-4 rounded-[5px] gap-3 cursor-pointer min-w-[180px] max-w-[280px] overflow-hidden"
             onClick={() => setLocationDropdownOpen((prev) => !prev)}
           >
             <img src={Filter} alt="filter" />
-            <span className="text-[#566074] font-semibold">
-              {selectedLocations.length === 0 ||
-              selectedLocations.length === locationsList.length
-                ? "All Location"
-                : selectedLocations.join(", ")}
+            <span
+              className={`text-sm font-semibold truncate ${
+                stationLoading ? "text-gray-400" : "text-[#566074]"
+              }`}
+            >
+              {getFilterText()}
             </span>
           </div>
 
           {locationDropdownOpen && (
-            <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow w-48 max-h-60 overflow-y-auto">
-              {/* All checkbox */}
-              <label className="flex items-center p-2 hover:bg-gray-100 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedLocations.length === locationsList.length}
-                  onChange={() => {
-                    const allSelected =
-                      selectedLocations.length === locationsList.length;
-                    const newSelected = allSelected ? [] : [...locationsList];
-                    setSelectedLocations(newSelected);
-                  }}
-                  className="mr-2 accent-green-600"
-                />
-                <span className="text-gray-700 font-semibold">All</span>
-              </label>
-
-              {/* Individual locations */}
-              {locationsList.map((loc) => {
-                const colorMap = {
-                  "Shed 1": "#19A598",
-                  "Shed 2": "#C41651",
-                  "Shed 3": "#1773E0",
-                };
-
-                return (
-                  <label
-                    key={loc}
-                    className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                  >
+            <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow w-56 max-h-64 overflow-y-auto">
+              {stationLoading ? (
+                <div className="flex items-center justify-center p-4 text-gray-500">
+                  <span className="loading loading-spinner loading-sm mr-2"></span>
+                  Loading...
+                </div>
+              ) : (
+                <>
+                  {/* ✅ Select All */}
+                  <label className="flex items-center p-2 hover:bg-gray-100 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={selectedLocations.includes(loc)}
+                      checked={
+                        selectedStations.length === activeStations?.length &&
+                        activeStations.length > 0
+                      }
                       onChange={() => {
-                        let newSelected;
-                        if (selectedLocations.includes(loc)) {
-                          newSelected = selectedLocations.filter(
-                            (l) => l !== loc
-                          );
-                        } else {
-                          newSelected = [...selectedLocations, loc];
-                        }
-                        setSelectedLocations(newSelected);
+                        const allSelected =
+                          selectedStations.length === activeStations?.length;
+                        setSelectedStations(
+                          allSelected
+                            ? []
+                            : activeStations.map((s) => s.name || s.stationName)
+                        );
                       }}
                       className="mr-2 accent-green-600"
                     />
-                    <span
-                      className="font-semibold"
-                      style={{ color: colorMap[loc] }}
-                    >
-                      {loc}
-                    </span>
+                    <span className="text-gray-700 font-semibold">All</span>
                   </label>
-                );
-              })}
+
+                  {/* ✅ Each ACTIVE station */}
+                  {activeStations?.map((station) => {
+                    const name = station.name || station.stationName;
+                    return (
+                      <label
+                        key={station.stationId || name}
+                        className="flex items-center p-2 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedStations.includes(name)}
+                          onChange={() => {
+                            if (selectedStations.includes(name)) {
+                              setSelectedStations(
+                                selectedStations.filter((s) => s !== name)
+                              );
+                            } else {
+                              setSelectedStations([...selectedStations, name]);
+                            }
+                          }}
+                          className="mr-2 accent-green-600"
+                        />
+                        <span className="font-semibold text-gray-700 truncate">
+                          {name}
+                        </span>
+                      </label>
+                    );
+                  })}
+
+                  {/* Manage stations */}
+                  <div className="border-t border-gray-200 py-2 flex justify-center">
+                    <button
+                      onClick={() => setIsStationModalOpen(true)}
+                      className="text-green-600 font-semibold hover:underline"
+                    >
+                      Manage...
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -219,9 +242,8 @@ function WeekNavigator() {
         />
       </div>
 
-      {/* roster */}
+      {/* Roster Section */}
       <div className="w-full h-[calc(100%-60px)] px-2">
-        {/* Header row with dates */}
         <div className="w-full h-[80px] grid grid-cols-7">
           {week.map((item, index) => {
             const dayStr = format(item, "yyyy-MM-dd");
@@ -255,23 +277,24 @@ function WeekNavigator() {
           })}
         </div>
 
-        {/* Roster cells */}
         <div className="w-full h-[calc(100%-80px)] grid grid-cols-7 overflow-y-auto">
           {week.map((day) => {
             const dayStr = format(day, "yyyy-MM-dd");
             const rosterForDay = roster.find((r) => r.date === dayStr);
-            const shifts = rosterForDay?.data ?? [];
+            const filteredShifts = (rosterForDay?.data ?? []).filter((shift) =>
+              selectedStations.includes(shift.station)
+            );
 
             return (
               <div
                 className="border border-[#EDEDED] flex flex-col p-2 gap-2.5"
                 key={dayStr}
               >
-                {shifts.map((shift, i) => (
+                {filteredShifts.map((shift, i) => (
                   <CardRoster
                     key={shift.id ?? `${dayStr}-${i}`}
                     employeeName={shift.employeeName}
-                    location={shift.location}
+                    station={shift.station}
                     time={shift.time}
                     index={i}
                     columnIndex={dayStr}
@@ -288,6 +311,13 @@ function WeekNavigator() {
           })}
         </div>
       </div>
+
+      {/* Station Management Modal */}
+      <StationModal
+        isOpenModal={isStationModalOpen}
+        setIsOpenModal={setIsStationModalOpen}
+        stationList={stationList}
+      />
     </div>
   );
 }

@@ -42,7 +42,7 @@ public class UpdateUserDTO {
     @Positive(message = "Pay rate must be greater than zero")
     private Double payRate;
 
-    private String Location;
+    private String station;
 
     private String employeeId;
 

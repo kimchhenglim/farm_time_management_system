@@ -60,8 +60,8 @@ public interface RosterRepository extends JpaRepository<RosterEntity, Long>, Jpa
   """)
     int propagateEmployeeName(@Param("empId") String empId, @Param("newName") String newName);
 
-    @Query("SELECT DISTINCT r.location FROM RosterEntity r " +
-            "WHERE :keyword IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("SELECT DISTINCT r.station FROM RosterEntity r " +
+            "WHERE :keyword IS NULL OR LOWER(r.station) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<String> findDistinctLocations(@Param("keyword") String keyword);
 
 

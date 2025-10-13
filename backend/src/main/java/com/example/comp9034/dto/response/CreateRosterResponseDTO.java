@@ -19,7 +19,7 @@ public class CreateRosterResponseDTO {
     private String startTime;
     private String endTime;
     private LocalDate date;
-    private String location;
+    private String station;
     private int breakMinutes;
     private RosterEnum status;
     private long remainingMinutes;

@@ -17,7 +17,11 @@ public class BreakEntity {
     private int id;
 
     private int clockingId;
+
+    @Column(name = "break_start_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime breakStartTime;
+
+    @Column(name = "break_end_time", columnDefinition = "TIMESTAMP(0)")
     private LocalDateTime breakEndTime;
     private String reason;
 }

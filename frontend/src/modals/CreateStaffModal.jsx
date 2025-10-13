@@ -18,7 +18,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
     role: "",
     contractType: "",
     payRate: "",
-    location: "",
+    station: "",
     avatar: null,
     isActive: true,
   });
@@ -50,7 +50,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       role: "",
       contractType: "",
       payRate: "",
-      location: "",
+      station: "",
       avatar: null,
       isActive: true,
     });

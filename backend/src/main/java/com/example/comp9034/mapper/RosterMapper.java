@@ -22,5 +22,6 @@ public interface RosterMapper {
     )
     RosterDTO toWeekDto(RosterEntity e);
 
-    List<RosterDTO> toWeekDtos(List<RosterEntity> entities);
+    List<RosterDTO>
+    toWeekDtos(List<RosterEntity> entities);
 }

@@ -8,11 +8,17 @@ function CalendarModal({
   weekStart,
   weekEnd,
   handleDateClick,
+  top,
 }) {
   return (
     <>
       {isOpen && (
-        <div className="bg-white p-6 rounded-lg shadow-[var(--custom-shadow)] w-[350px] absolute top-[60px] z-50">
+        <div
+          className={`bg-white p-6 rounded-lg shadow-[var(--custom-shadow)] w-[350px] absolute ${
+            top ? top : "top-[60px]"
+          } z-50`}
+          onClick={(e) => e.stopPropagation()} // ⬅️ Add this line so that it will not trigger the parent container
+        >
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-[#566074]">
@@ -22,7 +28,13 @@ function CalendarModal({
               className="text-gray-500 font-bold"
               onClick={() => setIsOpen(false)}
             >
-              ✕
+              <span
+                onClick={() => {
+                  setIsOpen(false);
+                }}
+              >
+                ✕
+              </span>
             </button>
           </div>
 

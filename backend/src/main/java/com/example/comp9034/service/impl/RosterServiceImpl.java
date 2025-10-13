@@ -120,7 +120,7 @@ public class RosterServiceImpl implements RosterService {
                 return new BusinessException(USER_NOT_FOUND, ROSTER.name(), msg);
             });
 
-            RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime, employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getLocation(), user.getFirstName() + " " + user.getLastName());
+            RosterEntity roster = new RosterEntity(breakMin, shiftDate, endTime, startTime, employeeId, DRAFT.name(), SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), createRosterDTO.getStation(), user.getFirstName() + " " + user.getLastName());
             rosterRepository.save(roster);
             log.info("Created shift {} for employee {}", roster.getId(), employeeId);
 
@@ -129,6 +129,7 @@ public class RosterServiceImpl implements RosterService {
             long limitMinutes = convertStringToLong(getConfigValue(WEEKLY_LIMIT_MINUTES.name(), configurationRepository, "2280"));
             long remainingMinutes = Math.max(0L, limitMinutes - currentWeekMin);
             response = new CreateRosterResponseDTO().toBuilder()
+                    .id(roster.getId())
                     .createdBy(roster.getCreatedBy())
                     .date(roster.getDate())
                     .createdAt(roster.getCreatedAt())
@@ -137,7 +138,7 @@ public class RosterServiceImpl implements RosterService {
                     .endTime(reformatDateTime(roster.getEndTime()))
                     .status(RosterEnum.valueOf(roster.getStatus()))
                     .startTime(reformatDateTime(roster.getStartTime()))
-                    .location(roster.getLocation())
+                    .station(roster.getStation())
                     .remainingMinutes(remainingMinutes)
                     .employeeName(roster.getEmployeeName())
                     .build();
@@ -179,7 +180,7 @@ public class RosterServiceImpl implements RosterService {
             Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startTime").and(Sort.by("employeeId")));
 
             // 2) Build Specification
-            Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, employeeIdList, safeList(locationList), Boolean.TRUE.equals(includeCancelled));
+            Specification<RosterEntity> spec = buildWeekSpec(startInclusive, endExclusive, safeList(employeeIdList), safeList(locationList), Boolean.TRUE.equals(includeCancelled));
             Page<RosterEntity> result = rosterRepository.findAll(spec, pageable);
             log.info("Fetched {} rosters (page {}/{}) for week {} to {}", result.getNumberOfElements(), result.getNumber() + 1, result.getTotalPages(), monday, nextMonday.minusDays(1));
             List<RosterDTO> rosterList = rosterMapper.toWeekDtos(result.getContent());
@@ -296,7 +297,7 @@ public class RosterServiceImpl implements RosterService {
             }
             rosterEntity.setStartTime(request.getStartTime());
             rosterEntity.setEndTime(request.getEndTime());
-            rosterEntity.setLocation(request.getLocation());
+            rosterEntity.setStation(request.getStation());
             rosterEntity.setStatus(UPDATED.name());
             rosterRepository.save(rosterEntity);
             log.info("Update Roster with ID {} succesfully", rosterId.toString());
@@ -305,7 +306,7 @@ public class RosterServiceImpl implements RosterService {
             throw e;
         } catch (Exception e) {
             String msg = "There has been an error updating roster shift with ID {}";
-            log.error(msg, request);
+            log.error(msg, request.getRosterId());
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), msg);
         }
     }
@@ -342,10 +343,10 @@ public class RosterServiceImpl implements RosterService {
                 log.info("Trying to publish empty roster");
                 return getCompleteResponse(errorCodeRepository, UPDATE_ROSTER_SUCCESS, ROSTER.name(), "No new roster to publish for week " + monday.format(DateTimeFormatter.ISO_DATE));
             }
-    
+
             Map<String, List<RosterEntity>> rosterByEmployeeId = rosters.stream()
-                                    .collect(Collectors.groupingBy(RosterEntity::getEmployeeId));
-    
+                    .collect(Collectors.groupingBy(RosterEntity::getEmployeeId));
+
             rosterByEmployeeId.forEach((employeeId, employeeRosters) -> {
                 userRepository.findByEmployeeId(employeeId).ifPresent(employee -> {
                     emailService.sendRosterEmail(employee.getEmail(), monday, buildRosterEmailBodyHtml(employee.getFirstName(), monday, employeeRosters));
@@ -368,36 +369,36 @@ public class RosterServiceImpl implements RosterService {
 
     private String formatRosterHtml(RosterEntity roster) {
         DateTimeFormatter startFormatter = DateTimeFormatter.ofPattern("EEE, MMM d yyyy HH:mm");
-        DateTimeFormatter endFormatter   = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
         return String.format(
-            "<li><strong>%s - %s</strong><br/>Location: %s</li>",
-            roster.getStartTime().format(startFormatter),
-            roster.getEndTime().format(endFormatter),
-            roster.getLocation() != null ? roster.getLocation() : "N/A"
+                "<li><strong>%s - %s</strong><br/>Location: %s</li>",
+                roster.getStartTime().format(startFormatter),
+                roster.getEndTime().format(endFormatter),
+                roster.getStation() != null ? roster.getStation() : "N/A"
         );
     }
 
 
     private String buildRosterEmailBodyHtml(String employeeName, LocalDate weekStart, List<RosterEntity> listRoster) {
-    StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
 
-    builder.append("<!DOCTYPE html>")
-           .append("<html>")
-           .append("<body style=\"font-family:Arial,sans-serif; line-height:1.5;\">")
-           .append("<p>Hi ").append(employeeName).append(",</p>")
-           .append("<p>This is your roster for week ").append(weekStart).append(":</p>")
-           .append("<ul>");
+        builder.append("<!DOCTYPE html>")
+                .append("<html>")
+                .append("<body style=\"font-family:Arial,sans-serif; line-height:1.5;\">")
+                .append("<p>Hi ").append(employeeName).append(",</p>")
+                .append("<p>This is your roster for week ").append(weekStart).append(":</p>")
+                .append("<ul>");
 
-    listRoster.sort(Comparator.comparing(RosterEntity::getStartTime));
-    listRoster.forEach(r -> builder.append(formatRosterHtml(r)));
+        listRoster.sort(Comparator.comparing(RosterEntity::getStartTime));
+        listRoster.forEach(r -> builder.append(formatRosterHtml(r)));
 
-    builder.append("</ul>")
-           .append("<p>Please contact your manager if you have any questions.</p>")
-           .append("<p>Best regards,<br/>Farm Management Team</p>")
-           .append("</body>")
-           .append("</html>");
+        builder.append("</ul>")
+                .append("<p>Please contact your manager if you have any questions.</p>")
+                .append("<p>Best regards,<br/>Farm Management Team</p>")
+                .append("</body>")
+                .append("</html>");
 
-    return builder.toString();
-}
+        return builder.toString();
+    }
 }

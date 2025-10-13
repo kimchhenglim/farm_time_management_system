@@ -24,7 +24,7 @@ public class UpdateRosterDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-uuuu HH:mm")
     private java.time.LocalDateTime endTime;
 
-    private String location;
+    private String station;
     private int breakMinutes;
 
     public UpdateRosterDTO(String employeeId, java.time.LocalDateTime startTime, java.time.LocalDateTime endTime) {
