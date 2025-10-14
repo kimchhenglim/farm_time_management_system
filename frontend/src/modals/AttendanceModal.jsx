@@ -26,13 +26,7 @@ function AttendanceModal({
   const { createAttendance } = useAttendanceStore();
   const { stationList, fetchStationList, stationLoading } = useStationStore();
 
-  const [today, setToday] = useState(
-    new Date()
-      .toLocaleDateString("en-AU")
-      .split("/")
-      .map((part) => part.padStart(2, "0"))
-      .join("-")
-  );
+  const [today, setToday] = useState(new Date().toISOString().split("T")[0]);
   const [time, setTime] = useState(
     new Date().toLocaleTimeString("en-AU", {
       hour: "2-digit",
@@ -74,13 +68,7 @@ function AttendanceModal({
   // Refresh current date/time every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setToday(
-        new Date()
-          .toLocaleDateString("en-AU")
-          .split("/")
-          .map((part) => part.padStart(2, "0"))
-          .join("-")
-      );
+      setToday(new Date().toISOString().split("T")[0]);
       setTime(
         new Date().toLocaleTimeString("en-AU", {
           hour: "2-digit",
@@ -235,17 +223,15 @@ function AttendanceModal({
     console.log("Payload for attendance:", payload);
 
     try {
-      const res = await createAttendance(payload);
-      if (res) {
-        toast.success("Attendance created successfully!");
-        resetForm();
-        setIsOpenModal(false);
-      } else {
-        toast.error("Failed to create attendance!");
-      }
+      await createAttendance(payload);
+      toast.success("Attendance created successfully!");
+      resetForm();
+      setIsOpenModal(false);
     } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong!");
+      toast.error(
+        error?.response?.data?.body || "Failed to create attendance!"
+      );
+      console.error("Create attendance error:", error);
     }
 
     if (onSubmitFunction && selectedUser) {
@@ -333,6 +319,7 @@ function AttendanceModal({
                     onChange={handleChange}
                     value={formData.date}
                     lang="en-AU"
+                    max={today}
                     className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                 </div>
