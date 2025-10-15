@@ -248,7 +248,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
       <AttendanceModal
         isOpenModal={isModalOpen}
         setIsOpenModal={setIsModalOpen}
-        title="Create new Timesheet"
+        title="Create New Attendance"
         onClose={() => setIsModalOpen(false)}
         onSubmitFunction=""
         submitLabel="Save"

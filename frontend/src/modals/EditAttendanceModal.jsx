@@ -280,10 +280,10 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
               className="p-3 border border-gray-300 rounded-md"
             >
               <option value="">Select reason</option>
-              <option value="Meal">Meal</option>
-              <option value="Emergency Leave">Emergency Leave</option>
               <option value="Card Failure">Card Failure</option>
+              <option value="Emergency Leave">Emergency Leave</option>
               <option value="Missing Clocking">Missing Clocking</option>
+              <option value="Card Failure">Not Rostered</option>
             </select>
           </div>
         </div>
