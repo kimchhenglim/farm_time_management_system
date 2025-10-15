@@ -153,7 +153,7 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-[20px] w-[800px] max-w-full p-6 flex flex-col gap-6">
         <h2 className="text-[#566074] font-semibold text-2xl">
-          Edit Timesheet
+          Edit Attendance
         </h2>
         <div className="flex items-center gap-4">
           <img src={Avatar} alt="avatar" className="w-20 h-20 rounded-full" />
