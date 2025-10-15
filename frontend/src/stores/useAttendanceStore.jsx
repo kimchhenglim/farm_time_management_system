@@ -66,13 +66,12 @@ const useAttendanceStore = create((set, get) => ({
           Authorization: `Bearer ${token}`,
         },
       });
-      return res;
+      return res; // success
     } catch (error) {
       console.error("Error creating attendance:", error);
-      return null;
+      throw error;
     }
   },
-
   updateAttendance: async (clockingId, attendanceData) => {
     const authUser = useAuthStore.getState().authUser;
     try {

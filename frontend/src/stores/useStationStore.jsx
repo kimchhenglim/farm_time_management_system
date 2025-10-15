@@ -25,17 +25,18 @@ const useStationStore = create((set, get) => ({
       set({ stationLoading: false });
     }
   },
-  createStation: async (name, status = "ACTIVE") => {
+  createStation: async (name) => {
     const authUser = useAuthStore.getState().authUser;
     try {
+      console.log(name);
       const token = authUser?.body?.loginToken;
       set({ createLoading: true });
       const res = await axiosInstances.post(
         "admin/station/create",
         {
           name: name,
-          station: "This is address",
-          status: status,
+          location: "This is address",
+          status: "ACTIVE",
         },
         {
           headers: {
