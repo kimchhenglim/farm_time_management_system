@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import useRosterStore from "../stores/useRosterStore";
 import Avatar from "../assets/avatar.svg";
 import Calendar from "../assets/calendar.svg";
-import Filter from "../assets/filter.svg";
-import DropDown from "../assets/dropdown.svg";
 import Search from "../assets/search.svg";
 import ConfirmModal from "./ConfirmationModal";
 import useStaffStore from "../stores/useStaffStore";
@@ -22,25 +20,18 @@ function AttendanceModal({
 }) {
   const inputRef = useRef(null);
   const [selectedUser, setSelectedUser] = useState(data || null);
-  const { staffActiveList } = useRosterStore();
   const { createAttendance } = useAttendanceStore();
   const { stationList, fetchStationList, stationLoading } = useStationStore();
+  const [errors, setErrors] = useState({});
 
   const [today, setToday] = useState(new Date().toISOString().split("T")[0]);
-  const [time, setTime] = useState(
-    new Date().toLocaleTimeString("en-AU", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })
-  );
-
   const {
     activeStaffList,
     fetchActiveStaffPaginated,
     searchActiveStaff,
     isFetchingActiveStaff,
   } = useStaffStore();
+
   const [searchQuery, setSearchQuery] = useState("");
   const searchTimeout = useRef(null);
 
@@ -49,7 +40,6 @@ function AttendanceModal({
     setSearchQuery(value);
 
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
     searchTimeout.current = setTimeout(() => {
       if (value.trim() === "") {
         fetchActiveStaffPaginated(10, 0, true);
@@ -58,6 +48,7 @@ function AttendanceModal({
       }
     }, 250);
   };
+
   const handleScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.target;
     if (scrollTop + clientHeight >= scrollHeight - 10) {
@@ -65,19 +56,11 @@ function AttendanceModal({
     }
   };
 
-  // Refresh current date/time every minute
+  // refresh current date/time every minute
   useEffect(() => {
     const interval = setInterval(() => {
       setToday(new Date().toISOString().split("T")[0]);
-      setTime(
-        new Date().toLocaleTimeString("en-AU", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-      );
-    }, 60 * 1000);
-
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -108,15 +91,13 @@ function AttendanceModal({
     }
   }, [stationList.length, fetchStationList]);
 
+  useEffect(() => {
+    if (isOpenModal) fetchStationList();
+  }, [isOpenModal, fetchStationList]);
+
   const activeStations =
     stationList?.filter((s) => (s.status || "").toUpperCase() === "ACTIVE") ||
     [];
-
-  useEffect(() => {
-    if (isOpenModal) {
-      fetchStationList();
-    }
-  }, [isOpenModal, fetchStationList]);
 
   const [formData, setFormData] = useState({
     date: data?.date || "",
@@ -133,6 +114,11 @@ function AttendanceModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Remove the error for this field if it exists
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleCloseModal = (e) => {
@@ -165,18 +151,66 @@ function AttendanceModal({
     return hours + minutes / 60;
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Staff selected
+    if (!selectedUser) newErrors.selectedUser = "Please select a staff member";
+
+    // Date
+    if (!formData.date) {
+      newErrors.date = "Please select a date";
+    } else {
+      const today = new Date();
+      const [year, month, day] = formData.date.split("-").map(Number);
+      const selectedDate = new Date(year, month - 1, day);
+
+      if (selectedDate > today) {
+        newErrors.date = "Selected date cannot be in the future";
+      }
+    }
+
+    // Station
+    if (!formData.stationId) newErrors.stationId = "Please select a station";
+
+    // Clock-in / Clock-out
+    if (!formData.startTime)
+      newErrors.startTime = "Please select clock-in time";
+    if (!formData.endTime) newErrors.endTime = "Please select clock-out time";
+
+    // Future datetime check
+    if (formData.date && formData.startTime) {
+      const [year, month, day] = formData.date.split("-").map(Number);
+      const [startHour, startMin] = formData.startTime.split(":").map(Number);
+      const startDateTime = new Date(year, month - 1, day, startHour, startMin);
+
+      if (startDateTime > new Date()) {
+        newErrors.startTime = "Clock-in cannot be in the future";
+      }
+    }
+
+    if (formData.date && formData.endTime) {
+      const [year, month, day] = formData.date.split("-").map(Number);
+      const [endHour, endMin] = formData.endTime.split(":").map(Number);
+      const endDateTime = new Date(year, month - 1, day, endHour, endMin);
+
+      if (endDateTime > new Date()) {
+        newErrors.endTime = "Clock-out cannot be in the future";
+      }
+    }
+
+    // Override reason
+    if (!formData.overrideReason)
+      newErrors.overrideReason = "Please select an override reason";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedUser) return toast.error("Please select staff!");
-    if (!formData.date) return toast.error("Please enter date");
-    if (!formData.stationId) return toast.error("Please select a station!");
-    if (!formData.startTime || !formData.endTime)
-      return toast.error("Please enter shift time!");
-    if (formData.endTime < formData.startTime)
-      return toast.error("Start time must not be bigger than End time!");
-    if (timeToFloat(formData.endTime) - timeToFloat(formData.startTime) > 12)
-      return toast.error("Shift cannot be longer than 12 hours!");
+    if (!validateForm()) return;
 
     if (selectedUser.type === "Full-time" || selectedUser.type === "Casual") {
       if (
@@ -220,8 +254,6 @@ function AttendanceModal({
       reasonCode: formData.overrideReason,
     };
 
-    console.log("Payload for attendance:", payload);
-
     try {
       await createAttendance(payload);
       toast.success("Attendance created successfully!");
@@ -260,6 +292,19 @@ function AttendanceModal({
     }
   };
 
+  // Generate 30-min interval time options
+  const generateTimes = () => {
+    return Array.from({ length: 24 * 2 }, (_, i) => {
+      const hour = Math.floor(i / 2);
+      const minute = (i % 2) * 30;
+      return `${hour.toString().padStart(2, "0")}:${minute
+        .toString()
+        .padStart(2, "0")}`;
+    });
+  };
+
+  const times = generateTimes();
+
   return (
     <div
       className="fixed inset-0 bg-[#000000]/40 flex items-center justify-center z-999"
@@ -267,9 +312,11 @@ function AttendanceModal({
     >
       <div className="bg-white rounded-lg p-6 relative w-[977px] shadow-lg text-[#565656] z-10">
         <h2 className="text-xl font-semibold text-[#566074] mb-4">{title}</h2>
+
         <div className="grid grid-cols-2 gap-4 border-y-[1px] border-[#ADADAD] p-2">
-          {/* Left side form */}
+          {/* LEFT FORM */}
           <div className="p-2 flex flex-col gap-8">
+            {/* Staff info */}
             <div className="w-full flex gap-8 items-center">
               <img src={Avatar} className="size-[100px]" alt="avatar" />
               {selectedUser ? (
@@ -283,13 +330,19 @@ function AttendanceModal({
                   </span>
                 </div>
               ) : (
-                <button className="p-2 bg-[#F5F5F5] h-[41px] w-[112px] rounded-[5px] font-medium text-[#566074] border-[#DEDEDE] border">
-                  Assign staff
-                </button>
+                <div className="flex flex-col gap-[4px]">
+                  {errors.selectedUser && (
+                    <span className="text-red-500 text-sm">
+                      {errors.selectedUser}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 
+            {/* Form fields */}
             <div className="flex flex-col gap-6">
+              {/* Date */}
               <div className="flex flex-col gap-[10px]">
                 <label htmlFor="date" className="text-[#565656] font-medium">
                   Date
@@ -305,12 +358,15 @@ function AttendanceModal({
                         : ""
                     }
                     readOnly
-                    className="input bg-white focus:outline-hidden placeholder:text-[#ADADAD] w-full border-none"
+                    className={`input bg-white focus:outline-none placeholder:text-[#ADADAD] w-full rounded-[5px] border ${
+                      errors.date ? "border-red-500" : "border-[#ADADAD]"
+                    }`}
                   />
                   <img
                     src={Calendar}
                     alt="calendar"
                     className="size-[15px] mr-[3px]"
+                    onClick={openCalendar}
                   />
                   <input
                     ref={inputRef}
@@ -323,8 +379,12 @@ function AttendanceModal({
                     className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                 </div>
+                {errors.date && (
+                  <span className="text-red-500 text-sm">{errors.date}</span>
+                )}
               </div>
 
+              {/* Station */}
               <div className="flex flex-col gap-[10px]">
                 <label
                   htmlFor="stationId"
@@ -337,7 +397,9 @@ function AttendanceModal({
                   id="stationId"
                   value={formData.stationId}
                   onChange={handleChange}
-                  className="border border-[#ADADAD] px-3 py-2 rounded"
+                  className={`border px-3 py-2 rounded ${
+                    errors.stationId ? "border-red-500" : "border-[#ADADAD]"
+                  }`}
                 >
                   <option value="">Select Station</option>
                   {stationLoading ? (
@@ -350,41 +412,108 @@ function AttendanceModal({
                     ))
                   )}
                 </select>
+                {errors.stationId && (
+                  <span className="text-red-500 text-sm">
+                    {errors.stationId}
+                  </span>
+                )}
               </div>
 
+              {/* Time selectors */}
               <div className="grid grid-cols-2 gap-[36px]">
+                {/* Start time */}
                 <div className="flex flex-col gap-[10px]">
                   <label
                     htmlFor="startTime"
                     className="text-[#565656] font-medium"
                   >
-                    Start time
+                    Clock-in
                   </label>
-                  <input
-                    type="time"
-                    className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
+                  <select
                     id="startTime"
-                    value={formData.startTime}
                     name="startTime"
-                    onChange={handleChange}
-                  />
+                    value={formData.startTime}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        startTime: newStart,
+                        endTime:
+                          prev.endTime && prev.endTime <= newStart
+                            ? ""
+                            : prev.endTime,
+                      }));
+
+                      // Clear startTime error if exists
+                      if (errors.startTime) {
+                        setErrors((prev) => ({ ...prev, startTime: null }));
+                      }
+
+                      // Also clear endTime error because resetting endTime may resolve it
+                      if (errors.endTime) {
+                        setErrors((prev) => ({ ...prev, endTime: null }));
+                      }
+                    }}
+                    className={`border border-[#ADADAD] rounded-[5px] px-3 py-2 w-full bg-white ${
+                      errors.startTime ? "border-red-500" : ""
+                    }`}
+                  >
+                    <option value="">Select clock-in time</option>
+                    {times.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.startTime && (
+                    <span className="text-red-500 text-sm">
+                      {errors.startTime}
+                    </span>
+                  )}
                 </div>
+
+                {/* End time */}
                 <div className="flex flex-col gap-[10px]">
                   <label
                     htmlFor="endTime"
                     className="text-[#565656] font-medium"
                   >
-                    End time
+                    Clock-out
                   </label>
-                  <input
-                    type="time"
-                    className="input bg-white placeholder:text-[#ADADAD] border-[1px] border-[#ADADAD] rounded-[5px] w-full"
+                  <select
                     id="endTime"
-                    value={formData.endTime}
                     name="endTime"
+                    value={formData.endTime}
                     onChange={handleChange}
-                  />
+                    className={`border border-[#ADADAD] rounded-[5px] px-3 py-2 w-full bg-white ${
+                      errors.endTime ? "border-red-500" : ""
+                    }`}
+                    disabled={!formData.startTime}
+                  >
+                    <option value="">Select clock-out time</option>
+                    {times.map((t) => (
+                      <option
+                        key={t}
+                        value={t}
+                        disabled={formData.startTime && t <= formData.startTime}
+                        className={
+                          formData.startTime && t <= formData.startTime
+                            ? "text-gray-400"
+                            : "text-black"
+                        }
+                      >
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.endTime && (
+                    <span className="text-red-500 text-sm">
+                      {errors.endTime}
+                    </span>
+                  )}
                 </div>
+
+                {/* Override reason */}
                 <div className="flex flex-col gap-[10px] col-span-2">
                   <label
                     htmlFor="overrideReason"
@@ -397,7 +526,9 @@ function AttendanceModal({
                     id="overrideReason"
                     value={formData.overrideReason || ""}
                     onChange={handleChange}
-                    className="border-[1px] border-[#ADADAD] rounded-[5px] px-3 py-2 w-full"
+                    className={`border border-[#ADADAD] rounded-[5px] px-3 py-2 w-full ${
+                      errors.overrideReason ? "border-red-500" : ""
+                    }`}
                   >
                     <option value="">Select reason</option>
                     <option value="Card Failure">Card Failure</option>
@@ -405,12 +536,17 @@ function AttendanceModal({
                     <option value="Missing clocking">Missing clocking</option>
                     <option value="Not Rostered">Not Rostered</option>
                   </select>
+                  {errors.overrideReason && (
+                    <span className="text-red-500 text-sm">
+                      {errors.overrideReason}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right side staff list */}
+          {/* RIGHT STAFF LIST */}
           <div className="p-4 flex flex-col gap-[16px] border-l-[1px] border-[#ADADAD]">
             <div className="flex items-center justify-between">
               <span className="text-[20px] font-semibold text-[#566074]">
@@ -418,6 +554,7 @@ function AttendanceModal({
               </span>
             </div>
 
+            {/* Search bar */}
             <label className="w-full h-[50px] border-[#E8E8E8] border p-2 rounded-[5px] flex items-center">
               <div className="flex items-center gap-[10px] w-full">
                 <img src={Search} alt="search" className="size-[15px]" />
@@ -431,6 +568,7 @@ function AttendanceModal({
               </div>
             </label>
 
+            {/* Scrollable list */}
             <div
               className="w-full h-[400px] overflow-y-auto flex flex-col"
               onScroll={handleScroll}
@@ -441,7 +579,12 @@ function AttendanceModal({
                   className={`p-2 flex gap-[14px] items-center cursor-pointer ${
                     selectedUser?.id === staff.id ? "bg-[#F0FDF4]" : ""
                   }`}
-                  onClick={() => setSelectedUser(staff)}
+                  onClick={() => {
+                    setSelectedUser(staff);
+                    if (errors.selectedUser) {
+                      setErrors((prev) => ({ ...prev, selectedUser: null }));
+                    }
+                  }}
                 >
                   <img src={Avatar} alt="avatar" className="size-[60px]" />
                   <div className="flex flex-col">
@@ -470,6 +613,7 @@ function AttendanceModal({
           </div>
         </div>
 
+        {/* FOOTER BUTTONS */}
         <div className="flex justify-end gap-2 pt-6">
           <button
             type="button"
