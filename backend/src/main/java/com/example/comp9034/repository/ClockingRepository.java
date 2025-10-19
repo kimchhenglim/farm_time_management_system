@@ -35,22 +35,26 @@ public interface ClockingRepository extends JpaRepository<ClockingEntity, Intege
             TIME_FORMAT(c.clock_out_time, '%H:%i') AS clock_out_time,
             c.is_admin_manual,
             c.reason_code,
-            c.break_minutes,
+            COALESCE(
+                c.break_minutes,
+                SUM(TIMESTAMPDIFF(MINUTE, b.break_start_time, b.break_end_time))
+            ) AS break_minutes,
             u.pay_rate,
             ROUND(TIMESTAMPDIFF(MINUTE, c.clock_in_time, c.clock_out_time) / 60, 2) AS hours,
             ROUND((TIMESTAMPDIFF(MINUTE, c.clock_in_time, c.clock_out_time) / 60) * u.pay_rate, 2) AS total
         FROM clocking c
         JOIN users u ON u.employee_id = c.employee_id
+        LEFT JOIN break b ON b.clocking_id = c.id
         WHERE (:employeeId IS NULL OR c.employee_id = :employeeId)
           AND (:startDate IS NULL OR c.clock_in_time >= :startDate)
-          AND (:endDate IS NULL OR c.clock_in_time <= :endDate)
+          AND (:endDate IS NULL OR c.clock_out_time <= :endDate)
         """,
         countQuery = """
                 SELECT COUNT(*)
                 FROM clocking c
                 WHERE (:employeeId IS NULL OR c.employee_id = :employeeId)
                 AND (:startDate IS NULL OR c.clock_in_time >= :startDate)
-                AND (:endDate IS NULL OR c.clock_in_time <= :endDate)
+                AND (:endDate IS NULL OR c.clock_out_time <= :endDate)
                 """,
         nativeQuery = true
         )
