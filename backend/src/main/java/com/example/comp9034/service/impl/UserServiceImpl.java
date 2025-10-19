@@ -1,13 +1,15 @@
 package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.*;
+import com.example.comp9034.dto.request.CreateUserDTO;
+import com.example.comp9034.dto.request.ForgotPasswordDTO;
+import com.example.comp9034.dto.request.LoginDTO;
+import com.example.comp9034.dto.request.LogoutDTO;
 import com.example.comp9034.entity.RoleEntity;
-import com.example.comp9034.entity.RosterEntity;
 import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.enums.UserEnum;
 import com.example.comp9034.exception_handler.BusinessException;
 import com.example.comp9034.mapper.DataMapper;
-import com.example.comp9034.mapper.UserDataMapperHelper;
 import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.repository.RoleRepository;
 import com.example.comp9034.repository.RosterRepository;
@@ -22,11 +24,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -36,12 +40,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.example.comp9034.enums.CommonEnum.*;
 import static com.example.comp9034.enums.ErrorCodeEnum.*;
+import static com.example.comp9034.enums.UserEnum.ADMIN;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
-import static com.example.comp9034.util.DateTimeFormatter.toLocalDate;
+import static com.example.comp9034.util.DateTimeFormatUtil.toLocalDate;
 
 
 @Service
@@ -76,8 +80,11 @@ public class UserServiceImpl implements UserService {
                 log.error(message);
                 throw new BusinessException(USER_NOT_FOUND, LOGOUT.name(), message);
             }
+            UserEntity user = userOptional.get();
             // Clear security context
             SecurityContextHolder.clearContext();
+         //   TokenBlackListEntity tokenBlackListEntity = new TokenBlackListEntity(user.getEmail(), );
+
             log.info("User {} logged out successfully!", username);
             return getCompleteResponse(errorCodeRepository, LOGOUT_SUCCESS, LOGOUT.name(), null);
         } catch (BusinessException e) {
@@ -93,10 +100,10 @@ public class UserServiceImpl implements UserService {
     public CompleteResponse<Object> login(LoginDTO loginRequest) {
         try {
             String username = loginRequest.getEmail();
-            Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(loginRequest.getEmail(), true);
+            Optional<UserEntity> userOptional = userRepository.findByEmailAndActiveAndRole(loginRequest.getEmail(), true, ADMIN.name());
             // Check if user existed
             if (userOptional.isEmpty()) {
-                String message = "User " + username + " does not exist!";
+                String message = "User " + username + " does not exist or does not have an admin role!";
                 log.error(message);
                 throw new BusinessException(USER_NOT_FOUND, LOGIN.name(), message);
             }
@@ -113,7 +120,7 @@ public class UserServiceImpl implements UserService {
             log.info("User {} roles from token: {}", username, authentication);
             UserDTO responseDto = dataMapper.toUserDto(userEntity);
 
-            if (userEntity.getRole().getName().toUpperCase().equals(UserEnum.ADMIN.name())) {
+            if (userEntity.getRole().getName().toUpperCase().equals(ADMIN.name())) {
                 String accessToken = tokenServiceImpl.generateAccessToken(username).getResponseBody().getBody().toString();
                 responseDto.setLoginToken(accessToken);
             }
@@ -131,9 +138,9 @@ public class UserServiceImpl implements UserService {
     public CompleteResponse<Object> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
         //Check if email existed
         String email = forgotPasswordDTO.getEmail();
-        Optional<UserEntity> userOptional = userRepository.findByEmailAndActive(email, true);
+        Optional<UserEntity> userOptional = userRepository.findByEmailAndActiveAndRole(email, true, ADMIN.name());
         if (userOptional.isEmpty()) {
-            String message = "User " + email + " not found to reset password!";
+            String message = "User " + email + " not found or authorized to reset password!";
             log.error(message);
             throw new BusinessException(USER_NOT_FOUND, FORGOT_PASSWORD.name(), message);
         }
@@ -177,14 +184,14 @@ public class UserServiceImpl implements UserService {
             }
             RoleEntity role = roleOptional.get();
             UserEntity newUser;
-            if (registerRequest.getRole().toUpperCase().equals(UserEnum.ADMIN.name())) {
+            if (registerRequest.getRole().toUpperCase().equals(ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().toUpperCase().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, null);
             } else {
                 String message = "User role is not valid: " + registerRequest.getRole();
                 log.info(message);
@@ -203,6 +210,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
         try {
@@ -213,12 +221,18 @@ public class UserServiceImpl implements UserService {
                         return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                     });
 
+            String oldName = normalizeName(existingUser.getFirstName(), existingUser.getLastName());
             //update entire entity
             dataMapper.updateEntityFromDto(updateUserDTO, existingUser);
             existingUser.setUpdatedAt(LocalDateTime.now());
             userRepository.save(existingUser);
-
             UserDTO responseDTO = dataMapper.toUserDto(existingUser);
+
+            String newName = normalizeName(updateUserDTO.getFirstName(), updateUserDTO.getLastName());
+            if (newName != null && !newName.equals(oldName)) {
+                int updatedRowNum = rosterRepository.propagateEmployeeName(employeeId, newName);
+                log.info("Updating name for employeeId {} for {} records", employeeId, updatedRowNum);
+            }
             return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
         } catch (Exception e) {
             String message = "There has been an error in updating user " + updateUserDTO.getEmail() + e;
@@ -227,8 +241,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private String normalizeName(String first, String last) {
+        String f = first == null ? "" : first.trim();
+        String l = last  == null ? "" : last.trim();
+        String s = (f + " " + l).trim().replaceAll("\\s+", " ");
+        return s.isEmpty() ? null : s;
+    }
+
     @Override
-    public CompleteResponse<Object> getUserByFilter(Integer id, String employeeId, String name, String email, String mobileNumber, Pageable pageable) {
+    public CompleteResponse<Object> getUserByFilter(UserFilterDTO filter) {
         Specification<UserEntity> spec = Specification.where(null);
 
         //only show STAFF users
@@ -237,28 +258,42 @@ public class UserServiceImpl implements UserService {
             return cb.equal(roleJoin.get("name"), UserEnum.STAFF.name());
         });
 
-        if (employeeId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), employeeId));
+        if (filter.getId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), filter.getId()));
         }
 
-        if (id != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), id));
+        if (filter.getEmployeeId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), filter.getEmployeeId()));
         }
 
-        if (name != null) {
+        if (filter.getName() != null) {
             spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("firstName")), "%" + name.toLowerCase() + "%"),
-                    cb.like(cb.lower(root.get("lastName")), "%" + name.toLowerCase() + "%")
+                    cb.like(cb.lower(root.get("firstName")), "%" + filter.getName().toLowerCase() + "%"),
+                    cb.like(cb.lower(root.get("lastName")), "%" + filter.getName().toLowerCase() + "%")
             ));
         }
 
-        if (email != null) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
+        if (filter.getEmail() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + filter.getEmail().toLowerCase() + "%"));
         }
 
-        if (mobileNumber != null) {
-            spec = spec.and((root, query, cb) -> cb.like(root.get("mobileNumber"), "%" + mobileNumber + "%"));
+        if (filter.getMobileNumber() != null) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("mobileNumber"), "%" + filter.getMobileNumber() + "%"));
         }
+
+        if (filter.getContractType() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("contractType"), filter.getContractType().toUpperCase()));
+        }
+
+        if (filter.getIsActive() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"), filter.getIsActive()));
+        }
+
+        Pageable pageable = PageRequest.of(
+            filter.getPage(),
+            filter.getSize(),
+            filter.getSortDir().equalsIgnoreCase("asc") ? Sort.by(filter.getSortBy()).ascending() : Sort.by(filter.getSortBy()).descending());
+
 
         Page<UserEntity> page = userRepository.findAll(spec, pageable);
 

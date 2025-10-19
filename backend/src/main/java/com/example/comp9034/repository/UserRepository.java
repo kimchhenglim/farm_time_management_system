@@ -6,28 +6,22 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer>, JpaSpecificationExecutor<UserEntity> {
 
-    // /**
-    //  * Finds a user by their username.
-    //  *
-    //  * @param username the username to search for
-    //  * @param isActive the active status to search for
-    //  * @return an Optional containing the User if found, or empty if not found
-    //  */
-//    @Query("SELECT u FROM User u WHERE u.username = :username AND u.isActive = :isActive")
-//    Optional<User> findByUsernameAndActive(String username, boolean isActive);
-//
-//    @Query("SELECT u FROM User u WHERE u.phoneNumber = :phoneNumber AND u.isActive = :isActive")
-//    Optional<User> findByPhoneNumberAndActive(String phoneNumber, boolean isActive);
-
     Optional<UserEntity> findByEmployeeId(String employeeId);
+
+    Optional<UserEntity> findByCardId(String cardId);
 
     @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.isActive = :isActive")
     Optional<UserEntity> findByEmailAndActive(String email, boolean isActive);
 
-    Optional<UserEntity> findByEmail(String email);
+    @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.isActive = :isActive")
+    Optional<UserEntity> findByEmailAndActiveAndRole(String email, boolean isActive, String role);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.employeeId = :employeeId AND u.isActive = :isActive")
+    Optional<UserEntity> findByEmployeeIdAndActive(String employeeId, boolean isActive);
 }

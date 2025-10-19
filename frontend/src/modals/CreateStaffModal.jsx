@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import UploadAvatar from "../assets/uploadAvatar.svg";
 import Avatar from "../assets/avatar.svg";
+import toast from "react-hot-toast";
 
 function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
@@ -17,7 +18,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
     role: "",
     contractType: "",
     payRate: "",
-    location: "",
+    station: "",
     avatar: null,
     isActive: true,
   });
@@ -49,7 +50,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       role: "",
       contractType: "",
       payRate: "",
-      location: "",
+      station: "",
       avatar: null,
       isActive: true,
     });
@@ -67,7 +68,6 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       "role",
       "contractType",
       "payRate",
-      "location",
     ];
 
     const newErrors = {};
@@ -83,15 +83,22 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       newErrors.email = "Please enter a valid email";
     }
 
+    if (formData.payRate <= 0) {
+      newErrors.payRate = "Pay rate must be greater than 0";
+    }
+
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveClick = async () => {
+    // Validate form first
     if (!validateForm()) return;
 
+    // Prepare payload
     const payload = {
+      cardId: formData.cardId || null,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -106,7 +113,6 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       isActive: formData.isActive,
       contractType: formData.contractType,
       payRate: parseFloat(formData.payRate),
-      location: formData.location,
     };
 
     try {
@@ -115,9 +121,16 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       setIsLoading(false);
       resetForm();
       setIsOpenModal(false);
+
+      toast.success("Staff registered successfully!");
     } catch (err) {
       setIsLoading(false);
-      alert("Failed to register staff. Please try again.");
+
+      toast.error(
+        err?.response?.data?.message ||
+          "Failed to register staff. Please try again."
+      );
+      console.error("Staff registration error:", err);
     }
   };
 
@@ -228,12 +241,19 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="date"
                 name="dob"
                 value={formData.dob}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, dob: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.dob ? "border-red-500" : "border-[#ADADAD]"
+                } calendar-black`}
                 min="1900-01-01"
                 max={new Date().toISOString().split("T")[0]}
-                required
               />
+              {errors.dob && (
+                <span className="text-red-500 text-xs mt-1">{errors.dob}</span>
+              )}
             </div>
 
             {/* Gender */}
@@ -242,14 +262,23 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
               <select
                 name="gender"
                 value={formData.gender}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, gender: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.gender ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               >
                 <option value="">Select Gender</option>
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
               </select>
+              {errors.gender && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.gender}
+                </span>
+              )}
             </div>
 
             {/* Email */}
@@ -259,10 +288,19 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, email: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.email ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               />
+              {errors.email && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.email}
+                </span>
+              )}
             </div>
 
             {/* Phone Number */}
@@ -273,15 +311,20 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 name="mobileNumber"
                 value={formData.mobileNumber}
                 onChange={(e) => {
-                  // Only allow field to have 10 digits
                   const val = e.target.value.replace(/\D/g, "").slice(0, 10);
                   setFormData((prev) => ({ ...prev, mobileNumber: val }));
                   setErrors({ ...errors, mobileNumber: null });
                 }}
                 placeholder="e.g., 0452345678"
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                className={`border px-3 py-2 rounded ${
+                  errors.mobileNumber ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               />
+              {errors.mobileNumber && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.mobileNumber}
+                </span>
+              )}
             </div>
 
             {/* Address */}
@@ -291,10 +334,19 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
                 type="text"
                 name="address"
                 value={formData.address}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, address: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.address ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               />
+              {errors.address && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.address}
+                </span>
+              )}
             </div>
 
             {/* Role */}
@@ -303,14 +355,20 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
               <select
                 name="role"
                 value={formData.role}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, role: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.role ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               >
                 <option value="">Select Role</option>
-                <option value="ADMIN">Admin</option>
                 <option value="STAFF">Staff</option>
               </select>
+              {errors.role && (
+                <span className="text-red-500 text-xs mt-1">{errors.role}</span>
+              )}
             </div>
 
             {/* Contract Type */}
@@ -319,47 +377,69 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
               <select
                 name="contractType"
                 value={formData.contractType}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, contractType: null });
+                }}
+                className={`border px-3 py-2 rounded ${
+                  errors.contractType ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               >
                 <option value="">Select Contract</option>
                 <option value="FULLTIME">Full-Time</option>
                 <option value="PARTTIME">Part-Time</option>
                 <option value="CASUAL">Casual</option>
               </select>
+              {errors.contractType && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.contractType}
+                </span>
+              )}
             </div>
 
             {/* Pay Rate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Pay Rate</label>
+              <label className="text-sm font-medium mb-1">Standard Rate</label>
               <input
                 type="number"
                 name="payRate"
                 value={formData.payRate}
-                onChange={handleChange}
+                onChange={(e) => {
+                  handleChange(e);
+                  setErrors({ ...errors, payRate: null });
+                }}
                 placeholder="$/hr"
-                className="border border-[#ADADAD] px-3 py-2 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                required
+                className={`border px-3 py-2 rounded ${
+                  errors.payRate ? "border-red-500" : "border-[#ADADAD]"
+                }`}
               />
+              {errors.payRate && (
+                <span className="text-red-500 text-xs mt-1">
+                  {errors.payRate}
+                </span>
+              )}
             </div>
 
-            {/* Location */}
+            {/* overtimeRate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Location</label>
-              <select
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
-                required
+              <label
+                className="text-sm font-medium mb-1"
+                htmlFor="overtimeRate"
               >
-                <option value="">Select Location</option>
-                <option value="Shed 1">Shed 1</option>
-                <option value="Shed 2">Shed 2</option>
-                <option value="Shed 3">Shed 3</option>
-                <option value="Shed 4">Shed 4</option>
-              </select>
+                Overtime Rate
+              </label>
+              <input
+                type="text"
+                name="overtimeRate"
+                id="overtimeRate"
+                disabled
+                value={
+                  formData?.contractType === "CASUAL"
+                    ? 2.5 * formData?.payRate + " (Standard pay * 2.5)"
+                    : 1.5 * formData?.payRate + " (Standard pay * 1.5)"
+                }
+                className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
+              />
             </div>
           </div>
 

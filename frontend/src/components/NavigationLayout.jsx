@@ -74,7 +74,7 @@ function SideNavBar() {
     <aside className="w-64 h-screen bg-white border-r border-gray-200 shadow-sm border-t-[2px] ">
       <nav className="flex flex-col pt-6 s64pace-y-2 ">
         <Link
-          to="/roster"
+          to="/"
           className={`w-full hover:bg-[#F0FDF4] ${
             currentPath === "/roster"
               ? "border-l-[4px] border-[#16A34A] bg-[#F0FDF4]"
@@ -87,7 +87,7 @@ function SideNavBar() {
             }`}
           >
             <img
-              src={currentPath === "/roster" ? Calendar_active : Calendar}
+              src={currentPath === "/" ? Calendar_active : Calendar}
               alt="Calendar"
             />
             Roster
@@ -145,7 +145,7 @@ function NavigationLayout({ children }) {
   const { authUser } = useAuthStore();
   console.log(authUser);
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen w-screen">
       {authUser && (
         <TopNavBar
           fullName={`${authUser?.body.firstName || ""} ${

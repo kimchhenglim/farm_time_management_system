@@ -47,7 +47,7 @@ public class UserEntity implements Serializable, UserDetails {
     private UserEnum contractType;
 
     private Double payRate;
-    private String location;
+    private String station;
     private Boolean isActive = true;
 
     private String password;
@@ -63,7 +63,7 @@ public class UserEntity implements Serializable, UserDetails {
 
     }
 
-    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String location, LocalDateTime createdAt, RoleEntity role, String password) {
+    public UserEntity(String employeeId, String firstName, String lastName, LocalDate dob, UserEnum gender, String email, String mobileNumber, String address, String cardId, UserEnum contractType, Double payRate, String station, LocalDateTime createdAt, RoleEntity role, String password) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -75,7 +75,7 @@ public class UserEntity implements Serializable, UserDetails {
         this.cardId = cardId;
         this.contractType = contractType;
         this.payRate = payRate;
-        this.location = location;
+        this.station = station;
         this.createdAt = createdAt;
         this.role = role;
         this.password = password;

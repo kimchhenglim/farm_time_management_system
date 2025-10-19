@@ -1,26 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Filter from "../assets/filter.svg";
 import Add from "../assets/add.svg";
 import AscSort from "../assets/ascsort.svg";
 import DescSort from "../assets/descsort.svg";
 import CreateStaffModal from "../modals/CreateStaffModal";
-import { axiosInstances } from "../libs/axios";
 import { useNavigate } from "react-router-dom";
 import useStaffStore from "../stores/useStaffStore";
-
+import { axiosInstances } from "../libs/axios";
 function StaffManagement() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [isOpenModal, setIsOpenModal] = useState(false);
-  //import from useStaffStore
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredStaff, setFilteredStaff] = useState([]);
-  const { staffList, fetchStaffList } = useStaffStore();
   const navigate = useNavigate();
 
+  const {
+    staffList,
+    page,
+    totalPages,
+    totalElements,
+    numberOfElements,
+    fetchStaffList,
+  } = useStaffStore();
+
   useEffect(() => {
-    fetchStaffList();
-  }, []);
+    fetchStaffList(0, 10); // Fetch page 0 with size 10 on mount
+  }, [fetchStaffList]);
 
   useEffect(() => {
     setFilteredStaff(staffList);
@@ -71,19 +77,23 @@ function StaffManagement() {
   };
 
   const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
+    const query = e.target.value;
     setSearchQuery(query);
-
-    const filtered = staffList.filter((staff) => {
-      const fullName = `${staff.firstName ?? ""} ${
-        staff.lastName ?? ""
-      }`.toLowerCase();
-      const id = String(staff.id).toLowerCase();
-      return fullName.includes(query) || id.includes(query);
-    });
-
-    setFilteredStaff(filtered);
+    if (!query) {
+      fetchStaffList(0, 10);
+      return;
+    }
+    const isIdSearch = /^\d+$/.test(query);
+    if (isIdSearch) {
+      fetchStaffList(0, 10, { id: query });
+    } else {
+      fetchStaffList(0, 10, { name: query });
+    }
   };
+
+  const handlePrevPage = () => fetchStaffList(Math.max(0, page - 1));
+  const handleNextPage = () =>
+    fetchStaffList(Math.min(totalPages - 1, page + 1));
 
   // Handle POST
   const handleAddStaff = async (payload) => {
@@ -91,15 +101,13 @@ function StaffManagement() {
       const authUser = JSON.parse(sessionStorage.getItem("authUser"));
       const token = authUser?.body.loginToken;
 
-      console.log(token);
-
       await axiosInstances.post("/admin/register", payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      await fetchStaffList();
+      await fetchStaffList(0, 10);
     } catch (error) {
       alert("Failed to register staff. Please try again.");
     }
@@ -115,11 +123,11 @@ function StaffManagement() {
   ];
 
   const handleFilterClick = (option) => {
-    const filtered = staffList.filter(
-      (staff) => staff[option.key] === option.value
-    );
-    setFilteredStaff(filtered);
     setShowFilterDropdown(false);
+    setSearchQuery("");
+
+    // Fetch filtered staff
+    fetchStaffList(0, 10, { [option.key]: option.value });
   };
 
   return (
@@ -154,7 +162,7 @@ function StaffManagement() {
                 <div
                   className="px-4 py-2 text-red-500 cursor-pointer hover:bg-gray-100"
                   onClick={() => {
-                    setFilteredStaff(staffList);
+                    fetchStaffList(0, 10);
                     setShowFilterDropdown(false);
                   }}
                 >
@@ -218,7 +226,7 @@ function StaffManagement() {
                 { label: "Role", key: "role" },
                 { label: "Contract", key: "contractType" },
                 { label: "Pay Rate", key: "payRate" },
-                { label: "Location", key: "location" },
+                { label: "Station", key: "station" },
                 { label: "Upcoming Shift", key: "upcomingShift" },
                 { label: "Status", key: "status" },
               ].map(({ label, key }) => (
@@ -236,53 +244,100 @@ function StaffManagement() {
             </tr>
           </thead>
           <tbody className="text-sm text-center">
-            {sortedStaff.map((person) => {
-              const statusColor = person.isActive
-                ? "bg-[#F0FDF4] text-[#16A34A]"
-                : "bg-[#F5F5F5] text-[#566074]";
-              return (
-                <tr
-                  key={person.id}
-                  onClick={() =>
-                    navigate(`/staff-management/staff/${person.id}`)
-                  }
-                  className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 cursor-pointer"
+            {sortedStaff.length > 0 ? (
+              sortedStaff.map((person) => {
+                const statusColor = person.isActive
+                  ? "bg-[#F0FDF4] text-[#16A34A]"
+                  : "bg-[#F5F5F5] text-[#566074]";
+                return (
+                  <tr
+                    key={person.id}
+                    onClick={() =>
+                      navigate(`/staff-management/staff/${person.id}`)
+                    }
+                    className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 cursor-pointer"
+                  >
+                    <td className="px-4 py-2 border-b border-[#D6D6D6] text-[#ADADAD]">
+                      FT{person.id}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6] font-semibold">
+                      {person.firstName} {person.lastName}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      {person.role}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      {person.contractType}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      {person.payRate ? `$${person.payRate}/hr` : ""}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      {person.station}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      {person.upComingShift}
+                    </td>
+                    <td className="px-4 py-2 border-b border-[#D6D6D6]">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full font-semibold text-sm ${statusColor}`}
+                      >
+                        {person.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan="8"
+                  className="px-4 py-6 text-center text-gray-500 font-medium"
                 >
-                  <td className="px-4 py-2 border-b border-[#D6D6D6] text-[#ADADAD]">
-                    FT{person.id}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6] font-semibold">
-                    {person.firstName} {person.lastName}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    {person.role}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    {person.contractType}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    {person.payRate ? `$${person.payRate}/hr` : ""}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    {person.location}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    {person.upComingShift}
-                  </td>
-                  <td className="px-4 py-2 border-b border-[#D6D6D6]">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full font-semibold text-sm ${statusColor}`}
-                    >
-                      {person.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
+                  No records found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-
+      {sortedStaff.length > 0 && (
+        <div className="flex flex-col items-center mt-4">
+          <span className="text-sm text-gray-700">
+            Showing{" "}
+            <span className="font-semibold">{(page ?? 0) * 10 + 1}</span> to{" "}
+            <span className="font-semibold">
+              {(page ?? 0) * 10 + (numberOfElements ?? 0)}
+            </span>{" "}
+            of <span className="font-semibold">{totalElements ?? 0}</span>{" "}
+            Entries
+          </span>
+          <div className="inline-flex mt-2 xs:mt-0">
+            <button
+              onClick={handlePrevPage}
+              disabled={page === 0}
+              className={`px-3 h-8 text-sm font-medium rounded-s ${
+                page === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-800 text-white hover:bg-gray-900"
+              }`}
+            >
+              Prev
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={page + 1 >= totalPages}
+              className={`px-3 h-8 text-sm font-medium rounded-e ${
+                page + 1 >= totalPages
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-800 text-white hover:bg-gray-900"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
       {/* Modal */}
       <CreateStaffModal
         isOpenModal={isOpenModal}

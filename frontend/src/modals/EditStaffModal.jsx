@@ -14,10 +14,9 @@ function EditStaffModal({
   const modalRef = useRef(null);
   const fileInputRef = useRef(null);
   const { editStaffDetail } = useStaffStore();
-  // console.log(staffInfo);
   const [formData, setFormData] = useState({
     employeeId: currentStaff?.employeeId,
-    biometricId: currentStaff?.employeeId,
+    cardId: currentStaff?.cardId,
     firstName: currentStaff?.firstName,
     lastName: currentStaff?.lastName,
     dob: currentStaff?.dob,
@@ -28,7 +27,6 @@ function EditStaffModal({
     role: currentStaff?.role || "",
     contractType: currentStaff?.contractType || "",
     payRate: currentStaff?.payRate,
-    location: currentStaff?.location,
     avatar: null,
   });
 
@@ -62,10 +60,13 @@ function EditStaffModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(formData);
     const regex = /^[A-Za-z]+$/; // only letters
     const phoneNumberRegex = /^\+61[0-9]{9}$/;
+    const standardRate = /^\d*$/;
     const emailRegex = /\S+@\S+\.\S+/;
+    // console.log(formData.payRate);
+    const num = parseFloat(formData.payRate);
     if (!regex.test(formData.firstName) || !regex.test(formData.lastName)) {
       toast.error("Only letters allowed for firstName or lastName!");
       return;
@@ -75,14 +76,23 @@ function EditStaffModal({
     } else if (!emailRegex.test(formData.email)) {
       toast.error("Enter a valid email address!");
       return;
+    } else if (!/^\d+(\.\d{1,2})?$/.test(num)) {
+      toast.error("Rate must be a number with up to 2 decimals");
+      return;
+    } else if (num < 0.01 || num > 100.0) {
+      toast.error("Rate must be between 0.01 and 100.00");
+      return;
     }
     const payload = {
       ...formData,
       dob: formData.dob.split("-").reverse().join("/"),
     };
+    //
+    console.log(payload);
     await editStaffDetail(payload);
 
     setIsOpenModal(false);
+    // alert("Hi");
   };
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -132,11 +142,10 @@ function EditStaffModal({
               </div>
               {/* Biometric ID */}
               <div className="flex flex-col justify-center">
-                <label className="text-sm font-medium mb-1">Biometric ID</label>
+                <label className="text-sm font-medium mb-1">Card ID</label>
                 <input
-                  name="biometricId"
-                  value={formData.biometricId}
-                  disabled
+                  name="cardId"
+                  value={formData.cardId}
                   onChange={handleChange}
                   className="border border-[#ADADAD] px-3 py-2 rounded"
                 />
@@ -240,8 +249,9 @@ function EditStaffModal({
                 onChange={handleChange}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               >
-                <option value="">Select Role</option>
-                <option value="STAFF">Staff</option>
+                <option value="STAFF" defaultChecked>
+                  Staff
+                </option>
               </select>
             </div>
 
@@ -263,31 +273,38 @@ function EditStaffModal({
 
             {/* Pay Rate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Pay Rate</label>
+              <label className="text-sm font-medium mb-1">Standard Rate</label>
               <input
                 name="payRate"
+                type="text"
                 value={formData.payRate}
                 onChange={handleChange}
                 placeholder="$/hr"
-                maxLength={3}
+                maxLength={6}
                 className="border border-[#ADADAD] px-3 py-2 rounded"
               />
             </div>
 
-            {/* Task */}
+            {/* overtimeRate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Location</label>
-              <select
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="border border-[#ADADAD] px-3 py-2 rounded"
+              <label
+                className="text-sm font-medium mb-1"
+                htmlFor="overtimeRate"
               >
-                <option value="">Select Location</option>
-                <option value="Shed 1">Shed 1</option>
-                <option value="Shed 2">Shed 2</option>
-                <option value="Shed 3">Shed 3</option>
-              </select>
+                Overtime Rate
+              </label>
+              <input
+                type="text"
+                name="overtimeRate"
+                id="overtimeRate"
+                disabled
+                value={
+                  formData?.contractType === "CASUAL"
+                    ? 2.5 * formData?.payRate + " (Standard pay * 2.5)"
+                    : 1.5 * formData?.payRate + " (Standard pay * 1.5)"
+                }
+                className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
+              />
             </div>
           </div>
           {/* Buttons */}

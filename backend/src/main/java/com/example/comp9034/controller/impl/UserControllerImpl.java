@@ -3,6 +3,10 @@ package com.example.comp9034.controller.impl;
 import com.example.comp9034.controller.UserController;
 import com.example.comp9034.dto.*;
 
+import com.example.comp9034.dto.request.CreateUserDTO;
+import com.example.comp9034.dto.request.ForgotPasswordDTO;
+import com.example.comp9034.dto.request.LoginDTO;
+import com.example.comp9034.dto.request.LogoutDTO;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.response_template.ResponseBody;
 import com.example.comp9034.service.UserService;
@@ -53,13 +57,8 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<ResponseBody<Object>> getUsers(Integer id, String employeeId, String name, String email, String phoneNumber, int page, int size, String sortBy, String sortDir) {
-        Pageable pageable = PageRequest.of(
-            page,
-            size,
-            sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
-        
-        CompleteResponse<Object> response = userService.getUserByFilter(id, employeeId, name, email, phoneNumber, pageable);
+    public ResponseEntity<ResponseBody<Object>> getUsers(UserFilterDTO filter) {
+        CompleteResponse<Object> response = userService.getUserByFilter(filter);
         
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
     }
