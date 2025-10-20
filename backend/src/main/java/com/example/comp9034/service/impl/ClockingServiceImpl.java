@@ -3,6 +3,7 @@ package com.example.comp9034.service.impl;
 import static com.example.comp9034.enums.CommonEnum.CLOCKING;
 import static com.example.comp9034.enums.CommonEnum.COMMON;
 import static com.example.comp9034.enums.ErrorCodeEnum.ALREADY_CLOCK_IN;
+import static com.example.comp9034.enums.ErrorCodeEnum.ALREADY_IN_BREAK;
 import static com.example.comp9034.enums.ErrorCodeEnum.BREAK_CREATED;
 import static com.example.comp9034.enums.ErrorCodeEnum.CLOCKING_CREATED;
 import static com.example.comp9034.enums.ErrorCodeEnum.CLOCK_OUT_SUCCESS;
@@ -13,6 +14,7 @@ import static com.example.comp9034.enums.ErrorCodeEnum.INTERNAL_SERVER_ERROR;
 import static com.example.comp9034.enums.ErrorCodeEnum.INVALID_INPUT;
 import static com.example.comp9034.enums.ErrorCodeEnum.NO_CLOCK_IN;
 import static com.example.comp9034.enums.ErrorCodeEnum.NO_EXISTING_BREAK;
+import static com.example.comp9034.enums.ErrorCodeEnum.STATION_NOT_FOUND;
 import static com.example.comp9034.enums.ErrorCodeEnum.UPDATE_CLOCKING_SUCCESS;
 import static com.example.comp9034.enums.ErrorCodeEnum.USER_NOT_FOUND;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
@@ -47,6 +49,7 @@ import com.example.comp9034.entity.UserEntity;
 import com.example.comp9034.repository.BreakRepository;
 import com.example.comp9034.repository.ClockingRepository;
 import com.example.comp9034.repository.ErrorCodeRepository;
+import com.example.comp9034.repository.StationRepository;
 import com.example.comp9034.repository.UserRepository;
 import com.example.comp9034.response_template.CompleteResponse;
 import com.example.comp9034.service.ClockingService;
@@ -59,18 +62,22 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class ClockingServiceImpl implements ClockingService {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy h:mma");
+
     private final ClockingRepository clockingRepository;
     private final UserRepository userRepository;
     private final BreakRepository breakRepository;
     private final ErrorCodeRepository errorCodeRepository;
     private final ClockingMapper clockingMapper;
+    private final StationRepository stationRepository;
 
-    public ClockingServiceImpl(ClockingRepository clockingRepository, UserRepository userRepository, BreakRepository breakRepository, ErrorCodeRepository errorCodeRepository, ClockingMapper clockingMapper) {
+    public ClockingServiceImpl(ClockingRepository clockingRepository, UserRepository userRepository, BreakRepository breakRepository, ErrorCodeRepository errorCodeRepository, ClockingMapper clockingMapper, StationRepository stationRepository) {
         this.clockingRepository = clockingRepository;
         this.userRepository = userRepository;
         this.breakRepository = breakRepository;
         this.errorCodeRepository = errorCodeRepository;
         this.clockingMapper = clockingMapper;
+        this.stationRepository = stationRepository;
     }
 
     @Override
@@ -78,7 +85,7 @@ public class ClockingServiceImpl implements ClockingService {
         try {
             UserEntity existingUser = userRepository.findByCardId(dto.getCardId())
                 .orElseThrow(() -> {
-                    String message = "User not found for cardId " + dto.getCardId();
+                    String message = "Card not recognized. Please contact admin.";
                     log.error(message);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                 });
@@ -87,15 +94,23 @@ public class ClockingServiceImpl implements ClockingService {
             if (clockingRepository.existsByEmployeeIdAndClockOutTimeIsNull(existingUser.getEmployeeId())) {
                 return getCompleteResponse(errorCodeRepository, ALREADY_CLOCK_IN, CLOCKING.name(), null);
             }
+
+            //check valid station
+            if(!stationRepository.existsById(Long.valueOf(dto.getStationId()))) {
+                String message = "Invalid station. Please try again.";
+                log.error(message);
+                throw new BusinessException(STATION_NOT_FOUND, COMMON.name(), message);
+            }
     
+            var clockInTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
             ClockingEntity clocking = new ClockingEntity();
-            clocking.setClockInTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+            clocking.setClockInTime(clockInTime);
             clocking.setEmployeeId(existingUser.getEmployeeId());
             clocking.setStationId(dto.getStationId());
             clockingRepository.save(clocking);
 
             log.info("Clock in successfully for cardId {}", dto.getCardId());
-            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), null);
+            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), clockInTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -116,7 +131,7 @@ public class ClockingServiceImpl implements ClockingService {
         try {
             UserEntity existingUser = userRepository.findByCardId(dto.getCardId())
                 .orElseThrow(() -> {
-                    String message = "User not found for cardId " + dto.getCardId();
+                    String message = "Card not recognized. Please contact admin.";
                     log.error(message);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                 });
@@ -127,10 +142,17 @@ public class ClockingServiceImpl implements ClockingService {
                 return getCompleteResponse(errorCodeRepository, NO_CLOCK_IN, CLOCKING.name(), null);
             }
 
+            //check if staff is in a break
+            var existingBreak = breakRepository.findByClockingIdAndBreakEndTimeIsNull(existingClocking.get().getId());
+            if (!existingBreak.isEmpty()) {
+                return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
+            }
+
+            var clockOutTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
             var entity  = existingClocking.get();
-            entity.setClockOutTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+            entity.setClockOutTime(clockOutTime);
             clockingRepository.save(entity);
-            return getCompleteResponse(errorCodeRepository, CLOCK_OUT_SUCCESS, CLOCKING.name(), null);
+            return getCompleteResponse(errorCodeRepository, CLOCK_OUT_SUCCESS, CLOCKING.name(), clockOutTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -147,7 +169,7 @@ public class ClockingServiceImpl implements ClockingService {
         try {
             UserEntity existingUser = userRepository.findByCardId(dto.getCardId())
                 .orElseThrow(() -> {
-                    String message = "User not found for cardId " + dto.getCardId();
+                    String message = "Card not recognized. Please contact admin.";
                     log.error(message);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                 });
@@ -158,13 +180,22 @@ public class ClockingServiceImpl implements ClockingService {
                 return getCompleteResponse(errorCodeRepository, NO_CLOCK_IN, CLOCKING.name(), null);
             }
 
+            //check if staff already in break
+            var existingBreak = breakRepository.findByClockingIdAndBreakEndTimeIsNull(existingClocking.get().getId());
+            if (!existingBreak.isEmpty()) {
+                return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
+            }
+
+
+
+            var breakStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
             BreakEntity entity = new BreakEntity();
             entity.setClockingId(existingClocking.get().getId());
             entity.setReason(dto.getReason());
-            entity.setBreakStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+            entity.setBreakStartTime(breakStartTime);
             breakRepository.save(entity);
 
-            return getCompleteResponse(errorCodeRepository, BREAK_CREATED, CLOCKING.name(), null);
+            return getCompleteResponse(errorCodeRepository, BREAK_CREATED, CLOCKING.name(), breakStartTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -182,7 +213,7 @@ public class ClockingServiceImpl implements ClockingService {
         try {
             UserEntity existingUser = userRepository.findByCardId(dto.getCardId())
                 .orElseThrow(() -> {
-                    String message = "User not found for cardId " + dto.getCardId();
+                    String message = "Card not recognized. Please contact admin.";
                     log.error(message);
                     return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                 });
@@ -194,15 +225,16 @@ public class ClockingServiceImpl implements ClockingService {
             }
 
             var existingBreak = breakRepository.findByClockingIdAndBreakEndTimeIsNull(existingClocking.get().getId());
-            if (existingClocking.isEmpty()) {
+            if (existingBreak.isEmpty()) {
                 return getCompleteResponse(errorCodeRepository, NO_EXISTING_BREAK, CLOCKING.name(), null);
             }
 
+            var breakEndTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
             var entity = existingBreak.get();
-            entity.setBreakEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+            entity.setBreakEndTime(breakEndTime);
             breakRepository.save(entity);
 
-            return getCompleteResponse(errorCodeRepository, END_BREAK_SUCCESS, CLOCKING.name(), null);
+            return getCompleteResponse(errorCodeRepository, END_BREAK_SUCCESS, CLOCKING.name(), breakEndTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -217,49 +249,34 @@ public class ClockingServiceImpl implements ClockingService {
     @Override
     public CompleteResponse<Object> getClockings(ClockingFilterDTO dto) {
         try {
-            Specification<ClockingEntity> spec = Specification.where(null);
-
             if (!dto.getStartDate().isBefore(dto.getEndDate())) {
                 String msg = "End date must be after start date";
                 log.error(msg);
                 throw new BusinessException(INVALID_INPUT, CLOCKING.name(), msg);
             }
             LocalDateTime start = dto.getStartDate().atStartOfDay();        // 00:00:00
-            LocalDateTime end = dto.getEndDate().atTime(LocalTime.MAX);     // 23:59:59.999999999
-
-    
-            // spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("clockInTime"), start));
-            // spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("clockInTime"), end));
-    
-            // if (dto.getEmployeeId() != null) {
-            //     spec = spec.and((root, query, cb) -> cb.equal(root.get("employeeId"), dto.getEmployeeId()));
-            // }
-    
+            LocalDateTime end = dto.getEndDate().atTime(LocalTime.MAX);     // 23:59:5
             Pageable pageable = PageRequest.of(
                 dto.getPage(),
                 dto.getSize(),
                 dto.getSortDir().equalsIgnoreCase("asc") ? Sort.by(dto.getSortBy()).ascending() : Sort.by(dto.getSortBy()).descending());
-    
-            // Page<ClockingEntity> page = clockingRepository.findAll(spec, pageable);
-    
-            // var dtoPage = page.map(clockingMapper::toClockingResponseDTO);
 
             Page<Object[]> page = clockingRepository.findClockingsNative(dto.getEmployeeId(), start, end, pageable);
             List<ClockingResponseDTO> dtos = page.getContent().stream().map(row -> {
                 return new ClockingResponseDTO(
-                    ((Number) row[0]).intValue(),
-                    (String) row[1],
-                    (String) row[2],
-                    row[3] != null ? ((Number) row[3]).intValue() : null,
-                    (String) row[4],
-                    (String) row[5],
-                    (String) row[6],
-                    row[7] != null && (Boolean) row[7],
-                    (String) row[8],
-                    row[9] != null ? ((Number) row[9]).intValue() : null,
-                    row[10] != null ? ((Number) row[10]).doubleValue() : 0.0,
-                    row[11] != null ? ((Number) row[11]).doubleValue() : 0.0,
-                    row[12] != null ? ((Number) row[12]).doubleValue() : 0.0
+                    ((Number) row[0]).intValue(),                                       //id
+                    (String) row[1],                                                    //employee_id
+                    (String) row[2],                                                    //name
+                    row[3] != null ? ((Number) row[3]).intValue() : null,               //stationId
+                    (String) row[4],                                                    //date
+                    (String) row[5],                                                    //clock in time
+                    (String) row[6],                                                    //clock out time
+                    row[7] != null && (Boolean) row[7],                                 //is admin manual
+                    (String) row[8],                                                    //reason code
+                    row[9] != null ? ((Number) row[9]).intValue() : null,               //break minutes
+                    row[10] != null ? ((Number) row[10]).doubleValue() : 0.0,           //payrate
+                    row[11] != null ? ((Number) row[11]).doubleValue() : 0.0,           //hours
+                    row[12] != null ? ((Number) row[12]).doubleValue() : 0.0            //total pay
                 );
             }).toList();
 
