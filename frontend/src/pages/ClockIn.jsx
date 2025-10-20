@@ -14,8 +14,11 @@ function ClockIn() {
     }
     // add socketIO
     const newSocket = io("http://localhost:8000", {
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
+
     setSocket(newSocket);
     newSocket.on("connect", () => console.log("🟢 Connected to backend"));
     newSocket.on("disconnect", () => console.log("🔴 Disconnected"));
@@ -27,7 +30,7 @@ function ClockIn() {
     });
     return () => {
       newSocket.off();
-      newSocket.disconnect();
+      // newSocket.disconnect();
     };
   }, []);
   return (
