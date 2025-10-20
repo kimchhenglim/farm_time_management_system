@@ -8,6 +8,7 @@ from flask_socketio import SocketIO, emit
 import serial, serial.tools.list_ports
 import threading
 import time
+import json
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -46,7 +47,13 @@ def serial_listener():
 
             print("🎫 Card ID from Arduino:", line)
             # Send to webpage
-            socketio.emit("server_message", {"msg": f"{line}"})
+            data = {
+                "station": '1',
+                "id": line
+            }
+            # socketio.emit("server_message", {"msg": f"{line}"})
+            print(data)
+            socketio.emit("server_message", {"msg": data})
 
     except Exception as e:
         print("❌ Serial Error:", e)
