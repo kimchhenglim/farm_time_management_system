@@ -38,12 +38,18 @@ function CardStationManagement({ bg, symbol, text_color, border, text, path }) {
             text === "Break-in" ? "block" : "hidden"
           } absolute top-[85%] left-[75%] border-2 border-[#16A34A] w-[200px] h-fit  rounded-lg bg-[#FBFBFB] flex flex-col text-[#566074] `}
         >
-          <Link to={`${path}/meal-break`} className="p-2 cursor-pointer">
+          <Link
+            to={`${path}/meal-break`}
+            className="p-2 cursor-pointer hover:bg-[#16A34A] hover:text-white"
+          >
             Meal break
           </Link>
           {/* line break*/}
           <div className="bg-black h-[1px] w-full"></div>
-          <Link to={`${path}/emergency`} className="p-2 cursor-pointer">
+          <Link
+            to={`${path}/emergency`}
+            className="p-2 cursor-pointer  hover:bg-[#16A34A] hover:text-white"
+          >
             Emergency
           </Link>
         </div>

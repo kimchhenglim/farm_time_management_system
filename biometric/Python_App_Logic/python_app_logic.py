@@ -30,7 +30,7 @@ def home():
 @socketio.on("connect")
 def handle_connect():
     print("🌐 Client connected")
-    emit("server_message", {"msg": "🌐 Client connected"})
+    # emit("server_message", {"msg": "🌐 Client connected"})
 
 # ----- BACKGROUND THREAD: SERIAL LISTENER -----
 def serial_listener():

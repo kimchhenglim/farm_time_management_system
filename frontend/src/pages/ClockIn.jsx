@@ -1,38 +1,65 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
 import Clock from "../components/Clock";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import useScanStore from "../stores/useScanStore";
 function ClockIn() {
   // clear useAuthStore
   const { authUser, setAuthUser } = useAuthStore();
-  const [messages, setMessages] = useState([]);
   const [socket, setSocket] = useState(null);
+  const { type, reason } = useParams();
+  // using navigate
+  const navigate = useNavigate();
+  // get the function from useScanStore
+  const { clockIn, isScanning, clockOut, breakIn, breakOut } = useScanStore();
   useEffect(() => {
     if (authUser) {
       setAuthUser();
     }
-    // add socketIO
-    const newSocket = io("http://localhost:8000", {
+
+    const newSocket = io("http://localhost:5000", {
       transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
     setSocket(newSocket);
+
     newSocket.on("connect", () => console.log("🟢 Connected to backend"));
     newSocket.on("disconnect", () => console.log("🔴 Disconnected"));
 
-    // Receive messages from backend
-    newSocket.on("server_message", (data) => {
+    // 🧩 define an async handler for incoming messages
+    const handleServerMessage = async (data) => {
       console.log("📨 Received:", data);
-      setMessages((prev) => [...prev, data.cardId || data.text]);
-    });
+
+      try {
+        if (type === "clockIn") {
+          await clockIn(data.msg, "1"); // ✅ await call
+        } else if (type === "clockOut") {
+          await clockOut(data.msg, "1"); // ✅ await call
+        } else if (type === "breakIn") {
+          await breakIn(data.msg, reason);
+        } else if (type === "breakOut") {
+          await breakOut(data.msg, reason);
+        }
+
+        // navigate after operation finishes
+        navigate("/staff");
+      } catch (err) {
+        console.error("Error while clocking:", err);
+      }
+    };
+
+    // attach the async handler
+    newSocket.on("server_message", handleServerMessage);
+
     return () => {
-      newSocket.off();
-      // newSocket.disconnect();
+      newSocket.off("server_message", handleServerMessage);
     };
   }, []);
+
+  // clockIn(1, "1");
   return (
     <div className="w-full h-full p-10 flex flex-col gap-6">
       {/* clock */}
@@ -77,9 +104,15 @@ function ClockIn() {
         </div>
 
         {/* message */}
-        <div className="font-semibold text-5xl text-[#16A34A] animate-breathe">
-          Please tap your card
-        </div>
+        {isScanning ? (
+          <div className="font-semibold text-5xl text-[#16A34A] animate-fade-circle">
+            Identifying
+          </div>
+        ) : (
+          <div className="font-semibold text-5xl text-[#16A34A] animate-breathe">
+            Please tap your card
+          </div>
+        )}
       </div>
     </div>
   );
