@@ -68,7 +68,7 @@ function ClockIn() {
           <Clock />
         </div>
         <div className="flex gap-10">
-          <Link to="/staff/clockIn/manual">
+          <Link to={`/staff/manual/${type}${reason ? "/" + reason : ""}`}>
             <button className="w-[250px] h-[60px] border-[1px] border-[#16A34A] rounded-sm font-semibold text-[#16A34A] text-xl cursor-pointer">
               Manual
             </button>{" "}

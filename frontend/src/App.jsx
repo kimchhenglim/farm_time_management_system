@@ -53,7 +53,10 @@ function App() {
           />
           <Route path="/staff" element={<StationClockManagement />} />
           <Route path="/staff/scan/:type/:reason?" element={<ClockIn />} />
-          <Route path="/staff/scan/manual" element={<ManualClockIn />} />
+          <Route
+            path="/staff/manual/:type/:reason?"
+            element={<ManualClockIn />}
+          />
         </Routes>
       </main>
       <Toaster />
