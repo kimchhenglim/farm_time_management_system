@@ -6,69 +6,81 @@ import useStationStore from "../stores/useStationStore";
 import useScanStore from "../stores/useScanStore";
 
 function ManualClockIn() {
-  // use navigation
   const navigate = useNavigate();
-  // getting the param from URL
   const { type, reason } = useParams();
-  // ✅ station store
-  const { fetchStationList, stationList, stationLoading } = useStationStore();
-  // get the function from useScanStore
-  const { clockIn, isScanning, clockOut, breakIn, breakOut } = useScanStore();
-  // clear useAuthStore
+
+  const { stationList, stationLoading } = useStationStore();
+  const {
+    clockIn,
+    clockOut,
+    breakIn,
+    breakOut,
+    isScanning,
+    popupMessage,
+    setPopupMessage,
+  } = useScanStore();
+
   const { authUser, setAuthUser } = useAuthStore();
+
   useEffect(() => {
-    if (authUser) {
-      setAuthUser();
-    }
-    // fetchStationList();
+    if (authUser) setAuthUser();
   }, []);
 
   const [formData, setFormData] = useState({
     station: "",
     cardId: "",
   });
-  //handle form change
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Filter only ACTIVE stations
   const activeStations =
     stationList?.filter((s) => (s.status || "").toUpperCase() === "ACTIVE") ||
     [];
 
-  // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (type === "clockIn") {
-        await clockIn(formData.cardId, "1"); // ✅ await call
+        await clockIn(formData.cardId, "1");
       } else if (type === "clockOut") {
-        await clockOut(formData.cardId, "1"); // ✅ await call
+        await clockOut(formData.cardId, "1");
       } else if (type === "breakIn") {
         await breakIn(formData.cardId, reason);
       } else if (type === "breakOut") {
         await breakOut(formData.cardId, reason);
       }
 
-      // navigate after operation finishes
-      navigate("/staff");
+      // wait for popup to show
+      setTimeout(() => {
+        setPopupMessage(null);
+        navigate("/staff");
+      }, 2000); // ⏱️ 2 seconds
     } catch (err) {
       console.error("Error while clocking:", err);
+      setPopupMessage("❌ Something went wrong!");
+      setTimeout(() => {
+        setPopupMessage(null);
+        navigate("/staff");
+      }, 2000);
     }
   };
+
   return (
-    <div className="w-full h-full p-10 flex flex-col gap-6">
-      {/* clock */}
+    <div className="w-full h-full p-10 flex flex-col gap-6 relative">
+      {/* clock header */}
       <div className="flex items-center justify-between">
-        <div className="w-[250px] h-[60px] ">
+        <div className="w-[250px] h-[60px]">
           <Clock />
         </div>
       </div>
-      {/* loading page */}
-      <div className="w-full h-full  flex flex-col items-center justify-center gap-10">
+
+      {/* form */}
+      <div className="w-full h-full flex flex-col items-center justify-center gap-10">
         <form className="flex gap-[111px] flex-col" onSubmit={handleSubmit}>
+          {/* Station */}
           <div className="flex items-center gap-6">
             <label
               htmlFor="station"
@@ -103,7 +115,8 @@ function ManualClockIn() {
               )}
             </select>
           </div>
-          {/* cardID */}
+
+          {/* Card ID */}
           <div className="flex items-center gap-6">
             <label
               htmlFor="cardId"
@@ -120,16 +133,20 @@ function ManualClockIn() {
               className="w-[500px] h-[50px] border border-[#ADADAD] px-3 py-2 rounded bg-white focus:outline-green-500"
             />
           </div>
-          {/* buttons */}
+
+          {/* Buttons */}
           <div className="w-full h-full flex justify-end gap-10">
             <Link to="/staff">
-              <button className=" px-10 rounded-sm py-4 bg-[#F5F5F5] text-2xl text-[#565656] font-semibold cursor-pointer">
+              <button
+                type="button"
+                className="px-10 rounded-sm py-4 bg-[#F5F5F5] text-2xl text-[#565656] font-semibold cursor-pointer"
+              >
                 Back
               </button>
             </Link>
             <button
               type="submit"
-              className=" px-10 rounded-sm py-4 bg-[#16A34A] text-2xl text-white cursor-pointer"
+              className="px-10 rounded-sm py-4 bg-[#16A34A] text-2xl text-white cursor-pointer"
             >
               {isScanning ? (
                 <span className="loading loading-spinner loading-lg"></span>
@@ -140,6 +157,16 @@ function ManualClockIn() {
           </div>
         </form>
       </div>
+
+      {/* ✅ Auto Popup Modal */}
+      {popupMessage && (
+        <div className="fixed inset-0 bg-[#000000]/40 bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-10 text-center w-1/2 max-w-[600px]">
+            <h2 className="text-3xl font-bold text-[#16A34A] mb-6">Message</h2>
+            <p className="text-2xl text-gray-700">{popupMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

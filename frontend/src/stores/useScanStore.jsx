@@ -1,158 +1,72 @@
 import { create } from "zustand";
 import { axiosInstances } from "../libs/axios";
-import toast from "react-hot-toast";
 
-const useScanStore = create((set, get) => ({
+const useScanStore = create((set) => ({
   isScanning: false,
-  // function to send the cardId to server
+  popupMessage: null,
+  setPopupMessage: (msg) => set({ popupMessage: msg }),
+
   clockIn: async (cardId, stationId) => {
-    console.log(cardId, stationId);
     try {
       set({ isScanning: true });
       const res = await axiosInstances.post("/clocking/in", {
-        cardId: cardId,
-        stationId: stationId,
+        cardId,
+        stationId,
       });
-      if (res) {
-        toast.success("Clock In Successfully!");
-      }
+      if (res) set({ popupMessage: "✅ Clock In Successfully!" });
     } catch (error) {
-      if (error.response) {
-        // ✅ Server responded, but not in 2xx range
-        const status = error.response.status;
-
-        if (status === 409) {
-          console.log(error);
-          toast.error(error.response.data.message);
-        } else if (status === 400) {
-          toast.error("❌ Invalid request!");
-        } else if (status === 500) {
-          toast.error("💥 Server error, please try again later.");
-        } else {
-          toast.error(`Unexpected error (${status})`);
-        }
-      } else if (error.request) {
-        // ❌ No response received (e.g., server offline)
-        toast.error("No response from server!");
-      } else {
-        // ❌ Something else went wrong in setup
-        toast.error("Error: " + error.message);
-      }
-
-      console.error("Unexpected error in ClockOut:", error);
+      const msg =
+        "❌ " + error?.response?.data?.message || "❌ Clock In Failed!";
+      set({ popupMessage: msg });
+      console.error(error);
     } finally {
       set({ isScanning: false });
     }
   },
+
   clockOut: async (cardId, stationId) => {
-    console.log(cardId, stationId);
     try {
       set({ isScanning: true });
       const res = await axiosInstances.post("/clocking/out", {
-        cardId: cardId,
-        stationId: stationId,
+        cardId,
+        stationId,
       });
-      if (res) {
-        toast.success("Clock out Successfully!");
-      }
+      if (res) set({ popupMessage: "✅ Clock Out Successfully!" });
     } catch (error) {
-      if (error.response) {
-        // ✅ Server responded, but not in 2xx range
-        const status = error.response.status;
-
-        if (status === 409) {
-          toast.error(error.response.data.message);
-        } else if (status === 400) {
-          toast.error("❌ Invalid request!");
-        } else if (status === 500) {
-          toast.error("💥 Server error, please try again later.");
-        } else {
-          toast.error(`Unexpected error (${status})`);
-        }
-      } else if (error.request) {
-        // ❌ No response received (e.g., server offline)
-        toast.error("No response from server!");
-      } else {
-        // ❌ Something else went wrong in setup
-        toast.error("Error: " + error.message);
-      }
-
-      console.error("Unexpected error in ClockOut:", error);
+      const msg =
+        "❌ " + error?.response?.data?.message || "❌ Clock Out Failed!";
+      set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
     }
   },
+
   breakIn: async (cardId, reason) => {
-    // console.log(cardId, stationId);
     try {
       set({ isScanning: true });
       const res = await axiosInstances.post("/clocking/break/start", {
-        cardId: cardId,
-        reason: reason,
+        cardId,
+        reason,
       });
-      if (res) {
-        toast.success("Break In for " + reason + " Successfully!");
-      }
+      if (res) set({ popupMessage: `☕ Break In (${reason}) Successfully!` });
     } catch (error) {
-      if (error.response) {
-        // ✅ Server responded, but not in 2xx range
-        const status = error.response.status;
-
-        if (status === 409) {
-          toast.error(error.response.data.message);
-        } else if (status === 400) {
-          toast.error("❌ Invalid request!");
-        } else if (status === 500) {
-          toast.error("💥 Server error, please try again later.");
-        } else {
-          toast.error(`Unexpected error (${status})`);
-        }
-      } else if (error.request) {
-        // ❌ No response received (e.g., server offline)
-        toast.error("No response from server!");
-      } else {
-        // ❌ Something else went wrong in setup
-        toast.error("Error: " + error.message);
-      }
-
-      console.error("Unexpected error in BreakIn:", error);
+      const msg =
+        "❌ " + error?.response?.data?.message || "❌ Break In Failed!";
+      set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
     }
   },
-  breakOut: async (cardId, reason) => {
-    // console.log(cardId, stationId);
+
+  breakOut: async (cardId) => {
     try {
       set({ isScanning: true });
-      const res = await axiosInstances.post("/clocking/break/end", {
-        cardId: cardId,
-      });
-      if (res) {
-        toast.success("Break Out Successfully!");
-      }
+      const res = await axiosInstances.post("/clocking/break/end", { cardId });
+      if (res) set({ popupMessage: "✅ Break Out Successfully!" });
     } catch (error) {
-      if (error.response) {
-        // ✅ Server responded, but not in 2xx range
-        const status = error.response.status;
-
-        if (status === 409) {
-          toast.error(error.response.data.message);
-        } else if (status === 400) {
-          toast.error("❌ Invalid request!");
-        } else if (status === 500) {
-          toast.error("💥 Server error, please try again later.");
-        } else {
-          toast.error(`Unexpected error (${status})`);
-        }
-      } else if (error.request) {
-        // ❌ No response received (e.g., server offline)
-        toast.error("No response from server!");
-      } else {
-        // ❌ Something else went wrong in setup
-        toast.error("Error: " + error.message);
-      }
-
-      console.error("Unexpected error in breakOut:", error);
+      const msg =
+        "❌ " + error?.response?.data?.message || "❌ Break Out Failed!";
+      set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
     }
