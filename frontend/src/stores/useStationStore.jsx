@@ -89,8 +89,12 @@ const useStationStore = create((set, get) => ({
       }
 
       console.log("Station updated:", updatedStation);
+      toast.success("Changed Successfully!");
     } catch (error) {
       console.error("Error updating station:", error);
+      if (error?.status === 500) {
+        toast.error("Station name cannot be the same!");
+      }
     }
   },
 }));

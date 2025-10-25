@@ -76,14 +76,14 @@ function SideNavBar() {
         <Link
           to="/"
           className={`w-full hover:bg-[#F0FDF4] ${
-            currentPath === "/roster"
+            currentPath === "/"
               ? "border-l-[4px] border-[#16A34A] bg-[#F0FDF4]"
               : ""
           }`}
         >
           <button
             className={`flex items-center gap-2.5 h-[76px] text-left px-[24px]  py-2 rounded-lg   font-medium cursor-pointer ${
-              currentPath === "/roster" ? "text-[#16A34A]" : "text-gray-700"
+              currentPath === "/" ? "text-[#16A34A]" : "text-gray-700"
             }`}
           >
             <img
