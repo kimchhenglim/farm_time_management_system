@@ -4,19 +4,25 @@ import Clock from "../components/Clock";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import useScanStore from "../stores/useScanStore";
+
 function ClockIn() {
-  // clear useAuthStore
   const { authUser, setAuthUser } = useAuthStore();
   const [socket, setSocket] = useState(null);
   const { type, reason } = useParams();
-  // using navigate
   const navigate = useNavigate();
-  // get the function from useScanStore
-  const { clockIn, isScanning, clockOut, breakIn, breakOut } = useScanStore();
+
+  const {
+    clockIn,
+    isScanning,
+    clockOut,
+    breakIn,
+    breakOut,
+    popupMessage,
+    setPopupMessage,
+  } = useScanStore();
+
   useEffect(() => {
-    if (authUser) {
-      setAuthUser();
-    }
+    if (authUser) setAuthUser();
 
     const newSocket = io("http://localhost:5000", {
       transports: ["websocket", "polling"],
@@ -29,66 +35,72 @@ function ClockIn() {
     newSocket.on("connect", () => console.log("🟢 Connected to backend"));
     newSocket.on("disconnect", () => console.log("🔴 Disconnected"));
 
-    // 🧩 define an async handler for incoming messages
+    // 🧩 Handle incoming messages from backend
     const handleServerMessage = async (data) => {
       console.log("📨 Received:", data);
 
       try {
         if (type === "clockIn") {
-          await clockIn(data.msg, "1"); // ✅ await call
+          await clockIn(data.msg, "1");
         } else if (type === "clockOut") {
-          await clockOut(data.msg, "1"); // ✅ await call
+          await clockOut(data.msg, "1");
         } else if (type === "breakIn") {
           await breakIn(data.msg, reason);
         } else if (type === "breakOut") {
           await breakOut(data.msg, reason);
         }
 
-        // navigate after operation finishes
-        navigate("/staff");
+        // show popup for 2 s then navigate
+        setTimeout(() => {
+          setPopupMessage(null);
+          navigate("/staff");
+        }, 2000);
       } catch (err) {
         console.error("Error while clocking:", err);
+        setPopupMessage("❌ Something went wrong!");
+        setTimeout(() => {
+          setPopupMessage(null);
+          navigate("/staff");
+        }, 2000);
       }
     };
 
-    // attach the async handler
     newSocket.on("server_message", handleServerMessage);
 
     return () => {
       newSocket.off("server_message", handleServerMessage);
+      newSocket.disconnect();
     };
   }, []);
 
-  // clockIn(1, "1");
   return (
-    <div className="w-full h-full p-10 flex flex-col gap-6">
-      {/* clock */}
+    <div className="w-full h-full p-10 flex flex-col gap-6 relative">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="w-[250px] h-[60px] ">
           <Clock />
         </div>
         <div className="flex gap-10">
           <Link to={`/staff/manual/${type}${reason ? "/" + reason : ""}`}>
-            <button className="w-[250px] h-[60px] border-[1px] border-[#16A34A] rounded-sm font-semibold text-[#16A34A] text-xl cursor-pointer">
+            <button className="w-[250px] h-[60px] border border-[#16A34A] rounded-sm font-semibold text-[#16A34A] text-xl cursor-pointer">
               Manual
-            </button>{" "}
+            </button>
           </Link>
           <Link to="/staff">
-            <button className="w-[250px] h-[60px] border-[1px] border-[#16A34A] rounded-sm font-semibold text-[#16A34A] text-xl cursor-pointer">
+            <button className="w-[250px] h-[60px] border border-[#16A34A] rounded-sm font-semibold text-[#16A34A] text-xl cursor-pointer">
               Cancel
             </button>
           </Link>
         </div>
       </div>
-      {/* loading page */}
+
+      {/* Center animation */}
       <div className="w-full h-full flex flex-col gap-10 items-center justify-center">
         <div className="relative flex items-center justify-center w-full h-full">
-          {/* Outer pulsing ring */}
           <div className="absolute w-[500px] h-[500px] rounded-full border border-[#16A34A] animate-fade-circle"></div>
           <div className="absolute w-[400px] h-[400px] rounded-full border border-[#16A34A] animate-fade-circle delay-150"></div>
           <div className="absolute w-[300px] h-[300px] rounded-full border border-[#16A34A] animate-fade-circle delay-300"></div>
 
-          {/* Icon */}
           <svg
             width="150"
             height="150"
@@ -114,6 +126,16 @@ function ClockIn() {
           </div>
         )}
       </div>
+
+      {/* ✅ Auto Popup Modal */}
+      {popupMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-10 text-center w-1/2 max-w-[600px] transition-opacity duration-200">
+            <h2 className="text-3xl font-bold text-[#16A34A] mb-6">Message</h2>
+            <p className="text-2xl text-gray-700">{popupMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

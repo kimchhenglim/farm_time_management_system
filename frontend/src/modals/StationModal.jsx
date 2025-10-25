@@ -8,6 +8,7 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
   const [loadingId, setLoadingId] = useState(null);
   const [newStation, setNewStation] = useState({ name: "", status: "ACTIVE" });
   const [isAdding, setIsAdding] = useState(false);
+  const [errorMap, setErrorMap] = useState({}); // 👈 Track errors for each station
 
   const { editStation, createStation, fetchStationList } = useStationStore();
 
@@ -21,23 +22,31 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
     setEditableStations((prev) =>
       prev.map((s) => (s.stationId === id ? { ...s, [field]: value } : s))
     );
+    setErrorMap((prev) => ({ ...prev, [id]: null })); // clear error when user changes input
   };
 
   const handleEdit = async (id) => {
     const station = editableStations.find((s) => s.stationId === id);
-    if (station) {
-      setLoadingId(id);
-      try {
-        await editStation(
-          station.stationId,
-          station.stationName,
-          station.status
-        );
-        setEditId(null);
-        await fetchStationList(); // refresh
-      } finally {
-        setLoadingId(null);
-      }
+    if (!station) return;
+
+    setLoadingId(id);
+    try {
+      // Try saving changes
+      await editStation(station.stationId, station.stationName, station.status);
+
+      // ✅ Success — refresh + close edit mode
+      await fetchStationList();
+      setEditId(null);
+    } catch (error) {
+      // ❌ Failure — show error but KEEP input open
+      console.error("Edit failed:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update station. Please check input.";
+      setErrorMap((prev) => ({ ...prev, [id]: message }));
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -78,140 +87,151 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
           {editableStations?.map((station) => {
             const isEditing = editId === station.stationId;
             const isLoading = loadingId === station.stationId;
+            const errorMsg = errorMap[station.stationId];
 
             return (
-              <div
-                key={station.stationId}
-                className="flex items-center justify-between gap-2"
-              >
-                {/* Station name */}
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={station.stationName}
-                    onChange={(e) =>
-                      handleChanges(
-                        station.stationId,
-                        "stationName",
-                        e.target.value
-                      )
-                    }
-                    className="w-[120px] border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                  />
-                ) : (
-                  <div
-                    className="font-[500] text-[16px] w-[120px] truncate"
-                    title={station.stationName}
-                  >
-                    {station.stationName}
-                  </div>
-                )}
-
-                {/* Status */}
-                {isEditing ? (
-                  <select
-                    value={station.status}
-                    onChange={(e) =>
-                      handleChanges(station.stationId, "status", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                  >
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                  </select>
-                ) : (
-                  <div
-                    className={`py-2 px-6 rounded-full font-medium text-sm whitespace-nowrap ${
-                      station.status.toLowerCase() === "active"
-                        ? "bg-[#F0FDF4] text-[#16A34A]"
-                        : "bg-[#F5F5F5] text-[#8D8D8D]"
-                    }`}
-                  >
-                    {station.status.charAt(0).toUpperCase() +
-                      station.status.slice(1).toLowerCase()}
-                  </div>
-                )}
-
-                {/* Action icons */}
-                <div className="flex items-center gap-2">
+              <div key={station.stationId} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between gap-2">
+                  {/* Station name */}
                   {isEditing ? (
-                    isLoading ? (
+                    <input
+                      type="text"
+                      value={station.stationName}
+                      onChange={(e) =>
+                        handleChanges(
+                          station.stationId,
+                          "stationName",
+                          e.target.value
+                        )
+                      }
+                      className={`w-[120px] border ${
+                        errorMsg ? "border-red-500" : "border-gray-300"
+                      } rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500`}
+                    />
+                  ) : (
+                    <div
+                      className="font-[500] text-[16px] w-[120px] truncate"
+                      title={station.stationName}
+                    >
+                      {station.stationName}
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  {isEditing ? (
+                    <select
+                      value={station.status}
+                      onChange={(e) =>
+                        handleChanges(
+                          station.stationId,
+                          "status",
+                          e.target.value
+                        )
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                    >
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  ) : (
+                    <div
+                      className={`py-2 px-6 rounded-full font-medium text-sm whitespace-nowrap ${
+                        station.status.toLowerCase() === "active"
+                          ? "bg-[#F0FDF4] text-[#16A34A]"
+                          : "bg-[#F5F5F5] text-[#8D8D8D]"
+                      }`}
+                    >
+                      {station.status.charAt(0).toUpperCase() +
+                        station.status.slice(1).toLowerCase()}
+                    </div>
+                  )}
+
+                  {/* Action icons */}
+                  <div className="flex items-center gap-2">
+                    {isEditing ? (
+                      isLoading ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="animate-spin text-green-600"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="6"
+                            cy="6"
+                            r="5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M6 0a6 6 0 0 1 6 6H9.6a3.6 3.6 0 0 0-3.6-3.6V0z"
+                          />
+                        </svg>
+                      ) : (
+                        <>
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="cursor-pointer"
+                            onClick={() => handleEdit(station.stationId)}
+                          >
+                            <path
+                              d="M20 6L9 17L4 12"
+                              stroke="#16A34A"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="cursor-pointer"
+                            onClick={() => setEditId(null)}
+                          >
+                            <path
+                              d="M6 6L18 18M6 18L18 6"
+                              stroke="#DC2626"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </>
+                      )
+                    ) : (
                       <svg
                         width="12"
                         height="12"
-                        viewBox="0 0 12 12"
+                        viewBox="0 0 20 20"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="animate-spin text-green-600"
+                        className="cursor-pointer"
+                        onClick={() => setEditId(station.stationId)}
                       >
-                        <circle
-                          className="opacity-25"
-                          cx="6"
-                          cy="6"
-                          r="5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
                         <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M6 0a6 6 0 0 1 6 6H9.6a3.6 3.6 0 0 0-3.6-3.6V0z"
+                          d="M13.7848 0.828029L12.0308 2.58173L17.4178 7.96783L19.1718 6.21412C19.7031 5.68684 20 4.96817 20 4.21826C20 3.46835 19.7031 2.74968 19.1718 2.2224L17.7772 0.828029C17.2499 0.29684 16.5311 0 15.781 0C15.031 0 14.3122 0.29684 13.7848 0.828029ZM10.7066 3.9058L2.29987 12.3072C1.88188 12.7251 1.57718 13.2485 1.41702 13.8187L0.0341331 18.8103C-0.0557153 19.1345 0.034133 19.486 0.276333 19.7243C0.518533 19.9625 0.866207 20.0563 1.19044 19.9664L6.18289 18.5799C6.75323 18.4197 7.27279 18.119 7.69468 17.6972L16.0935 9.29189L10.7066 3.9058Z"
+                          fill="#566074"
                         />
                       </svg>
-                    ) : (
-                      <>
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="cursor-pointer"
-                          onClick={() => handleEdit(station.stationId)}
-                        >
-                          <path
-                            d="M20 6L9 17L4 12"
-                            stroke="#16A34A"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="cursor-pointer"
-                          onClick={() => setEditId(null)}
-                        >
-                          <path
-                            d="M6 6L18 18M6 18L18 6"
-                            stroke="#DC2626"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </>
-                    )
-                  ) : (
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="cursor-pointer"
-                      onClick={() => setEditId(station.stationId)}
-                    >
-                      <path
-                        d="M13.7848 0.828029L12.0308 2.58173L17.4178 7.96783L19.1718 6.21412C19.7031 5.68684 20 4.96817 20 4.21826C20 3.46835 19.7031 2.74968 19.1718 2.2224L17.7772 0.828029C17.2499 0.29684 16.5311 0 15.781 0C15.031 0 14.3122 0.29684 13.7848 0.828029ZM10.7066 3.9058L2.29987 12.3072C1.88188 12.7251 1.57718 13.2485 1.41702 13.8187L0.0341331 18.8103C-0.0557153 19.1345 0.034133 19.486 0.276333 19.7243C0.518533 19.9625 0.866207 20.0563 1.19044 19.9664L6.18289 18.5799C6.75323 18.4197 7.27279 18.119 7.69468 17.6972L16.0935 9.29189L10.7066 3.9058Z"
-                        fill="#566074"
-                      />
-                    </svg>
-                  )}
+                    )}
+                  </div>
                 </div>
+
+                {/* Inline error message */}
+                {errorMsg && (
+                  <div className="text-xs text-red-500 ml-1">{errorMsg}</div>
+                )}
               </div>
             );
           })}
@@ -227,16 +247,7 @@ function StationModal({ isOpenModal, setIsOpenModal, stationList }) {
               }
               className="w-[120px]  px-2 py-1 text-sm focus:outline-none "
             />
-            {/* <select
-              value={newStation.status}
-              onChange={(e) =>
-                setNewStation({ ...newStation, status: e.target.value })
-              }
-              className="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select> */}
+
             <div className="p-2 bg-[#F5F5F5] rounded-sm hover:bg-[#EAEAEA] transition flex items-center justify-center w-[26px] h-[26px]">
               {isAdding ? (
                 <svg
