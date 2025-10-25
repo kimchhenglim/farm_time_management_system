@@ -4,12 +4,9 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
@@ -44,4 +41,11 @@ public class ClockingFilterDTO {
 
     @Pattern(regexp = "(?i)asc|desc", message = "Sort direction must be 'asc' or 'desc'")
     private String sortDir = "asc";
+
+    public ClockingFilterDTO(LocalDate startDate, LocalDate endDate, String employeeId) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.employeeId = employeeId;
+    }
+
 }
