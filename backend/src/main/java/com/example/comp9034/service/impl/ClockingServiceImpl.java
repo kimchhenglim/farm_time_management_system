@@ -19,21 +19,17 @@ import static com.example.comp9034.enums.ErrorCodeEnum.UPDATE_CLOCKING_SUCCESS;
 import static com.example.comp9034.enums.ErrorCodeEnum.USER_NOT_FOUND;
 import static com.example.comp9034.response_template.CompleteResponse.getCompleteResponse;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.example.comp9034.dto.request.BreakEndDTO;
@@ -96,7 +92,7 @@ public class ClockingServiceImpl implements ClockingService {
             }
 
             //check valid station
-            if(!stationRepository.existsById(Long.valueOf(dto.getStationId()))) {
+            if(!stationRepository.existsById((long) dto.getStationId())) {
                 String message = "Invalid station. Please try again.";
                 log.error(message);
                 throw new BusinessException(STATION_NOT_FOUND, COMMON.name(), message);
@@ -144,7 +140,7 @@ public class ClockingServiceImpl implements ClockingService {
 
             //check if staff is in a break
             var existingBreak = breakRepository.findByClockingIdAndBreakEndTimeIsNull(existingClocking.get().getId());
-            if (!existingBreak.isEmpty()) {
+            if (existingBreak.isPresent()) {
                 return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
             }
 
@@ -182,12 +178,9 @@ public class ClockingServiceImpl implements ClockingService {
 
             //check if staff already in break
             var existingBreak = breakRepository.findByClockingIdAndBreakEndTimeIsNull(existingClocking.get().getId());
-            if (!existingBreak.isEmpty()) {
+            if (existingBreak.isPresent()) {
                 return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
             }
-
-
-
             var breakStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
             BreakEntity entity = new BreakEntity();
             entity.setClockingId(existingClocking.get().getId());
