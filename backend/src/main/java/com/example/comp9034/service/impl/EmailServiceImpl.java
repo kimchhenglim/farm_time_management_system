@@ -65,4 +65,26 @@ public class EmailServiceImpl implements EmailService {
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), e.getMessage());
         }
     }
+
+    @Override
+    public void sendPayrollCsvEmail(String to, LocalDate start, LocalDate end, byte[] csvBytes, String htmlBody) {
+        try {
+            String filename = String.format("payroll_%s_%s.csv", start, end);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("Whitefield Farm <no-reply@whitefield.com>");
+            helper.setTo(to);
+            helper.setSubject("Payroll CSV: " + start + " to " + end);
+            helper.setText(htmlBody != null ? htmlBody : "Please find the payroll CSV attached.", true);
+
+            // IMPORTANT: content type "text/csv"
+            helper.addAttachment(filename, new ByteArrayResource(csvBytes), "text/csv");
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), e.getMessage());
+        }
+    }
 }
