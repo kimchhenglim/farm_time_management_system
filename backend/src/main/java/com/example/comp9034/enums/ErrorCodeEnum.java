@@ -40,6 +40,7 @@ public enum ErrorCodeEnum {
     END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
     CREATE_PAYROLL_SUCCESS("E000", "Payroll created successfully", PAYROLL, HttpStatusCodeEnum.OK),
     CREATE_PAYROLL_PDF_SUCCESS("E000", "Payroll PDF created successfully", PAYROLL, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_CSV_SUCCESS("E000", "Payroll CSV created successfully", PAYROLL, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),

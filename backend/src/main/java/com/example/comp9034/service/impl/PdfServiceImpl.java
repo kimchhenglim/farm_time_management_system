@@ -2,7 +2,6 @@ package com.example.comp9034.service.impl;
 
 import com.example.comp9034.dto.EmployeePayrollDTO;
 import com.example.comp9034.exception_handler.BusinessException;
-import com.example.comp9034.repository.ErrorCodeRepository;
 import com.example.comp9034.service.PdfService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -35,9 +34,6 @@ public class PdfServiceImpl implements PdfService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final NumberFormat CURRENCY = NumberFormat.getCurrencyInstance(Locale.US); // change to Locale for your currency
-
-    public PdfServiceImpl() {
-    }
 
     @Override
     public byte[] generatePayrollPDF(List<EmployeePayrollDTO> dtoList, LocalDate start, LocalDate end) {
@@ -151,7 +147,6 @@ public class PdfServiceImpl implements PdfService {
             Paragraph foot = new Paragraph("Generated at: " + java.time.LocalDateTime.now(), FONT_SUB);
             foot.setSpacingBefore(12f);
             document.add(foot);
-
         } catch (Exception ex) {
             throw new BusinessException(INTERNAL_SERVER_ERROR, COMMON.name(), "Failed to build payroll PDF");
         } finally {
@@ -189,4 +184,6 @@ public class PdfServiceImpl implements PdfService {
         cell.setPadding(6f);
         table.addCell(cell);
     }
+
+
 }

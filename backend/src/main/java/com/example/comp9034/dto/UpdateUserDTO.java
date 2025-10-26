@@ -31,9 +31,9 @@ public class UpdateUserDTO {
     @Size(max = 255, message = "Address too long")
     private String address;
 
+    @Size(max = 9, message = "Card ID must be at most 50 characters")
     private String cardId;
 
-//    @Pattern(regexp = "FULLTIME|PARTTIME|CASUAL", message = "Contract type can only be FULLTIME | PARTTIME | CASUAL")
     private UserEnum contractType;
 
     @Pattern(regexp = "ADMIN|STAFF", message = "Role can only be ADMIN | STAFF")

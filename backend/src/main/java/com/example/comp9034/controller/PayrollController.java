@@ -9,5 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/payroll/")
 public interface PayrollController {
     @PostMapping("/email")
-    ResponseEntity<ResponseBody<Object>> emailClocking(@Valid @RequestBody GeneratePayrollRequestDTO dto);
+    ResponseEntity<ResponseBody<Object>> emailPayroll(@Valid @RequestBody GeneratePayrollRequestDTO dto);
+
+    @PostMapping("/csv")
+    ResponseEntity<ResponseBody<Object>> csvPayroll(@Valid @RequestBody GeneratePayrollRequestDTO dto);
+
+
 }
