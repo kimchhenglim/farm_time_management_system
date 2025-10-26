@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import useAttendanceStore from "../stores/useAttendanceStore";
 import AttendanceModal from "../modals/AttendanceModal";
-function StaffTable({ weekStart, weekEnd, onRowClick }) {
+import useAttendanceStore from "../stores/useAttendanceStore";
+
+function PayrollTable({ weekStart, weekEnd, onRowClick }) {
   // for modal create
   const [isModalOpen, setIsModalOpen] = useState(false);
   //using useAttendanceStore
   const { fetchStaffTable, page, totalPages, totalElements, staffTable } =
     useAttendanceStore();
-  //using useEffect to get the data for staffTable
-  useEffect(() => {
-    fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
-  }, [fetchStaffTable, weekEnd, weekStart]);
+  // //using useEffect to get the data for staffTable
+  // useEffect(() => {
+  //   fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
+  // }, [fetchStaffTable, weekEnd, weekStart]);
   // Sorting state
   const [sortKey, setSortKey] = useState(null);
   const [direction, setDirection] = useState("asc");
@@ -94,23 +95,55 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#DEDEDE] border-2 rounded-md text-[#566074] bg-[#F5F5F5] font-semibold text-[16px]">
             Export
           </div>
-          <div
-            className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
-            onClick={() => setIsModalOpen(true)}
-          >
+          <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]">
             <svg
-              width="14"
-              height="15"
-              viewBox="0 0 14 15"
-              fill="none"
+              width="25px"
+              height="25px"
+              viewBox="0 -4 32 32"
+              version="1.1"
               xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+              xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+              fill="#16A34A"
             >
-              <path
-                d="M8 1.5C8 0.946875 7.55312 0.5 7 0.5C6.44688 0.5 6 0.946875 6 1.5V6.5H1C0.446875 6.5 0 6.94688 0 7.5C0 8.05312 0.446875 8.5 1 8.5H6V13.5C6 14.0531 6.44688 14.5 7 14.5C7.55312 14.5 8 14.0531 8 13.5V8.5H13C13.5531 8.5 14 8.05312 14 7.5C14 6.94688 13.5531 6.5 13 6.5H8V1.5Z"
-                fill="#16A34A"
-              />
+              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <title>mail</title> <desc>Created with Sketch Beta.</desc>{" "}
+                <defs> </defs>{" "}
+                <g
+                  id="Page-1"
+                  stroke="none"
+                  strokeWidth="1"
+                  fill="none"
+                  fillRule="evenodd"
+                  sketch:type="MSPage"
+                >
+                  {" "}
+                  <g
+                    id="Icon-Set"
+                    sketch:type="MSLayerGroup"
+                    transform="translate(-412.000000, -259.000000)"
+                    fill="#16A34A"
+                  >
+                    {" "}
+                    <path
+                      d="M442,279 C442,279.203 441.961,279.395 441.905,279.578 L433,270 L442,263 L442,279 L442,279 Z M415.556,280.946 L424.58,271.33 L428,273.915 L431.272,271.314 L440.444,280.946 C440.301,280.979 415.699,280.979 415.556,280.946 L415.556,280.946 Z M414,279 L414,263 L423,270 L414.095,279.578 C414.039,279.395 414,279.203 414,279 L414,279 Z M441,261 L428,271 L415,261 L441,261 L441,261 Z M440,259 L416,259 C413.791,259 412,260.791 412,263 L412,279 C412,281.209 413.791,283 416,283 L440,283 C442.209,283 444,281.209 444,279 L444,263 C444,260.791 442.209,259 440,259 L440,259 Z"
+                      id="mail"
+                      sketch:type="MSShapeGroup"
+                    >
+                      {" "}
+                    </path>{" "}
+                  </g>{" "}
+                </g>{" "}
+              </g>
             </svg>
-            New record
+            Send To Staff
           </div>
         </div>
       </div>
@@ -121,14 +154,14 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           <thead className="text-center text-sm text-[#ADADAD] border-[#D6D6D6]">
             <tr>
               {[
-                { label: "Date", key: "date" },
-                { label: "Staff", key: "employeeName" },
-                { label: "Clock-in", key: "clockInTime" },
-                { label: "Clock-out", key: "clockOutTime" },
-                { label: "Break", key: "breakMinutes" },
-                { label: "Pay rate", key: "payRate" },
-                { label: "Hours", key: "hours" },
-                { label: "Total", key: "total" },
+                { label: "Staff name", key: "employeeName" },
+                { label: "Regular Hours", key: "regularHours" },
+                { label: "OT Hours", key: "OThours" },
+                { label: "Regular Wage", key: "regularWage" },
+                { label: "OT Wage", key: "OTwage" },
+                { label: "Total Wage", key: "payRate" },
+                { label: "Period Start", key: "hours" },
+                { label: "Period End", key: "total" },
               ].map(({ label, key }) => (
                 <th
                   key={key}
@@ -146,49 +179,28 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           <tbody className="text-sm text-center [&>tr>td]:px-6 [&>tr>td]:py-4 ">
             {currentPageStaff.length > 0 ? (
               currentPageStaff.map((person) => {
-                const statusColor =
-                  person.status !== "Pending"
-                    ? "bg-[#F0FDF4] text-[#16A34A]"
-                    : "bg-[#F5F5F5] text-[#566074]";
                 return (
                   <tr
                     key={person.id}
-                    onClick={() => onRowClick && onRowClick(person)}
+                    // onClick={() => onRowClick && onRowClick(person)}
                     className="text-[#565656] hover:bg-[#e4e4e4] transition-colors duration-200 p-10 cursor-pointer"
                   >
                     {/* Row data */}
-                    <td className=" border-b border-[#D6D6D6] text-[#ADADAD]">
-                      {person.date}
-                    </td>
-                    <td className=" border-b border-[#D6D6D6] font-semibold">
-                      {person.employeeName}
-                    </td>
+
+                    <td className=" border-b border-[#D6D6D6] font-semibold"></td>
                     <td className=" border-b border-[#D6D6D6]  ">
-                      <div className="flex gap-2 items-center justify-center">
-                        <span>{person.clockInTime}</span>
-                      </div>
+                      <div className="flex gap-2 items-center justify-center"></div>
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
-                      <div className="flex gap-2 items-center justify-center">
-                        <span>{person.clockOutTime}</span>
-                      </div>
+                      <div className="flex gap-2 items-center justify-center"></div>
                     </td>
                     <td className=" border-b border-[#D6D6D6]">
-                      <div className="flex gap-2 items-center justify-center">
-                        <span>
-                          {person.breakMinutes ? person.breakMinutes : "—"}
-                        </span>
-                      </div>
+                      <div className="flex gap-2 items-center justify-center"></div>
                     </td>
-                    <td className=" border-b border-[#D6D6D6]">
-                      ${person.payRate}
-                    </td>
-                    <td className=" border-b border-[#D6D6D6]">
-                      {person.hours}
-                    </td>
-                    <td className=" border-b border-[#D6D6D6]">
-                      ${person.total}
-                    </td>
+                    <td className=" border-b border-[#D6D6D6]">$</td>
+                    <td className=" border-b border-[#D6D6D6]"></td>
+                    <td className=" border-b border-[#D6D6D6]"></td>
+                    <td className=" border-b border-[#D6D6D6]"></td>
                   </tr>
                 );
               })
@@ -256,4 +268,4 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   );
 }
 
-export default StaffTable;
+export default PayrollTable;
