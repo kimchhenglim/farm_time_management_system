@@ -41,13 +41,13 @@ function ClockIn() {
 
       try {
         if (type === "clockIn") {
-          await clockIn(data.msg, "1");
+          await clockIn(data.msg);
         } else if (type === "clockOut") {
-          await clockOut(data.msg, "1");
+          await clockOut(data.msg);
         } else if (type === "breakIn") {
           await breakIn(data.msg, reason);
         } else if (type === "breakOut") {
-          await breakOut(data.msg, reason);
+          await breakOut(data.msg);
         }
 
         // show popup for 2 s then navigate

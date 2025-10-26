@@ -102,15 +102,15 @@ function PayrollTable({ weekStart, weekEnd, onRowClick }) {
               viewBox="0 -4 32 32"
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
               xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
               fill="#16A34A"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
               <g
                 id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               ></g>
               <g id="SVGRepo_iconCarrier">
                 {" "}
@@ -119,9 +119,9 @@ function PayrollTable({ weekStart, weekEnd, onRowClick }) {
                 <g
                   id="Page-1"
                   stroke="none"
-                  stroke-width="1"
+                  strokeWidth="1"
                   fill="none"
-                  fill-rule="evenodd"
+                  fillRule="evenodd"
                   sketch:type="MSPage"
                 >
                   {" "}

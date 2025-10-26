@@ -44,13 +44,13 @@ function ManualClockIn() {
     e.preventDefault();
     try {
       if (type === "clockIn") {
-        await clockIn(formData.cardId, "1");
+        await clockIn({ id: formData.cardId, station: "1" });
       } else if (type === "clockOut") {
-        await clockOut(formData.cardId, "1");
+        await clockOut({ id: formData.cardId, station: "1" });
       } else if (type === "breakIn") {
-        await breakIn(formData.cardId, reason);
+        await breakIn({ id: formData.cardId, station: "1" }, reason);
       } else if (type === "breakOut") {
-        await breakOut(formData.cardId, reason);
+        await breakOut({ id: formData.cardId, station: "1" });
       }
 
       // wait for popup to show
