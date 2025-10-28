@@ -31,7 +31,7 @@ public class UpdateUserDTO {
     @Size(max = 255, message = "Address too long")
     private String address;
 
-    @Size(max = 9, message = "Card ID must be at most 50 characters")
+    @Size(max = 50, message = "Card ID must be at most 50 characters")
     private String cardId;
 
     private UserEnum contractType;
