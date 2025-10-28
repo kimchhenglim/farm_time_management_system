@@ -57,7 +57,6 @@ public class EmailServiceImpl implements EmailService {
             helper.setSubject("Payroll Report: " + start + " to " + end);
             helper.setText(htmlBody != null ? htmlBody : "Please find the payroll report attached.", true);
 
-            // Attach the PDF (Spring will set correct headers)
             helper.addAttachment(filename, new ByteArrayResource(pdfBytes));
 
             mailSender.send(message);
@@ -79,7 +78,6 @@ public class EmailServiceImpl implements EmailService {
             helper.setSubject("Payroll CSV: " + start + " to " + end);
             helper.setText(htmlBody != null ? htmlBody : "Please find the payroll CSV attached.", true);
 
-            // IMPORTANT: content type "text/csv"
             helper.addAttachment(filename, new ByteArrayResource(csvBytes), "text/csv");
 
             mailSender.send(message);
