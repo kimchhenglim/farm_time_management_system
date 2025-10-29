@@ -89,6 +89,7 @@ public interface ClockingRepository extends JpaRepository<ClockingEntity, Intege
                     WHERE (:employeeId IS NULL OR c.employee_id = :employeeId)
                       AND (:startDate IS NULL OR c.clock_in_time >= :startDate)
                       AND (:endDate IS NULL OR c.clock_out_time <= :endDate)
+                    GROUP BY c.id
                     """,
             countQuery = """
                     SELECT COUNT(*)
