@@ -88,7 +88,7 @@ public interface ClockingRepository extends JpaRepository<ClockingEntity, Intege
                     LEFT JOIN break b ON b.clocking_id = c.id
                     WHERE (:employeeId IS NULL OR c.employee_id = :employeeId)
                       AND (:startDate IS NULL OR c.clock_in_time >= :startDate)
-                      AND (:endDate IS NULL OR c.clock_out_time <= :endDate)
+                      AND (:endDate IS NULL OR c.clock_out_time <= :endDate OR c.clock_out_time IS NULL)
                     GROUP BY c.id
                     """,
             countQuery = """
