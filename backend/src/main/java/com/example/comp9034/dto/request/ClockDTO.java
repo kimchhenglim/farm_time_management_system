@@ -2,6 +2,7 @@ package com.example.comp9034.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,6 @@ public class ClockDTO {
     @NotBlank(message = "CardId cannot be null or empty")
     private String cardId;
 
-    @NotBlank(message = "Station cannot be null or empty")
+    @NotNull(message = "Station cannot be null or empty")
     private int stationId;
 }

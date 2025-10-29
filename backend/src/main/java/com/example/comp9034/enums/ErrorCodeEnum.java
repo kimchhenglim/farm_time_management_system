@@ -38,6 +38,9 @@ public enum ErrorCodeEnum {
     CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
     BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
     END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_SUCCESS("E000", "Payroll created successfully", PAYROLL, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_PDF_SUCCESS("E000", "Payroll PDF created successfully", PAYROLL, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_CSV_SUCCESS("E000", "Payroll CSV created successfully", PAYROLL, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
@@ -83,6 +86,8 @@ public enum ErrorCodeEnum {
     STATION_EXISTED("E041", "Station existed!", STATION, HttpStatusCodeEnum.BAD_REQUEST),
     STATION_NOT_FOUND("E042", "Station not found!", STATION, HttpStatusCodeEnum.NOT_FOUND),
     STATION_ALREADY_INACTIVE("E043", "Station already inactive", STATION, HttpStatusCodeEnum.BAD_REQUEST),
+    ALREADY_IN_BREAK("E044", "This user is already in a break", CLOCKING, HttpStatusCodeEnum.BAD_REQUEST),
+    PAYROLL_PERIOD_NOT_VALID("E045", "Time window to generate payroll is not valid", PAYROLL, HttpStatusCodeEnum.BAD_REQUEST),
     ;
 
 

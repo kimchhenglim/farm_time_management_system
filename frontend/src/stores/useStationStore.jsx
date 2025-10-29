@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosInstances } from "../libs/axios";
 import useAuthStore from "./useAuthStore";
+import toast from "react-hot-toast";
 
 const useStationStore = create((set, get) => ({
   stationList: [],
@@ -35,7 +36,7 @@ const useStationStore = create((set, get) => ({
         "admin/station/create",
         {
           name: name,
-          location: "This is address",
+          location: "This is new address",
           status: "ACTIVE",
         },
         {
@@ -47,6 +48,7 @@ const useStationStore = create((set, get) => ({
       );
     } catch (error) {
       console.error("Error creating station:", error);
+      toast.error(error.response.data.message);
     } finally {
       set({ createLoading: false });
     }
@@ -87,8 +89,12 @@ const useStationStore = create((set, get) => ({
       }
 
       console.log("Station updated:", updatedStation);
+      toast.success("Changed Successfully!");
     } catch (error) {
       console.error("Error updating station:", error);
+      if (error?.status === 500) {
+        toast.error("Station name cannot be the same!");
+      }
     }
   },
 }));

@@ -153,7 +153,7 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-[20px] w-[800px] max-w-full p-6 flex flex-col gap-6">
         <h2 className="text-[#566074] font-semibold text-2xl">
-          Edit Timesheet
+          Edit Attendance
         </h2>
         <div className="flex items-center gap-4">
           <img src={Avatar} alt="avatar" className="w-20 h-20 rounded-full" />
@@ -216,25 +216,73 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
 
           {/* Clock-in / Clock-out */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Clock-in */}
             <div className="flex flex-col">
               <label className="text-gray-600 text-sm">Clock-in</label>
-              <input
-                type="time"
+              <select
                 name="startTime"
                 value={formData.startTime}
-                onChange={handleChange}
-                className="p-3 border border-gray-300 rounded-md"
-              />
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    startTime: newStart,
+                    // Reset endTime if it's before or equal to new start
+                    endTime:
+                      prev.endTime && prev.endTime <= newStart
+                        ? ""
+                        : prev.endTime,
+                  }));
+                }}
+                className="p-3 border border-gray-300 rounded-md bg-white"
+              >
+                <option value="">Select clock-in time</option>
+                {Array.from({ length: 24 * 2 }, (_, i) => {
+                  const hour = Math.floor(i / 2);
+                  const minute = (i % 2) * 30;
+                  const formatted = `${hour
+                    .toString()
+                    .padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                  return (
+                    <option key={formatted} value={formatted}>
+                      {formatted}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
+
+            {/* Clock-out */}
             <div className="flex flex-col">
               <label className="text-gray-600 text-sm">Clock-out</label>
-              <input
-                type="time"
+              <select
                 name="endTime"
                 value={formData.endTime}
                 onChange={handleChange}
-                className="p-3 border border-gray-300 rounded-md"
-              />
+                className="p-3 border border-gray-300 rounded-md bg-white"
+                disabled={!formData.startTime} // Disable until start selected
+              >
+                <option value="">Select clock-out time</option>
+                {Array.from({ length: 24 * 2 }, (_, i) => {
+                  const hour = Math.floor(i / 2);
+                  const minute = (i % 2) * 30;
+                  const formatted = `${hour
+                    .toString()
+                    .padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                  const disabled =
+                    formData.startTime && formatted <= formData.startTime;
+                  return (
+                    <option
+                      key={formatted}
+                      value={formatted}
+                      disabled={disabled}
+                      className={disabled ? "text-gray-400" : "text-black"}
+                    >
+                      {formatted}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 
@@ -280,10 +328,10 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
               className="p-3 border border-gray-300 rounded-md"
             >
               <option value="">Select reason</option>
-              <option value="Meal">Meal</option>
-              <option value="Emergency Leave">Emergency Leave</option>
               <option value="Card Failure">Card Failure</option>
-              <option value="Missing Clocking">Missing Clocking</option>
+              <option value="Emergency Leave">Emergency Leave</option>
+              <option value="Missing clocking">Missing Clocking</option>
+              <option value="Not Rostered">Not Rostered</option>
             </select>
           </div>
         </div>

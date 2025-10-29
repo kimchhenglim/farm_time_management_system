@@ -6,6 +6,11 @@ import { axiosInstances } from "../libs/axios";
 
 const useAuthStore = create((set, get) => ({
   authUser: null,
+  setAuthUser: () => {
+    sessionStorage.clear();
+
+    set({ authUser: null });
+  },
   isCheckingAuth: false,
   isLoggingIn: false,
   checkAuth: async () => {
