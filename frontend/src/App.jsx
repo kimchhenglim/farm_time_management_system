@@ -53,7 +53,10 @@ function App() {
             element={authUser ? <Report /> : <Navigate to="/login" />}
           />
           <Route path="/staff" element={<StationClockManagement />} />
-          <Route path="/payroll" element={<Payroll />} />
+          <Route
+            path="/payroll"
+            element={authUser ? <Payroll /> : <Navigate to="/login" />}
+          />
           <Route path="/staff/scan/:type/:reason?" element={<ClockIn />} />
           <Route
             path="/staff/manual/:type/:reason?"
