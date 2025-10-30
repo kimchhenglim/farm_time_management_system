@@ -21,6 +21,9 @@ import static com.example.comp9034.response_template.CompleteResponse.getComplet
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -58,7 +61,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class ClockingServiceImpl implements ClockingService {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy h:mma");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mma");
+    private static final ZoneId ADELAIDE_ZONE = ZoneId.of("Australia/Adelaide");
 
     private final ClockingRepository clockingRepository;
     private final UserRepository userRepository;
@@ -74,6 +78,26 @@ public class ClockingServiceImpl implements ClockingService {
         this.errorCodeRepository = errorCodeRepository;
         this.clockingMapper = clockingMapper;
         this.stationRepository = stationRepository;
+    }
+
+    /**
+     * Converts UTC LocalDateTime to Adelaide time zone for frontend display
+     */
+    private LocalDateTime convertToAdelaideTime(LocalDateTime utcTime) {
+        return ZonedDateTime.of(utcTime, ZoneOffset.UTC)
+            .withZoneSameInstant(ADELAIDE_ZONE)
+            .toLocalDateTime();
+    }
+
+    private String convertToAdelaideTime(String utcTimeStr) {
+        if (utcTimeStr == null) {
+            return null;
+        }
+
+        // Parse the timestamp format from database: "2025-10-28 05:00:00.0"
+        DateTimeFormatter dbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        LocalDateTime utcTime = LocalDateTime.parse(utcTimeStr, dbFormatter);
+        return convertToAdelaideTime(utcTime).format(FORMATTER);
     }
 
     @Override
@@ -98,7 +122,7 @@ public class ClockingServiceImpl implements ClockingService {
                 throw new BusinessException(STATION_NOT_FOUND, COMMON.name(), message);
             }
     
-            var clockInTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            var clockInTime = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES);
             ClockingEntity clocking = new ClockingEntity();
             clocking.setClockInTime(clockInTime);
             clocking.setEmployeeId(existingUser.getEmployeeId());
@@ -106,7 +130,10 @@ public class ClockingServiceImpl implements ClockingService {
             clockingRepository.save(clocking);
 
             log.info("Clock in successfully for cardId {}", dto.getCardId());
-            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), clockInTime.format(FORMATTER));
+            // Convert to Adelaide time for frontend display
+            LocalDateTime adelaideTime = convertToAdelaideTime(clockInTime);
+            log.info("Clock in UTC: {} Adelaide: {}", clockInTime, adelaideTime);
+            return getCompleteResponse(errorCodeRepository, CLOCKING_CREATED, CLOCKING.name(), adelaideTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -144,11 +171,13 @@ public class ClockingServiceImpl implements ClockingService {
                 return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
             }
 
-            var clockOutTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            var clockOutTime = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES);
             var entity  = existingClocking.get();
             entity.setClockOutTime(clockOutTime);
             clockingRepository.save(entity);
-            return getCompleteResponse(errorCodeRepository, CLOCK_OUT_SUCCESS, CLOCKING.name(), clockOutTime.format(FORMATTER));
+            // Convert to Adelaide time for frontend display
+            LocalDateTime adelaideTime = convertToAdelaideTime(clockOutTime);
+            return getCompleteResponse(errorCodeRepository, CLOCK_OUT_SUCCESS, CLOCKING.name(), adelaideTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -181,14 +210,16 @@ public class ClockingServiceImpl implements ClockingService {
             if (existingBreak.isPresent()) {
                 return getCompleteResponse(errorCodeRepository, ALREADY_IN_BREAK, CLOCKING.name(), null);
             }
-            var breakStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            var breakStartTime = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES);
             BreakEntity entity = new BreakEntity();
             entity.setClockingId(existingClocking.get().getId());
             entity.setReason(dto.getReason());
             entity.setBreakStartTime(breakStartTime);
             breakRepository.save(entity);
 
-            return getCompleteResponse(errorCodeRepository, BREAK_CREATED, CLOCKING.name(), breakStartTime.format(FORMATTER));
+            // Convert to Adelaide time for frontend display
+            LocalDateTime adelaideTime = convertToAdelaideTime(breakStartTime);
+            return getCompleteResponse(errorCodeRepository, BREAK_CREATED, CLOCKING.name(), adelaideTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -222,12 +253,14 @@ public class ClockingServiceImpl implements ClockingService {
                 return getCompleteResponse(errorCodeRepository, NO_EXISTING_BREAK, CLOCKING.name(), null);
             }
 
-            var breakEndTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            var breakEndTime = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MINUTES);
             var entity = existingBreak.get();
             entity.setBreakEndTime(breakEndTime);
             breakRepository.save(entity);
 
-            return getCompleteResponse(errorCodeRepository, END_BREAK_SUCCESS, CLOCKING.name(), breakEndTime.format(FORMATTER));
+            // Convert to Adelaide time for frontend display
+            LocalDateTime adelaideTime = convertToAdelaideTime(breakEndTime);
+            return getCompleteResponse(errorCodeRepository, END_BREAK_SUCCESS, CLOCKING.name(), adelaideTime.format(FORMATTER));
         }
         catch (BusinessException e) {
             throw e;
@@ -256,20 +289,24 @@ public class ClockingServiceImpl implements ClockingService {
 
             Page<Object[]> page = clockingRepository.findClockingsNative(dto.getEmployeeId(), start, end, pageable);
             List<ClockingResponseDTO> dtos = page.getContent().stream().map(row -> {
+                String clockInTime = row[4] != null ? convertToAdelaideTime(String.valueOf(row[4])) : null;
+                String clockOutTime = row[5] != null ? convertToAdelaideTime(String.valueOf(row[5])) : null;
+                String date = clockInTime != null ? LocalDateTime.parse(clockInTime, FORMATTER).format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy")) : null;
+
                 return new ClockingResponseDTO(
                     ((Number) row[0]).intValue(),                                       //id
                     (String) row[1],                                                    //employee_id
                     (String) row[2],                                                    //name
                     row[3] != null ? ((Number) row[3]).intValue() : null,               //stationId
-                    (String) row[4],                                                    //date
-                    (String) row[5],                                                    //clock in time
-                    (String) row[6],                                                    //clock out time
-                    row[7] != null && (Boolean) row[7],                                 //is admin manual
-                    (String) row[8],                                                    //reason code
-                    row[9] != null ? ((Number) row[9]).intValue() : null,               //break minutes
-                    row[10] != null ? ((Number) row[10]).doubleValue() : 0.0,           //payrate
-                    row[11] != null ? ((Number) row[11]).doubleValue() : 0.0,           //hours
-                    row[12] != null ? ((Number) row[12]).doubleValue() : 0.0            //total pay
+                    date,                                                               //date
+                    clockInTime,                                                        //clock in time
+                    clockOutTime,                                                       //clock out time
+                    row[6] != null && (Boolean) row[6],                                 //is admin manual
+                    (String) row[7],                                                    //reason code
+                    row[8] != null ? ((Number) row[8]).intValue() : null,               //break minutes
+                    row[9] != null ? ((Number) row[9]).doubleValue() : 0.0,             //payrate
+                    row[10] != null ? ((Number) row[10]).doubleValue() : 0.0,           //hours
+                    row[11] != null ? ((Number) row[11]).doubleValue() : 0.0            //total pay
                 );
             }).toList();
 
