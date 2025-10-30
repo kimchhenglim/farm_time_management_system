@@ -61,7 +61,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Service
 public class ClockingServiceImpl implements ClockingService {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mma");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final ZoneId ADELAIDE_ZONE = ZoneId.of("Australia/Adelaide");
 
     private final ClockingRepository clockingRepository;
@@ -292,6 +292,10 @@ public class ClockingServiceImpl implements ClockingService {
                 String clockInTime = row[4] != null ? convertToAdelaideTime(String.valueOf(row[4])) : null;
                 String clockOutTime = row[5] != null ? convertToAdelaideTime(String.valueOf(row[5])) : null;
                 String date = clockInTime != null ? LocalDateTime.parse(clockInTime, FORMATTER).format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy")) : null;
+                
+                //convert clockInTime and clockOutTime to HH:mm
+                clockInTime = clockInTime != null ? LocalDateTime.parse(clockInTime, FORMATTER).format(DateTimeFormatter.ofPattern("HH:mm")) : null;
+                clockOutTime = clockOutTime != null ? LocalDateTime.parse(clockOutTime, FORMATTER).format(DateTimeFormatter.ofPattern("HH:mm")) : null;
 
                 return new ClockingResponseDTO(
                     ((Number) row[0]).intValue(),                                       //id
