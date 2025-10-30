@@ -71,9 +71,8 @@ public interface ClockingRepository extends JpaRepository<ClockingEntity, Intege
                         c.employee_id,
                         CONCAT(u.first_name, ' ', u.last_name) AS employee_name,
                         c.station_id,
-                        DATE_FORMAT(c.clock_in_time, '%a %d %b %Y') AS date,
-                        TIME_FORMAT(c.clock_in_time, '%H:%i') AS clock_in_time,
-                        TIME_FORMAT(c.clock_out_time, '%H:%i') AS clock_out_time,
+                        c.clock_in_time,
+                        c.clock_out_time,
                         c.is_admin_manual,
                         c.reason_code,
                         COALESCE(
