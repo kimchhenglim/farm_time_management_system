@@ -14,7 +14,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # ----- SERIAL SETUP -----
-PORT = "COM3"  # Change to your Arduino port
+PORT = "/dev/cu.usbmodem31201"  # Change to your Arduino port
 BAUD = 9600
 
 def get_serial_port():

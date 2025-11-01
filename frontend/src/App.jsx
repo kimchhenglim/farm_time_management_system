@@ -12,6 +12,7 @@ import useAuthStore from "./stores/useAuthStore";
 import StationClockManagement from "./pages/StationClockManagement";
 import ClockIn from "./pages/ClockIn";
 import ManualClockIn from "./pages/ManualClockIn";
+import Payroll from "./pages/Payroll";
 function App() {
   //import checkAuth from the useAuthStore
   const { checkAuth, authUser, isCheckingAuth } = useAuthStore();
@@ -52,6 +53,10 @@ function App() {
             element={authUser ? <Report /> : <Navigate to="/login" />}
           />
           <Route path="/staff" element={<StationClockManagement />} />
+          <Route
+            path="/payroll"
+            element={authUser ? <Payroll /> : <Navigate to="/login" />}
+          />
           <Route path="/staff/scan/:type/:reason?" element={<ClockIn />} />
           <Route
             path="/staff/manual/:type/:reason?"

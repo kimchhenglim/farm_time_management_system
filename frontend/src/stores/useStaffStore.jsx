@@ -95,9 +95,9 @@ const useStaffStore = create((set, get) => ({
         currentStaff: updatedStaff,
       }));
       if (isActive) {
-        toast.success("Successfullt Active staff!");
+        toast.success("Successfull Active staff!");
       } else {
-        toast.success("Successfullt Inactive staff!");
+        toast.success("Successfull Inactive staff!");
       }
     } catch (error) {
       console.error("Error updating staff status:", error);
