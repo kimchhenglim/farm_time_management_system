@@ -5,8 +5,14 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   // for modal create
   const [isModalOpen, setIsModalOpen] = useState(false);
   //using useAttendanceStore
-  const { fetchStaffTable, page, totalPages, totalElements, staffTable } =
-    useAttendanceStore();
+  const {
+    fetchStaffTable,
+    page,
+    totalPages,
+    totalElements,
+    staffTable,
+    createAttendance,
+  } = useAttendanceStore();
   //using useEffect to get the data for staffTable
   useEffect(() => {
     fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
@@ -54,7 +60,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
         bValue = new Date(bValue);
       }
 
-      // 🧠 If sorting by numeric field, ensure they're numbers
+      // If sorting by numeric field, ensure they're numbers
       if (["payRate", "hours", "total", "breakMinutes"].includes(sortKey)) {
         aValue = parseFloat(aValue);
         bValue = parseFloat(bValue);
@@ -91,9 +97,6 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           <span>${totalAmount}</span>
         </div>
         <div className="flex gap-6 items-center justify-center">
-          <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#DEDEDE] border-2 rounded-md text-[#566074] bg-[#F5F5F5] font-semibold text-[16px]">
-            Export
-          </div>
           <div
             className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
             onClick={() => setIsModalOpen(true)}

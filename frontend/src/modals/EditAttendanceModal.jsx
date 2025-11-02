@@ -119,16 +119,14 @@ export default function EditAttendanceModal({ isOpen, setIsOpen, data }) {
     };
 
     try {
-      const res = await updateAttendance(data.id, payload);
-      if (res) {
-        toast.success("Attendance updated successfully!");
-        setIsOpen(false);
-      } else {
-        toast.error("Failed to update attendance.");
-      }
+      await updateAttendance(data.id, payload);
+      toast.success("Attendance updated successfully!");
+      setIsOpen(false);
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred while updating attendance.");
+      console.log("Fail update attendance:", res.data);
+      toast.error(
+        error?.response?.data?.body || "Failed to update attendance!"
+      );
     }
   };
 
