@@ -29,11 +29,12 @@ public class MailConfig {
         mailSender.setHost(getConfigValue(EMAIL_HOST_CONFIG.name(), configurationRepository, "smtp.gmail.com"));
         mailSender.setPort(Integer.parseInt(getConfigValue(EMAIL_PORT_CONFIG.name(), configurationRepository, "587")));
         mailSender.setUsername(getConfigValue(EMAIL_ADDRESS_CONFIG.name(), configurationRepository, "needforspeed160899@gmail.com"));
-        mailSender.setPassword("lnhg jxtq donk gpuo");
+        mailSender.setPassword("43eaa3d79f220bf97f8e4ed75e8308bd");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
+
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "true");
 
