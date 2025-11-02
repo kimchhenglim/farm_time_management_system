@@ -38,7 +38,7 @@ public class EmailServiceImpl implements EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Whitefield Farm <no-reply@whitefield.com>");
+            helper.setFrom("hello@pantheonjungle.com");
             helper.setTo(to);
             helper.setSubject("Week " + weekStart.format(DateTimeFormatter.ISO_DATE) + " roster");
             helper.setText(text, true);
@@ -89,7 +89,7 @@ public class EmailServiceImpl implements EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Whitefield Farm <no-reply@whitefield.com>");
+            helper.setFrom("hello@pantheonjungle.com");
             helper.setTo(to);
             helper.setSubject("Payroll CSV: " + start + " to " + end);
             helper.setText(htmlBody != null ? htmlBody : "Please find the payroll CSV attached.", true);
