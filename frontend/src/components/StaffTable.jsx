@@ -8,10 +8,11 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   const {
     fetchStaffTable,
     page,
+    setPage,
     totalPages,
     totalElements,
+    numberOfElements,
     staffTable,
-    createAttendance,
   } = useAttendanceStore();
   //using useEffect to get the data for staffTable
   useEffect(() => {
