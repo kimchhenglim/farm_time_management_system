@@ -62,13 +62,9 @@ public class EmailServiceImpl implements EmailService {
             String filename = String.format("payroll_%s_%s.pdf", start, end);
 
             MimeMessage message = mailSender.createMimeMessage();
-//            String latestAccessToken =
-//                    getConfigValue(EMAIL_ACCESS_TOKEN_CONFIG, configurationRepository, EMAIL.name());
-//            mailSender.setPassword(latestAccessToken);
-
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Whitefield Farm <no-reply@whitefield.com>");
+            helper.setFrom("hello@pantheonjungle.com");
             helper.setTo(to);
             helper.setSubject("Payroll Report: " + start + " to " + end);
             helper.setText(htmlBody != null ? htmlBody : "Please find the payroll report attached.", true);
@@ -91,10 +87,6 @@ public class EmailServiceImpl implements EmailService {
             String filename = String.format("payroll_%s_%s.csv", start, end);
 
             MimeMessage message = mailSender.createMimeMessage();
-//            String latestAccessToken =
-//                    getConfigValue(EMAIL_ACCESS_TOKEN_CONFIG, configurationRepository, EMAIL.name());
-//            mailSender.setPassword(latestAccessToken);
-
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom("Whitefield Farm <no-reply@whitefield.com>");
