@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
 import Clock from "../components/Clock";
+import beep from "../assets/audios/85001724.wav";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import useScanStore from "../stores/useScanStore";
@@ -23,7 +24,6 @@ function ClockIn() {
 
   useEffect(() => {
     if (authUser) setAuthUser();
-
     const newSocket = io("http://localhost:5000", {
       transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
@@ -38,7 +38,9 @@ function ClockIn() {
     // 🧩 Handle incoming messages from backend
     const handleServerMessage = async (data) => {
       console.log("📨 Received:", data);
-
+      // once reeived then play the audio
+      let beepAudio = new Audio(beep);
+      beepAudio.play();
       try {
         if (type === "clockIn") {
           await clockIn(data.msg);
@@ -54,14 +56,14 @@ function ClockIn() {
         setTimeout(() => {
           setPopupMessage(null);
           navigate("/staff");
-        }, 2000);
+        }, 4000);
       } catch (err) {
         console.error("Error while clocking:", err);
         setPopupMessage("❌ Something went wrong!");
         setTimeout(() => {
           setPopupMessage(null);
           navigate("/staff");
-        }, 2000);
+        }, 4000);
       }
     };
 

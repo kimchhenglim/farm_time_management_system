@@ -15,8 +15,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   } = useAttendanceStore();
   //using useEffect to get the data for staffTable
   useEffect(() => {
-    fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
+    fetchStaffTable(weekStart, weekEnd, page, 10); // Fetch page 0 with size 10 on mount
   }, [fetchStaffTable, weekEnd, weekStart]);
+  console.log(staffTable);
   // Sorting state
   const [sortKey, setSortKey] = useState(null);
   const [direction, setDirection] = useState("asc");
@@ -72,10 +73,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
     });
   }, [staffTable, sortKey, direction]);
 
-  // Pagination
-  const handlePrevPage = () => setPage((p) => Math.max(0, p - 1));
-  const handleNextPage = () => setPage((p) => (p + 1 < totalPages ? p + 1 : p));
-
+  // Pagination handlers
+  const handlePrevPage = () => setPage(Math.max(0, page - 1));
+  const handleNextPage = () => setPage(page + 1 < totalPages ? page + 1 : page);
   // Checkbox handlers
   const currentPageStaff = sortedStaff.slice(
     page * pageSize,
@@ -218,7 +218,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
             <span className="font-semibold">
               {Math.min(page * pageSize + pageSize, sortedStaff.length)}
             </span>{" "}
-            of <span className="font-semibold">{totalElements}</span> Entries
+            of <span className="font-semibold">{numberOfElements}</span> Entries
           </span>
           <div className="inline-flex mt-2 xs:mt-0">
             <button

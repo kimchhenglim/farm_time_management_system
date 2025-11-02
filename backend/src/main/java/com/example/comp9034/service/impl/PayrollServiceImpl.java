@@ -58,8 +58,18 @@ public class PayrollServiceImpl implements PayrollService {
             java.text.NumberFormat.getCurrencyInstance(java.util.Locale.forLanguageTag("en-AU"));
 
     @Override
+    public CompleteResponse<Object> getInfoPayroll() {
+        // Build the rows
+        List<EmployeePayrollDTO> rows = buildPayrollRows(new GeneratePayrollRequestDTO());
+        if (rows.isEmpty()) {
+            throw new BusinessException(INVALID_INPUT, PAYROLL.name(), "No valid employees to show payroll!");
+        }
+        return getCompleteResponse(errorCodeRepository, GET_PAYROLL_SUCCESS, PAYROLL.name(), rows);
+    }
+
+    @Override
     public CompleteResponse<Object> emailPayroll(GeneratePayrollRequestDTO dto) {
-        // 1) Build the rows using the shared pipeline
+        // Build the rows using the shared pipeline
         List<EmployeePayrollDTO> rows = buildPayrollRows(dto);
         if (rows.isEmpty()) {
             throw new BusinessException(INVALID_INPUT, PAYROLL.name(), "No valid employees to generate payroll!");
@@ -68,20 +78,26 @@ public class PayrollServiceImpl implements PayrollService {
         LocalDate start = rows.get(0).getStartDate();
         LocalDate end = rows.get(0).getEndDate();
 
-        // 2) Single PDF for all rows (same columns as before)
-        byte[] pdfContent = pdfService.generatePayrollPDF(rows, start, end);
+        // Send ONE PDF per employee containing ONLY their row
+        for (EmployeePayrollDTO row : rows) {
+            String email = row.getEmail();
+            if (email == null || email.trim().isEmpty()) {
+                log.warn("Skipping PDF email for employee {} (no email).", row.getEmployeeId());
+                continue;
+            }
+            try {
+                // Generate a single-employee PDF by passing a singleton list
+                byte[] pdfBytes = pdfService.generatePayrollPDF(java.util.List.of(row), start, end);
 
-        // 3) Email to each employee that has an email
-        List<String> recipients = rows.stream()
-                .map(EmployeePayrollDTO::getEmail)
-                .filter(e -> e != null && !e.trim().isEmpty())
-                .distinct()
-                .toList();
-
-        for (String email : recipients) {
-            emailService.sendPayrollPdfEmail(email, start, end, pdfContent, null);
+                // More descriptive subject/body/filename for each employee's copy (optional)
+                String subjectBodyHtml = null; // or a small HTML summary if you prefer
+                emailService.sendPayrollPdfEmail(email, start, end, pdfBytes, subjectBodyHtml);
+            } catch (Exception ex) {
+                // Don't fail the whole run because one email failed
+                log.error("Failed to send payroll PDF to {} for employee {}: {}",
+                        email, row.getEmployeeId(), ex.getMessage(), ex);
+            }
         }
-
         return getCompleteResponse(errorCodeRepository, CREATE_PAYROLL_SUCCESS, PAYROLL.name(), rows);
     }
 
