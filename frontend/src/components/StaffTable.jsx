@@ -62,7 +62,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
         bValue = new Date(bValue);
       }
 
-      // 🧠 If sorting by numeric field, ensure they're numbers
+      // If sorting by numeric field, ensure they're numbers
       if (["payRate", "hours", "total", "breakMinutes"].includes(sortKey)) {
         aValue = parseFloat(aValue);
         bValue = parseFloat(bValue);
@@ -98,9 +98,6 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           <span>${totalAmount}</span>
         </div>
         <div className="flex gap-6 items-center justify-center">
-          <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#DEDEDE] border-2 rounded-md text-[#566074] bg-[#F5F5F5] font-semibold text-[16px]">
-            Export
-          </div>
           <div
             className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
             onClick={() => setIsModalOpen(true)}

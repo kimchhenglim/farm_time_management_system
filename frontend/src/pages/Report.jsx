@@ -83,7 +83,7 @@ function Report() {
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             currentDate={currentDate}
-            setCurrentDate={setCurrentDate} // ✅ Add this line
+            setCurrentDate={setCurrentDate}
             days={days}
             weekStart={weekStart}
             weekEnd={weekEnd}
