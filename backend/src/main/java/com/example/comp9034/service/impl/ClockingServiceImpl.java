@@ -275,7 +275,7 @@ public class ClockingServiceImpl implements ClockingService {
     @Override
     public CompleteResponse<Object> getClockings(ClockingFilterDTO dto) {
         try {
-            if (!dto.getStartDate().isBefore(dto.getEndDate())) {
+            if (!dto.getStartDate().isBefore(dto.getEndDate()) && !dto.getStartDate().isEqual(dto.getEndDate())) {
                 String msg = "End date must be after start date";
                 log.error(msg);
                 throw new BusinessException(INVALID_INPUT, CLOCKING.name(), msg);
