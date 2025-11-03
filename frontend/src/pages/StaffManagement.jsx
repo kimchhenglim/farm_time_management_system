@@ -77,12 +77,16 @@ function StaffManagement() {
   };
 
   const handleSearch = (e) => {
-    const query = e.target.value;
+    let query = e.target.value;
     setSearchQuery(query);
+
+    query = query.replace(/^FT/i, "").trim();
+
     if (!query) {
       fetchStaffList(0, 10);
       return;
     }
+
     const isIdSearch = /^\d+$/.test(query);
     if (isIdSearch) {
       fetchStaffList(0, 10, { id: query });

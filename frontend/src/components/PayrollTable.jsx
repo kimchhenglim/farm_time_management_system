@@ -93,7 +93,7 @@ function PayrollTable({ onRowClick }) {
           <button
             onClick={generatePayrollCSV}
             disabled={isGeneratingCSV}
-            className={`px-[40px] py-[16px] border-2 rounded-md font-semibold ${
+            className={`px-[40px] py-[16px] border-2 rounded-md font-semibold cursor-pointer ${
               isGeneratingCSV
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-[#F5F5F5] border-[#DEDEDE] text-[#566074]"
@@ -105,10 +105,10 @@ function PayrollTable({ onRowClick }) {
           <button
             onClick={sendPayrollEmails}
             disabled={isSendingEmail}
-            className={`px-[40px] py-[16px] border-2 rounded-md font-semibold ${
+            className={`px-[40px] py-[16px] border-2 rounded-md font-semibold cursor-pointer ${
               isSendingEmail
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "border-[#16A34A] text-[#16A34A]"
+                : "bg-[#16A34A] text-white"
             }`}
           >
             {isSendingEmail ? "Sending..." : "Send To Staff"}
