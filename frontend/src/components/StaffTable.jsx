@@ -99,7 +99,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
         </div>
         <div className="flex gap-6 items-center justify-center">
           <div
-            className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
+            className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] bg-[#16A34A] border-2 rounded-md text-white font-semibold text-[16px] cursor-pointer"
             onClick={() => setIsModalOpen(true)}
           >
             <svg
@@ -111,7 +111,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
             >
               <path
                 d="M8 1.5C8 0.946875 7.55312 0.5 7 0.5C6.44688 0.5 6 0.946875 6 1.5V6.5H1C0.446875 6.5 0 6.94688 0 7.5C0 8.05312 0.446875 8.5 1 8.5H6V13.5C6 14.0531 6.44688 14.5 7 14.5C7.55312 14.5 8 14.0531 8 13.5V8.5H13C13.5531 8.5 14 8.05312 14 7.5C14 6.94688 13.5531 6.5 13 6.5H8V1.5Z"
-                fill="#16A34A"
+                fill="white"
               />
             </svg>
             New record
