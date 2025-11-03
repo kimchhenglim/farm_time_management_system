@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { toast } from "react-hot-toast";
 import { axiosInstances } from "../libs/axios";
 import useAuthStore from "./useAuthStore";
+import { startOfWeek, format } from "date-fns";
 
 const useRosterStore = create((set, get) => ({
   isAddingRoster: false,
@@ -10,12 +11,13 @@ const useRosterStore = create((set, get) => ({
   staffActiveList: [],
   roster: [],
 
-  fetchRoster: async (weekStart, locations = []) => {
+  fetchRoster: async (weekStart, stations = []) => {
     const authUser = useAuthStore.getState().authUser;
+    console.log(stations);
     try {
       const token = authUser?.body?.loginToken;
       const params = { weekStart };
-      if (locations.length) params.locations = locations.join(",");
+      if (stations.length) params.stations = stations.join(",");
       const res = await axiosInstances.get("/admin/roster/get", {
         params,
         headers: {
@@ -25,6 +27,7 @@ const useRosterStore = create((set, get) => ({
       });
 
       const rosterList = res.data?.body?.rosterList || [];
+      // console.log("Fetched roster:", rosterList);
 
       const grouped = rosterList.reduce((acc, item) => {
         const [datePart] = item.startTime.split(" "); // "11-09-2025"
@@ -61,7 +64,7 @@ const useRosterStore = create((set, get) => ({
           id: item.rosterId,
           employeeName: item.employeeName || item.staffName,
           employeeId: item.employeeId,
-          location: item.location,
+          station: item.station,
           time: `${formatTo12Hour(startDate)} - ${formatTo12Hour(endDate)}`,
           type: item.type,
           payRate: item.payRate,
@@ -82,7 +85,7 @@ const useRosterStore = create((set, get) => ({
     date,
     staffId,
     staffName,
-    location,
+    station,
     startTime,
     endTime,
     type,
@@ -100,7 +103,7 @@ const useRosterStore = create((set, get) => ({
         {
           employeeId: staffId,
           employeeName: staffName,
-          location,
+          station,
           startTime,
           endTime,
           breakMinutes,
@@ -140,29 +143,35 @@ const useRosterStore = create((set, get) => ({
 
       // Update local store
       const newShift = {
-        id: data?.id || Date.now(),
+        id: data?.id,
         employeeName: staffName,
-        location,
+        station,
         time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
         type,
         payRate,
       };
 
-      set((state) => {
-        const rosterExists = state.roster.some((day) => day.date === date);
+      // set((state) => {
+      //   const rosterExists = state.roster.some((day) => day.date === date);
 
-        const updatedRoster = rosterExists
-          ? state.roster.map((day) =>
-              day.date === date
-                ? { ...day, data: [...day.data, newShift] }
-                : day
-            )
-          : [...state.roster, { date, data: [newShift] }];
+      //   const updatedRoster = rosterExists
+      //     ? state.roster.map((day) =>
+      //         day.date === date
+      //           ? { ...day, data: [...day.data, newShift] }
+      //           : day
+      //       )
+      //     : [...state.roster, { date, data: [newShift] }];
 
-        return { roster: updatedRoster };
-      });
-
+      //   return { roster: updatedRoster };
+      // });
+      const start = format(
+        startOfWeek(new Date(date), { weekStartsOn: 1 }),
+        "yyyy-MM-dd"
+      );
+      await get().fetchRoster(start);
       toast.success("Shift created successfully!");
+
+      // const weekStart
       return data;
     } catch (err) {
       console.error("Failed to add shift:", err);
@@ -181,7 +190,7 @@ const useRosterStore = create((set, get) => ({
     date,
     employeeId,
     staffName,
-    location,
+    station,
     startTime,
     endTime,
     type,
@@ -189,19 +198,18 @@ const useRosterStore = create((set, get) => ({
     totalHour,
   }) => {
     try {
+      console.log("update employee id:", employeeId);
       set({ isEditingRoster: true });
       const authUser = useAuthStore.getState().authUser;
       const token = authUser?.body?.loginToken;
-
       const { data } = await axiosInstances.put(
         "/admin/roster/update",
         {
           rosterId,
           employeeId,
-          location,
+          station,
           startTime,
           endTime,
-          employeeName: staffName,
         },
         {
           headers: {
@@ -234,7 +242,7 @@ const useRosterStore = create((set, get) => ({
       const updatedShift = {
         id: rosterId,
         employeeName: staffName,
-        location,
+        station,
         time: `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`,
         type,
         payRate,
@@ -271,6 +279,7 @@ const useRosterStore = create((set, get) => ({
       set({ isEditingRoster: false });
     }
   },
+
   deleteRoster: async (rosterId) => {
     try {
       set({ isDeletingRoster: true });
@@ -281,7 +290,7 @@ const useRosterStore = create((set, get) => ({
       await axiosInstances.delete("/admin/roster/delete", {
         params: {
           hard: "false",
-          rosterId: rosterId.toString(),
+          rosterId: rosterId,
         },
         headers: {
           "Content-Type": "application/json",

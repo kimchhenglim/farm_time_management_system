@@ -27,6 +27,20 @@ public enum ErrorCodeEnum {
     DELETE_ROSTER_SUCCESS("E000", "Roster deleted successfully", ROSTER, HttpStatusCodeEnum.OK),
     GET_ROSTER_BY_WEEK_SUCCESS("E000", "Get Roster successfully", ROSTER, HttpStatusCodeEnum.OK),
     UPDATE_ROSTER_SUCCESS("E000", "Roster updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+    GET_CLOCKING_SUCCESS("E000", "Fetch clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    UPDATE_CLOCKING_SUCCESS("E000", "Update clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    DELETE_CLOCKING_SUCCESS("E000", "Delete clocking successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CREATE_STATION_SUCCESS("E000", "Station created successfully", STATION, HttpStatusCodeEnum.OK),
+    DELETE_STATION_SUCCESS("E000", "Station deleted successfully", STATION, HttpStatusCodeEnum.OK),
+    GET_STATION_SUCCESS("E000", "Get Station successfully", STATION, HttpStatusCodeEnum.OK),
+    UPDATE_STATION_SUCCESS("E000", "Station updated successfully", ROSTER, HttpStatusCodeEnum.OK),
+    CLOCKING_CREATED("E000", "Clocking created successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_SUCCESS("E000", "Payroll created successfully", PAYROLL, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_PDF_SUCCESS("E000", "Payroll PDF created successfully", PAYROLL, HttpStatusCodeEnum.OK),
+    CREATE_PAYROLL_CSV_SUCCESS("E000", "Payroll CSV created successfully", PAYROLL, HttpStatusCodeEnum.OK),
 
 
     INVALID_INPUT("E001", "Invalid input provided", COMMON, HttpStatusCodeEnum.BAD_REQUEST),
@@ -66,7 +80,14 @@ public enum ErrorCodeEnum {
     SHIFT_ALREADY_CANCELED("E035", "Shift already cancelled", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
     ROSTER_NOT_FOUND("E036", "Roster not found!", ROSTER, HttpStatusCodeEnum.NOT_FOUND),
     SHIFT_DURATION_INVALID("E037", "Shift duration does not meet requirements", ROSTER, HttpStatusCodeEnum.BAD_REQUEST),
-
+    ALREADY_CLOCK_IN("E038", "This user has already clocked in or forgot to clock out", CLOCKING, HttpStatusCodeEnum.CONFLICT),
+    NO_CLOCK_IN("E039", "This user has not clocked in yet to perform the action", CLOCKING, HttpStatusCodeEnum.CONFLICT),
+    NO_EXISTING_BREAK("E040", "This user has no break", CLOCKING, HttpStatusCodeEnum.CONFLICT),
+    STATION_EXISTED("E041", "Station existed!", STATION, HttpStatusCodeEnum.BAD_REQUEST),
+    STATION_NOT_FOUND("E042", "Station not found!", STATION, HttpStatusCodeEnum.NOT_FOUND),
+    STATION_ALREADY_INACTIVE("E043", "Station already inactive", STATION, HttpStatusCodeEnum.BAD_REQUEST),
+    ALREADY_IN_BREAK("E044", "This user is already in a break", CLOCKING, HttpStatusCodeEnum.BAD_REQUEST),
+    PAYROLL_PERIOD_NOT_VALID("E045", "Time window to generate payroll is not valid", PAYROLL, HttpStatusCodeEnum.BAD_REQUEST),
     ;
 
 

@@ -18,7 +18,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
     role: "",
     contractType: "",
     payRate: "",
-    location: "",
+    station: "",
     avatar: null,
     isActive: true,
   });
@@ -50,7 +50,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       role: "",
       contractType: "",
       payRate: "",
-      location: "",
+      station: "",
       avatar: null,
       isActive: true,
     });
@@ -68,7 +68,6 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       "role",
       "contractType",
       "payRate",
-      "location",
     ];
 
     const newErrors = {};
@@ -99,6 +98,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
 
     // Prepare payload
     const payload = {
+      cardId: formData.cardId || null,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -113,7 +113,6 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
       isActive: formData.isActive,
       contractType: formData.contractType,
       payRate: parseFloat(formData.payRate),
-      location: formData.location,
     };
 
     try {
@@ -400,7 +399,7 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
 
             {/* Pay Rate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Pay Rate</label>
+              <label className="text-sm font-medium mb-1">Standard Rate</label>
               <input
                 type="number"
                 name="payRate"
@@ -421,31 +420,26 @@ function CreateStaffModal({ isOpenModal, setIsOpenModal, onClose, onSubmit }) {
               )}
             </div>
 
-            {/* Location */}
+            {/* overtimeRate */}
             <div className="flex flex-col">
-              <label className="text-sm font-medium mb-1">Location</label>
-              <select
-                name="location"
-                value={formData.location}
-                onChange={(e) => {
-                  handleChange(e);
-                  setErrors({ ...errors, location: null });
-                }}
-                className={`border px-3 py-2 rounded ${
-                  errors.location ? "border-red-500" : "border-[#ADADAD]"
-                }`}
+              <label
+                className="text-sm font-medium mb-1"
+                htmlFor="overtimeRate"
               >
-                <option value="">Select Location</option>
-                <option value="Shed 1">Shed 1</option>
-                <option value="Shed 2">Shed 2</option>
-                <option value="Shed 3">Shed 3</option>
-                <option value="Shed 4">Shed 4</option>
-              </select>
-              {errors.location && (
-                <span className="text-red-500 text-xs mt-1">
-                  {errors.location}
-                </span>
-              )}
+                Overtime Rate
+              </label>
+              <input
+                type="text"
+                name="overtimeRate"
+                id="overtimeRate"
+                disabled
+                value={
+                  formData?.contractType === "CASUAL"
+                    ? 2.5 * formData?.payRate + " (Standard pay * 2.5)"
+                    : 1.5 * formData?.payRate + " (Standard pay * 1.5)"
+                }
+                className="border border-[#ADADAD] px-3 py-2 rounded text-gray-500 cursor-not-allowed"
+              />
             </div>
           </div>
 

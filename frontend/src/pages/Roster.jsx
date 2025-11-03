@@ -6,6 +6,7 @@ import Plus from "../assets/plus.svg";
 import WeekNavigator from "../components/WeekNavigator";
 import ShiftModal from "../modals/ShiftModal";
 import useRosterStore from "../stores/useRosterStore";
+import ConfirmModal from "../modals/ConfirmationModal";
 function Dashboard() {
   //create trigger for Modal
   const [isOpen, setIsOpen] = useState(false);
@@ -58,6 +59,18 @@ function Dashboard() {
         onSubmitFunction={addRoster}
         submitLabel="Create"
       />
+      {/* <ConfirmModal
+        propID="deleteModal"
+        title="Delete this shift?"
+        message="Are you sure you want to publish this shift?"
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        submitLabel={"Delete"}
+        style="bg-[#F5F5F5] w-[124px] px-[24px] py-[16px] cursor-pointer rounded-[5px] text-white"
+        handleSubmit={() => {
+          // setIsActive((prev) => !prev);
+        }}
+      /> */}
     </div>
   );
 }

@@ -9,6 +9,10 @@ import { Toaster } from "react-hot-toast";
 import Report from "./pages/Report";
 import { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
+import StationClockManagement from "./pages/StationClockManagement";
+import ClockIn from "./pages/ClockIn";
+import ManualClockIn from "./pages/ManualClockIn";
+import Payroll from "./pages/Payroll";
 function App() {
   //import checkAuth from the useAuthStore
   const { checkAuth, authUser, isCheckingAuth } = useAuthStore();
@@ -48,7 +52,13 @@ function App() {
             path="/report"
             element={authUser ? <Report /> : <Navigate to="/login" />}
           />
-          {/* <Route path="/staff/:id" element={<StaffDetail />} /> */}
+          <Route path="/staff" element={<StationClockManagement />} />
+          <Route path="/payroll" element={<Payroll />} />
+          <Route path="/staff/scan/:type/:reason?" element={<ClockIn />} />
+          <Route
+            path="/staff/manual/:type/:reason?"
+            element={<ManualClockIn />}
+          />
         </Routes>
       </main>
       <Toaster />

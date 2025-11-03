@@ -16,6 +16,9 @@ public enum CommonEnum {
     SMS(Group.FLOW),
     EMAIL(Group.FLOW),
     ROSTER(Group.FLOW),
+    CLOCKING(Group.FLOW),
+    STATION(Group.FLOW),
+    PAYROLL(Group.FLOW),
 
     PASSWORD_PATTERN(Group.CONFIG),
     EMAIL_PATTERN(Group.CONFIG),
@@ -33,6 +36,8 @@ public enum CommonEnum {
     WEEKLY_LIMIT_MINUTES(Group.CONFIG),
     SHIFT_MIN_MINUTES(Group.CONFIG),
     SHIFT_MAX_MINUTES(Group.CONFIG),
+    WEEKLY_REGULAR_RATE(Group.CONFIG),
+    WEEKLY_OT_RATE(Group.CONFIG),
 
     EMAIL_ADDRESS_CONFIG(Group.CONFIG),
     EMAIL_HOST_CONFIG(Group.CONFIG),

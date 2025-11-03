@@ -124,9 +124,13 @@ function StaffDetail() {
                 </span>
               </div>
               <div>
-                Location:{" "}
+                Overtime rate:{" "}
                 <span className="text-[#16A34A] font-thin">
-                  {currentStaff?.location}
+                  {currentStaff?.contractType === "CASUAL"
+                    ? 2.5 * currentStaff?.payRate
+                    : 1.5 * currentStaff?.payRate}{" "}
+                  (Standard rate *{" "}
+                  {currentStaff?.contractType === "CASUAL" ? "2.5" : "1.5"})
                 </span>
               </div>
               <div>
@@ -136,7 +140,7 @@ function StaffDetail() {
                 </span>
               </div>
               <div>
-                Pay rate:{" "}
+                Standard Rate:{" "}
                 <span className="text-[#16A34A] font-thin">
                   ${currentStaff?.payRate}
                 </span>

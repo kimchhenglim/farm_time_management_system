@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import Edit from "../assets/edit.svg";
 import ShiftModal from "../modals/ShiftModal";
-import ConfirmModal from "../modals/ConfirmationModal";
 import useRosterStore from "../stores/useRosterStore";
+import ConfirmShiftModal from "../modals/ConfirmShiftModal";
 function CardRoster({
   rosterID,
   employeeName,
-  location,
+  station,
   time,
   index,
   columnIndex,
@@ -16,14 +15,19 @@ function CardRoster({
   totalHour,
   employeeId,
 }) {
-  const { deleteRoster, editRoster } = useRosterStore();
+  const { editRoster } = useRosterStore();
   //pre-define color for shift
-  const locationColors = {
+  const stationColors = {
     "Shed 1": "bg-[#D1EEEC] text-[#19A598]",
     "Shed 2": "bg-[#FFD0E0] text-[#C41651]",
     "Shed 3": "bg-[#C8EDFD] text-[#1773E0]",
   };
+
+  const handleCreateShift = () => {
+    console.log("Shift created ✅");
+  };
   const [isOpen, setIsOpen] = useState(false);
+  const [isConfirm, setIsConfirm] = useState(false);
   const [selectedShift, setSelectedShift] = useState(null);
   const onHandleEdit = () => {
     const elem = document.activeElement;
@@ -53,7 +57,7 @@ function CardRoster({
       lastName,
       contractType: type,
       payRate,
-      location,
+      station,
       startTime,
       endTime,
       id: employeeId,
@@ -69,7 +73,7 @@ function CardRoster({
     await editRoster({
       rosterId: rosterID,
       employeeId: formValues.staffId,
-      location: formValues.location,
+      station: formValues.station,
       startTime: formValues.startTime,
       endTime: formValues.endTime,
       date,
@@ -85,8 +89,8 @@ function CardRoster({
     if (elem) {
       elem?.blur();
     }
-    deleteRoster(rosterID);
-    // setIsOpen(true);
+    setIsConfirm(true);
+    // deleteRoster(rosterID);
   };
 
   return (
@@ -101,8 +105,11 @@ function CardRoster({
       <div
         tabIndex={0}
         role="button"
-        popoverTarget="popover-1"
-        className={` w-full h-[70px] p-2 flex flex-col gap-2 justify-center ${locationColors[location]}  rounded-[5px] cursor-pointer`}
+        className={` w-full h-[70px] p-2 flex flex-col gap-2 justify-center ${
+          stationColors[station]
+            ? stationColors[station]
+            : "bg-[#F5F5F5] text-[#8D8D8D]"
+        }  rounded-[5px] cursor-pointer`}
       >
         <span className=" font-semibold text-[14px]">{employeeName}</span>
         <div className="flex gap-2 items-center">
@@ -110,7 +117,7 @@ function CardRoster({
             {time}
           </span>
           <div className="w-[3px] h-[3px] rounded-full bg-[#19A598] "></div>
-          <span className="italic xl:text-[10px]">{location}</span>
+          <span className="italic xl:text-[10px]">{station}</span>
         </div>
       </div>
       {/* popup */}
@@ -122,7 +129,7 @@ function CardRoster({
         }`}
       >
         <li onClick={() => onHandleEdit()}>
-          <a>
+          <a className="flex gap-3 items-center">
             <svg
               width="15"
               height="15"
@@ -139,7 +146,6 @@ function CardRoster({
           </a>
         </li>
         <li onClick={() => onHandleDelete()}>
-          {/* <ConfirmModal /> */}
           <a className="flex gap-3 items-center">
             <svg
               width="15"
@@ -157,6 +163,7 @@ function CardRoster({
           </a>
         </li>
       </ul>
+
       <ShiftModal
         isOpenModal={isOpen}
         setIsOpenModal={setIsOpen}
@@ -165,6 +172,11 @@ function CardRoster({
         onClose={() => setIsOpen(false)}
         data={selectedShift}
         onSubmitFunction={handleEditSubmit}
+      />
+      <ConfirmShiftModal
+        isOpen={isConfirm}
+        setIsOpen={setIsConfirm}
+        rosterID={rosterID}
       />
     </div>
   );

@@ -30,6 +30,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -186,11 +187,11 @@ public class UserServiceImpl implements UserService {
             if (registerRequest.getRole().toUpperCase().equals(ADMIN.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, passwordEncoder.encode(registerRequest.getPassword()));
             } else if (registerRequest.getRole().toUpperCase().equals(UserEnum.STAFF.name())) {
                 newUser = new UserEntity(UUID.randomUUID().toString(), registerRequest.getFirstName(), registerRequest.getLastName(),
                         toLocalDate(registerRequest.getDob()), registerRequest.getGender(), registerRequest.getEmail(), registerRequest.getMobileNumber(),
-                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getLocation(), LocalDateTime.now(), role, null);
+                        registerRequest.getAddress(), registerRequest.getCardId(), registerRequest.getContractType(), registerRequest.getPayRate(), registerRequest.getStation(), LocalDateTime.now(), role, null);
             } else {
                 String message = "User role is not valid: " + registerRequest.getRole();
                 log.info(message);
@@ -209,6 +210,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public CompleteResponse<Object> updateUser(UpdateUserDTO updateUserDTO, String employeeId) {
         try {
@@ -219,18 +221,31 @@ public class UserServiceImpl implements UserService {
                         return new BusinessException(USER_NOT_FOUND, COMMON.name(), message);
                     });
 
+            String oldName = normalizeName(existingUser.getFirstName(), existingUser.getLastName());
             //update entire entity
             dataMapper.updateEntityFromDto(updateUserDTO, existingUser);
             existingUser.setUpdatedAt(LocalDateTime.now());
             userRepository.save(existingUser);
-
             UserDTO responseDTO = dataMapper.toUserDto(existingUser);
+
+            String newName = normalizeName(updateUserDTO.getFirstName(), updateUserDTO.getLastName());
+            if (newName != null && !newName.equals(oldName)) {
+                int updatedRowNum = rosterRepository.propagateEmployeeName(employeeId, newName);
+                log.info("Updating name for employeeId {} for {} records", employeeId, updatedRowNum);
+            }
             return getCompleteResponse(errorCodeRepository, UPDATE_USER_SUCCESS, COMMON.name(), responseDTO);
         } catch (Exception e) {
             String message = "There has been an error in updating user " + updateUserDTO.getEmail() + e;
             log.error(message);
             throw new BusinessException(INTERNAL_SERVER_ERROR, REGISTER.name(), message);
         }
+    }
+
+    private String normalizeName(String first, String last) {
+        String f = first == null ? "" : first.trim();
+        String l = last  == null ? "" : last.trim();
+        String s = (f + " " + l).trim().replaceAll("\\s+", " ");
+        return s.isEmpty() ? null : s;
     }
 
     @Override

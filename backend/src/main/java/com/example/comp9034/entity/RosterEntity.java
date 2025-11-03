@@ -33,7 +33,7 @@ public class RosterEntity {
     @Column(nullable = false)
     private LocalDate date;
 
-    private String location;
+    private String station;
     private Integer breakMinutes = 0;        // default 0; set to 30 if > 4h
     private Boolean isCancelled = false;
 
@@ -42,7 +42,7 @@ public class RosterEntity {
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String location, String employeeName) {
+    public RosterEntity(Integer breakMinutes, LocalDate date, LocalDateTime endTime, LocalDateTime startTime, String employeeId, String status, String createdBy, String station, String employeeName) {
         this.breakMinutes = breakMinutes;
         this.date = date;
         this.endTime = endTime;
@@ -50,7 +50,7 @@ public class RosterEntity {
         this.employeeId = employeeId;
         this.status = status;
         this.createdBy = createdBy;
-        this.location = location;
+        this.station = station;
         this.employeeName = employeeName;
     }
 
