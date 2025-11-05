@@ -88,7 +88,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   return (
     <div>
       {/* Summary + Button */}
-      <div className="w-full flex justify-between items-center cursor-pointer mb-[24px]">
+      <div className="w-full flex justify-between items-center  mb-[24px]">
         <div className="font-thin text-[#8D8D8D] flex gap-[44px]">
           <span>
             {staffTable.length}{" "}
@@ -96,10 +96,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           </span>
           <span>${totalAmount}</span>
         </div>
-        <div className="flex gap-6 items-center justify-center">
-          <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#DEDEDE] border-2 rounded-md text-[#566074] bg-[#F5F5F5] font-semibold text-[16px]">
-            Export
-          </div>
+        <div className="flex gap-6 items-center justify-center cursor-pointer">
           <div
             className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
             onClick={() => setIsModalOpen(true)}
@@ -182,7 +179,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
                     <td className=" border-b border-[#D6D6D6]">
                       <div className="flex gap-2 items-center justify-center">
                         <span>
-                          {person.breakMinutes ? person.breakMinutes : "—"}
+                          {person.breakMinutes
+                            ? person.breakMinutes + "m"
+                            : "—"}
                         </span>
                       </div>
                     </td>
