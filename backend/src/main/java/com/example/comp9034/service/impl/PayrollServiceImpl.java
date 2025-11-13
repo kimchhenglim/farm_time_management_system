@@ -58,6 +58,16 @@ public class PayrollServiceImpl implements PayrollService {
             java.text.NumberFormat.getCurrencyInstance(java.util.Locale.forLanguageTag("en-AU"));
 
     @Override
+    public CompleteResponse<Object> getInfoPayroll() {
+        // Build the rows
+        List<EmployeePayrollDTO> rows = buildPayrollRows(new GeneratePayrollRequestDTO());
+        if (rows.isEmpty()) {
+            throw new BusinessException(INVALID_INPUT, PAYROLL.name(), "No valid employees to show payroll!");
+        }
+        return getCompleteResponse(errorCodeRepository, GET_PAYROLL_SUCCESS, PAYROLL.name(), rows);
+    }
+
+    @Override
     public CompleteResponse<Object> emailPayroll(GeneratePayrollRequestDTO dto) {
         // Build the rows using the shared pipeline
         List<EmployeePayrollDTO> rows = buildPayrollRows(dto);

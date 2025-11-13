@@ -39,7 +39,7 @@ function ShiftModal({
     totalHour: data?.totalHour || "",
   });
 
-  // ✅ staff store
+  // staff store
   const {
     activeStaffList,
     fetchActiveStaffPaginated,
@@ -47,21 +47,33 @@ function ShiftModal({
     isFetchingActiveStaff,
   } = useStaffStore();
 
-  // ✅ station store
+  // station store
   const { fetchStationList, stationList, stationLoading } = useStationStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const searchTimeout = useRef(null);
 
-  // ✅ Fetch stations when modal opens
+  // Fetch stations when modal opens
   useEffect(() => {
     if (isOpenModal) fetchStationList();
   }, [isOpenModal, fetchStationList]);
 
-  // ✅ Filter only ACTIVE stations
+  // Filter only ACTIVE stations
   const activeStations =
     stationList?.filter((s) => (s.status || "").toUpperCase() === "ACTIVE") ||
     [];
+
+  const generateTimes = () => {
+    return Array.from({ length: 24 * 2 }, (_, i) => {
+      const hour = Math.floor(i / 2);
+      const minute = (i % 2) * 30;
+      return `${hour.toString().padStart(2, "0")}:${minute
+        .toString()
+        .padStart(2, "0")}`;
+    });
+  };
+
+  const times = generateTimes();
 
   // refresh date/time every minute
   useEffect(() => {
@@ -322,37 +334,61 @@ function ShiftModal({
 
               {/* Times */}
               <div className="grid grid-cols-2 gap-[36px]">
+                {/* Start Time */}
                 <div className="flex flex-col gap-[10px]">
                   <label
                     htmlFor="startTime"
                     className="text-[#565656] font-medium"
                   >
-                    Start time
+                    Start Time
                   </label>
-                  <input
-                    type="time"
-                    className="input bg-white border border-[#ADADAD] rounded-[5px] w-full"
+                  <select
+                    name="startTime"
                     id="startTime"
                     value={formData.startTime}
-                    name="startTime"
                     onChange={handleChange}
-                  />
+                    className="border border-[#ADADAD] px-3 py-2 rounded bg-white"
+                  >
+                    <option value="">Select Start Time</option>
+                    {times.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* End Time */}
                 <div className="flex flex-col gap-[10px]">
                   <label
                     htmlFor="endTime"
                     className="text-[#565656] font-medium"
                   >
-                    End time
+                    End Time
                   </label>
-                  <input
-                    type="time"
-                    className="input bg-white border border-[#ADADAD] rounded-[5px] w-full"
-                    id="endTime"
+                  <select
                     name="endTime"
-                    onChange={handleChange}
+                    id="endTime"
                     value={formData.endTime}
-                  />
+                    onChange={handleChange}
+                    className="border border-[#ADADAD] px-3 py-2 rounded bg-white"
+                  >
+                    <option value="">Select End Time</option>
+                    {times.map((t) => (
+                      <option
+                        key={t}
+                        value={t}
+                        disabled={formData.startTime && t <= formData.startTime}
+                        className={
+                          formData.startTime && t <= formData.startTime
+                            ? "text-[#ADADAD]"
+                            : ""
+                        }
+                      >
+                        {t}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

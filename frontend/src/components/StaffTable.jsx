@@ -5,12 +5,19 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   // for modal create
   const [isModalOpen, setIsModalOpen] = useState(false);
   //using useAttendanceStore
-  const { fetchStaffTable, page, totalPages, totalElements, staffTable } =
-    useAttendanceStore();
+  const {
+    fetchStaffTable,
+    page,
+    setPage,
+    totalPages,
+    numberOfElements,
+    staffTable,
+  } = useAttendanceStore();
   //using useEffect to get the data for staffTable
   useEffect(() => {
-    fetchStaffTable(weekStart, weekEnd, 0, 10); // Fetch page 0 with size 10 on mount
+    fetchStaffTable(weekStart, weekEnd, page, 10); // Fetch page 0 with size 10 on mount
   }, [fetchStaffTable, weekEnd, weekStart]);
+  console.log(staffTable);
   // Sorting state
   const [sortKey, setSortKey] = useState(null);
   const [direction, setDirection] = useState("asc");
@@ -66,10 +73,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
     });
   }, [staffTable, sortKey, direction]);
 
-  // Pagination
-  const handlePrevPage = () => setPage((p) => Math.max(0, p - 1));
-  const handleNextPage = () => setPage((p) => (p + 1 < totalPages ? p + 1 : p));
-
+  // Pagination handlers
+  const handlePrevPage = () => setPage(Math.max(0, page - 1));
+  const handleNextPage = () => setPage(page + 1 < totalPages ? page + 1 : page);
   // Checkbox handlers
   const currentPageStaff = sortedStaff.slice(
     page * pageSize,
@@ -82,7 +88,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   return (
     <div>
       {/* Summary + Button */}
-      <div className="w-full flex justify-between items-center cursor-pointer mb-[24px]">
+      <div className="w-full flex justify-between items-center  mb-[24px]">
         <div className="font-thin text-[#8D8D8D] flex gap-[44px]">
           <span>
             {staffTable.length}{" "}
@@ -90,10 +96,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           </span>
           <span>${totalAmount}</span>
         </div>
-        <div className="flex gap-6 items-center justify-center">
-          <div className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#DEDEDE] border-2 rounded-md text-[#566074] bg-[#F5F5F5] font-semibold text-[16px]">
-            Export
-          </div>
+        <div className="flex gap-6 items-center justify-center cursor-pointer">
           <div
             className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
             onClick={() => setIsModalOpen(true)}
@@ -176,7 +179,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
                     <td className=" border-b border-[#D6D6D6]">
                       <div className="flex gap-2 items-center justify-center">
                         <span>
-                          {person.breakMinutes ? person.breakMinutes : "—"}
+                          {person.breakMinutes
+                            ? person.breakMinutes + "m"
+                            : "—"}
                         </span>
                       </div>
                     </td>
@@ -215,7 +220,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
             <span className="font-semibold">
               {Math.min(page * pageSize + pageSize, sortedStaff.length)}
             </span>{" "}
-            of <span className="font-semibold">{totalElements}</span> Entries
+            of <span className="font-semibold">{numberOfElements}</span> Entries
           </span>
           <div className="inline-flex mt-2 xs:mt-0">
             <button

@@ -14,5 +14,6 @@ public interface PayrollController {
     @PostMapping("/csv")
     ResponseEntity<ResponseBody<Object>> csvPayroll(@Valid @RequestBody GeneratePayrollRequestDTO dto);
 
-
+    @GetMapping("/info")
+    ResponseEntity<ResponseBody<Object>> getInfoPayroll();
 }

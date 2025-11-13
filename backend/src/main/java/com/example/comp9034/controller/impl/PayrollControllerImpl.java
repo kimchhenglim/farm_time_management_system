@@ -19,6 +19,12 @@ public class PayrollControllerImpl implements PayrollController {
     }
 
     @Override
+    public ResponseEntity<ResponseBody<Object>> getInfoPayroll() {
+        CompleteResponse<Object> response = payrollService.getInfoPayroll();
+        return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));
+    }
+
+    @Override
     public ResponseEntity<ResponseBody<Object>> emailPayroll(GeneratePayrollRequestDTO dto) {
         CompleteResponse<Object> response = payrollService.emailPayroll(dto);
         return new ResponseEntity<>(response.getResponseBody(), HttpStatus.valueOf(response.getHttpCode()));

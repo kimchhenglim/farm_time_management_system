@@ -38,6 +38,7 @@ public enum ErrorCodeEnum {
     CLOCK_OUT_SUCCESS("E000", "Clocking out successfully", CLOCKING, HttpStatusCodeEnum.OK),
     BREAK_CREATED("E000", "Break created successfully", CLOCKING, HttpStatusCodeEnum.OK),
     END_BREAK_SUCCESS("E000", "Break ended successfully", CLOCKING, HttpStatusCodeEnum.OK),
+    GET_PAYROLL_SUCCESS("E000", "Payroll info retrieved successfully", PAYROLL, HttpStatusCodeEnum.OK),
     CREATE_PAYROLL_SUCCESS("E000", "Payroll created successfully", PAYROLL, HttpStatusCodeEnum.OK),
     CREATE_PAYROLL_PDF_SUCCESS("E000", "Payroll PDF created successfully", PAYROLL, HttpStatusCodeEnum.OK),
     CREATE_PAYROLL_CSV_SUCCESS("E000", "Payroll CSV created successfully", PAYROLL, HttpStatusCodeEnum.OK),
