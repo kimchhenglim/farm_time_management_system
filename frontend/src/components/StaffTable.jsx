@@ -10,7 +10,6 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
     page,
     setPage,
     totalPages,
-    totalElements,
     numberOfElements,
     staffTable,
   } = useAttendanceStore();
@@ -62,7 +61,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
         bValue = new Date(bValue);
       }
 
-      // If sorting by numeric field, ensure they're numbers
+      // 🧠 If sorting by numeric field, ensure they're numbers
       if (["payRate", "hours", "total", "breakMinutes"].includes(sortKey)) {
         aValue = parseFloat(aValue);
         bValue = parseFloat(bValue);
@@ -89,7 +88,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
   return (
     <div>
       {/* Summary + Button */}
-      <div className="w-full flex justify-between items-center cursor-pointer mb-[24px]">
+      <div className="w-full flex justify-between items-center  mb-[24px]">
         <div className="font-thin text-[#8D8D8D] flex gap-[44px]">
           <span>
             {staffTable.length}{" "}
@@ -97,9 +96,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
           </span>
           <span>${totalAmount}</span>
         </div>
-        <div className="flex gap-6 items-center justify-center">
+        <div className="flex gap-6 items-center justify-center cursor-pointer">
           <div
-            className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] bg-[#16A34A] border-2 rounded-md text-white font-semibold text-[16px] cursor-pointer"
+            className="flex justify-center items-center gap-[12px] px-[40px] py-[16px] border-[#16A34A] border-2 rounded-md text-[#16A34A] font-semibold text-[16px]"
             onClick={() => setIsModalOpen(true)}
           >
             <svg
@@ -111,7 +110,7 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
             >
               <path
                 d="M8 1.5C8 0.946875 7.55312 0.5 7 0.5C6.44688 0.5 6 0.946875 6 1.5V6.5H1C0.446875 6.5 0 6.94688 0 7.5C0 8.05312 0.446875 8.5 1 8.5H6V13.5C6 14.0531 6.44688 14.5 7 14.5C7.55312 14.5 8 14.0531 8 13.5V8.5H13C13.5531 8.5 14 8.05312 14 7.5C14 6.94688 13.5531 6.5 13 6.5H8V1.5Z"
-                fill="white"
+                fill="#16A34A"
               />
             </svg>
             New record
@@ -180,7 +179,9 @@ function StaffTable({ weekStart, weekEnd, onRowClick }) {
                     <td className=" border-b border-[#D6D6D6]">
                       <div className="flex gap-2 items-center justify-center">
                         <span>
-                          {person.breakMinutes ? person.breakMinutes : "—"}
+                          {person.breakMinutes
+                            ? person.breakMinutes + "m"
+                            : "—"}
                         </span>
                       </div>
                     </td>

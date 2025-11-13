@@ -1,15 +1,26 @@
 import { create } from "zustand";
 import { axiosInstances } from "../libs/axios";
 
+const handleError = (error, defaultMsg) => {
+  let msg = error?.response?.data?.message || defaultMsg;
+
+  // Custom mapping
+  if (msg?.toLowerCase().includes("user not found")) {
+    msg =
+      "❌ Card is not registered. Please contact the Main Office for more details.";
+  } else {
+    msg = "❌ " + msg;
+  }
+
+  return msg;
+};
+
 const useScanStore = create((set) => ({
   isScanning: false,
   popupMessage: null,
   setPopupMessage: (msg) => set({ popupMessage: msg }),
 
   clockIn: async (card) => {
-    // console.log(cardId, stationId);
-    // console.log("cardId:", cardId);
-
     try {
       set({ isScanning: true });
       const res = await axiosInstances.post("/clocking/in", {
@@ -18,10 +29,8 @@ const useScanStore = create((set) => ({
       });
       if (res) set({ popupMessage: "✅ Clock In Successfully!" });
     } catch (error) {
-      const msg =
-        "❌ " + error?.response?.data?.message || "❌ Clock In Failed!";
+      const msg = handleError(error, "Clock In Failed!");
       set({ popupMessage: msg });
-      // console.error(error);
     } finally {
       set({ isScanning: false });
     }
@@ -36,8 +45,7 @@ const useScanStore = create((set) => ({
       });
       if (res) set({ popupMessage: "✅ Clock Out Successfully!" });
     } catch (error) {
-      const msg =
-        "❌ " + error?.response?.data?.message || "❌ Clock Out Failed!";
+      const msg = handleError(error, "Clock Out Failed!");
       set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
@@ -53,8 +61,7 @@ const useScanStore = create((set) => ({
       });
       if (res) set({ popupMessage: `☕ Break In (${reason}) Successfully!` });
     } catch (error) {
-      const msg =
-        "❌ " + error?.response?.data?.message || "❌ Break In Failed!";
+      const msg = handleError(error, "Break In Failed!");
       set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
@@ -69,8 +76,7 @@ const useScanStore = create((set) => ({
       });
       if (res) set({ popupMessage: "✅ Break Out Successfully!" });
     } catch (error) {
-      const msg =
-        "❌ " + error?.response?.data?.message || "❌ Break Out Failed!";
+      const msg = handleError(error, "Break Out Failed!");
       set({ popupMessage: msg });
     } finally {
       set({ isScanning: false });
